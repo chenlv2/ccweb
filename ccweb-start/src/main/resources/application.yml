@@ -1,0 +1,107 @@
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+server:
+  port: 6666
+
+spring:
+  application:
+    name: ccait.ccweb
+  zipkin:
+    base-url: http://localhost:9411
+  thymeleaf:
+    cache: false
+  devtools: #dev tools
+    livereload:
+      enabled: true
+  session:
+    store-type: none #none, redis, mongo
+    cookie:
+      max-age: 43200000
+    persistent: false
+
+
+  mvc:
+    async:
+      request-timeout: 5000
+    static-path-pattern: /** #静态文件请求匹配方式
+  resources: #修改默认的静态寻址资源目录
+    static-locations: classpath:/templates/,classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/
+
+  redis:
+    host: 127.0.0.1
+    port: 6667
+    database: 0
+    timeout: 6000000
+    pool:
+      max-active: 8
+      max-wait: -1
+      max-idle: 8
+      min-idle: 0
+
+feign:
+  hystrix:
+    enabled: true
+
+websocket:
+  url: ws://127.0.0.1:8766/websocket
+  enable: false
+
+entity:
+  queryable:
+    configFile: db-config.xml
+  ignoreTotalCount: true
+  package: ccait.ccait.ccweb.entites
+  suffix: Entity
+  page:
+    maxSize: 50
+  defaultDateByNow: false
+  defaultValue:
+      userGroupRoleId: UUID_RANDOM
+      role.roleId: UUID_RANDOM
+      group.groupId: UUID_RANDOM
+      privilegeId: UUID_RANDOM
+      acl.aclId: UUID_RANDOM
+  security:
+    encrypt:
+      MD5:
+        fields: user.password #逗号分隔
+        publicKey: ccait@2019
+      AES:
+        publicKey: ccait@2019
+    admin:
+      username: admin
+      password: admin
+
+  validation:
+    email: ^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$
+    mobile: ^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$
+
+  formatter:
+    createTime: yyyy-MM-dd HH:mm
+    modifyTime: yyyy-MM-dd HH:mm
+
+  table:
+    reservedField:
+      userPath: userPath
+      createOn: createTime
+      createBy: createBy
+      modifyOn: modifyTime
+      groupId: groupId
+      roleId: roleId
+
+    user: user
+    group: group
+    role: role
+    acl: acl
+    privilege: privilege
+    userGroupRole: userGroupRole
+
+    display:
+      user:
+        password: hidden
+
+  ip:
+    whiteList: 127.0.0.1
+    blackList: 127.0.0.2

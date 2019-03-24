@@ -1,0 +1,270 @@
+{
+	"info": {
+		"_postman_id": "5573d34a-6c60-4fb9-97c8-593cbba5068a",
+		"name": "ccait",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "ccweb",
+			"item": [
+				{
+					"name": "query",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"conditionList\" : [{\"name\": \"id\", \"value\": \"0\", \"algorithm\" : \"GT\"}],\n\t\"keywords\": [],\n\t\"groupList\": [\"name\"],\n\t\"sortList\": [{\"name\": \"id\", \"isDesc\": false}],\n\t\"pageInfo\": {\n\t\t\"pageIndex\": 1,\n\t\t\"pageSize\": 100\n\t}\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:6666/api/testtt",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "6666",
+							"path": [
+								"api",
+								"testtt"
+							]
+						},
+						"description": "query user"
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\":\"admin\", \"password\": \"admin\" }"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:6666/api/login",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "6666",
+							"path": [
+								"api",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "insert",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\":\"test2\",\n  \"number\": 2\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:6666/api/testtt",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "6666",
+							"path": [
+								"api",
+								"testtt"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": " "
+						},
+						"url": {
+							"raw": "http://127.0.0.1:6666/api/user/6be35c8d5cf792e96b5c380a1c7edb7b",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "6666",
+							"path": [
+								"api",
+								"user",
+								"6be35c8d5cf792e96b5c380a1c7edb7b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "view",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:6666/api/user/4c50da4c960ac510b1143f5c76431c06",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "6666",
+							"path": [
+								"api",
+								"user",
+								"4c50da4c960ac510b1143f5c76431c06"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "logout",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "http://127.0.0.1:6666/api/logout",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "6666",
+							"path": [
+								"api",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "build",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "[\n\t{\n\t\t\"columnName\": \"id\",\n\t\t\"dataType\": \"INTEGER\",\n\t\t\"primaryKey\": true\n\t},\n\t{\n\t\t\"columnName\": \"name\",\n\t\t\"dataType\": \"NVARCHAR\"\n\t},\n\t{\n\t\t\"columnName\": \"number\",\n\t\t\"dataType\": \"INTEGER\"\n\t}\n]"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:6666/api/testtt/build",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "6666",
+							"path": [
+								"api",
+								"testtt",
+								"build"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "groupByQuery",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"conditionList\" : [{\"name\": \"id\", \"value\": \"0\", \"algorithm\" : \"GT\"}],\n\t\"keywords\": [],\n\t\"groupList\": [\"name\"],\n\t\"sortList\": [{\"name\": \"id\", \"isDesc\": false}],\n\t\"pageInfo\": {\n\t\t\"pageIndex\": 1,\n\t\t\"pageSize\": 100\n\t}\n}"
+						},
+						"url": {
+							"raw": "http://127.0.0.1:6666/api/testtt",
+							"protocol": "http",
+							"host": [
+								"127",
+								"0",
+								"0",
+								"1"
+							],
+							"port": "6666",
+							"path": [
+								"api",
+								"testtt"
+							]
+						},
+						"description": "query user"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
