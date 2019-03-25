@@ -38,6 +38,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static ccait.ccweb.controllers.BaseController.CURRENT_TABLE;
+import static ccait.ccweb.controllers.BaseController.getTablename;
 import static ccait.ccweb.controllers.BaseController.isPrimitive;
 
 
@@ -69,11 +70,7 @@ public final class DefaultTrigger {
     @OnInsert
     public void onInsert(Map<String, Object> data, HttpServletRequest request) throws Exception {
 
-        if(request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE) != null) {
-            String tablename = request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE).toString();
-
-            vaildPostData(tablename, data);
-        }
+        vaildPostData(data);
 
         UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + BaseController.LOGIN_KEY);
         if(user != null) {
@@ -95,11 +92,7 @@ public final class DefaultTrigger {
     @OnUpdate
     public void onUpdate(Map<String, Object> data, HttpServletRequest request) throws Exception {
 
-        if(request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE) != null) {
-            String tablename = request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE).toString();
-
-            vaildPostData(tablename, data);
-        }
+        vaildPostData(data);
 
         if(data.containsKey(createOnField)) {
             data.remove(createOnField);
@@ -185,13 +178,13 @@ public final class DefaultTrigger {
         wrapper.setPostParameter(columns);
     }
 
-    private void vaildPostData(String tablename, Map<String, Object> data) throws Exception {
+    private void vaildPostData(Map<String, Object> data) throws Exception {
         Map<String, Object> map = ApplicationConfig.getInstance().getMap("entity.validation");
         if(map != null) {
             for(String key : data.keySet()){
                 Optional opt = map.keySet().stream()
                         .filter(a -> a.equals(key) ||
-                                String.format("%s.%s", tablename, key).equals(a))
+                                String.format("%s.%s", BaseController.getTablename(), key).equals(a))
                         .findAny();
 
                 if(opt.isPresent() && !Pattern.matches(opt.get().toString(), data.get(key).toString())){
@@ -204,31 +197,22 @@ public final class DefaultTrigger {
     @OnList
     public void onList(QueryInfo queryInfo, HttpServletRequest request) throws Exception {
 
-        String tablename = null;
-        if(request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE) != null) {
-            tablename = request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE).toString();
-        }
-
-        vaildCondition(tablename, queryInfo);
+        vaildCondition(queryInfo);
     }
 
     @OnQuery
     public void onQuery(QueryInfo queryInfo, HttpServletRequest request) throws Exception {
 
-        String tablename = null;
-        if(request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE) != null) {
-            tablename = request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE).toString();
-        }
-        vaildCondition(tablename, queryInfo);
+        vaildCondition(queryInfo);
     }
 
-    private void vaildCondition(String tablename, QueryInfo queryInfo) throws Exception {
+    private void vaildCondition(QueryInfo queryInfo) throws Exception {
         Map<String, Object> map = ApplicationConfig.getInstance().getMap("entity.validation");
         if(map != null) {
             for(ConditionInfo condition : queryInfo.getConditionList()){
                 Optional opt = map.keySet().stream()
                         .filter(a -> a.equals(condition.getName()) ||
-                                String.format("%s.%s", tablename, condition.getName()).equals(a))
+                                String.format("%s.%s", getTablename(), condition.getName()).equals(a))
                         .findAny();
 
                 if(opt.isPresent() && !Pattern.matches(opt.get().toString(), condition.getValue().toString())){
@@ -247,8 +231,6 @@ public final class DefaultTrigger {
                 return;
             }
 
-            String tablename = request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE).toString();
-
             List<Map> list = new ArrayList<Map>();
 
             boolean isMapResult = true;
@@ -265,7 +247,7 @@ public final class DefaultTrigger {
             for(int i=0; i<list.size(); i++) {
                 List<String> keyList = (List<String>) list.get(i).keySet().stream().map(a->a.toString()).collect(Collectors.toList());
                 for(Object key : keyList) {
-                    if(ApplicationConfig.getInstance().get(String.format("${entity.table.display.%s.%s}", tablename, key.toString())).equals("hidden")) {
+                    if(ApplicationConfig.getInstance().get(String.format("${entity.table.display.%s.%s}", BaseController.getTablename(), key.toString())).equals("hidden")) {
                         list.get(i).remove(key);
                     }
                 }
