@@ -72,7 +72,7 @@ public abstract class BaseController {
     @Autowired
     private QueryInfo queryInfo;
 
-    @Value("${entity.enableRxJdbc:true}")
+    @Value("${entity.enableRxJdbc:false}")
     protected boolean enableRxJdbc;
 
     @Value("${entity.security.admin.username:admin}")
