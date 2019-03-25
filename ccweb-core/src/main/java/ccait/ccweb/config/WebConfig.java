@@ -74,7 +74,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public FilterRegistrationBean requestFilter()
     {
-        FilterRegistrationBean bean = new FilterRegistrationBean(new UrlFilter());
+        FilterRegistrationBean bean = new FilterRegistrationBean(new HttpFilter());
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
         return bean;
