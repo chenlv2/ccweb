@@ -9,7 +9,7 @@
                 <property name="driver" value="com.mysql.jdbc.Driver" />
                 <property name="url" value="jdbc:mysql://127.0.0.1:3306/ccait?serverTimezone=Asia/Shanghai&amp;useSSL=false&amp;connectTimeout=60000&amp;socketTimeout=60000&amp;autoReconnect=true" />
                 <property name="username" value="root" />
-                <property name="password" value="linlurui" />
+                <property name="password" value="123456" />
             </dataSource>
         </environment>
         <environment id="mssql" classScope="public">
@@ -18,7 +18,7 @@
                 <property name="driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver" />
                 <property name="url" value="jdbc:sqlserver://127.0.0.1:1433;Database=ccait" />
                 <property name="username" value="sa" />
-                <property name="password" value="lwx%33668" />
+                <property name="password" value="123456" />
             </dataSource>
         </environment>
         <environment id="postgresql" classScope="public">
@@ -27,7 +27,7 @@
                 <property name="driver" value="org.postgresql.Driver"/>
                 <property name="url" value="jdbc:postgresql://127.0.0.1:5432/ccait"/>
                 <property name="username" value="postgres"/>
-                <property name="password" value="linlurui"/>
+                <property name="password" value="123456"/>
             </dataSource>
         </environment>
 
@@ -37,7 +37,7 @@
                 <property name="driver" value="oracle.jdbc.OracleDriver"></property>
                 <property name="url" value="jdbc:oracle:thin:@localhost:1521:orcl"></property>
                 <property name="username" value="system"></property>
-                <property name="password" value="linlurui"></property>
+                <property name="password" value="123456"></property>
             </dataSource>
         </environment>
 
@@ -56,7 +56,7 @@
                 <property name="driver" value="n1ql_jdbc" />
                 <property name="url" value="jdbc:couchbase://localhost:8093" />
                 <property name="username" value="default" />
-                <property name="password" value="linlurui" />
+                <property name="password" value="123456" />
             </dataSource>
         </environment>
     </environments>
