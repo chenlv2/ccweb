@@ -87,8 +87,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(securityInterceptor()).excludePathPatterns("/static/*")
-                .excludePathPatterns("/error").addPathPatterns("/**");
+        registry.addInterceptor(securityInterceptor())
+                .excludePathPatterns("/static/*")
+                .excludePathPatterns("/error")
+                .excludePathPatterns("/template")
+                .addPathPatterns("/**");
     }
 
     @Bean
