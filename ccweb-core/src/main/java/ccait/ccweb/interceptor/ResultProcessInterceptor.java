@@ -13,6 +13,7 @@ package ccait.ccweb.interceptor;
 
 
 import ccait.ccweb.context.TriggerContext;
+import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.FastJsonUtils;
@@ -35,7 +36,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
-import static ccait.ccweb.controllers.BaseController.CURRENT_TABLE;
 import static ccait.ccweb.controllers.BaseController.isPrimitive;
 
 @Aspect // FOR AOP
@@ -61,10 +61,8 @@ public class ResultProcessInterceptor {
 
         try {
 
-            if(request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE) != null) {
-                tablename = request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE).toString();
-            }
-
+            tablename = BaseController.getTablename();
+            
             Object obj = proceedingJoinPoint.proceed();//调用执行目标方法
 
             if(obj != null) {
