@@ -18,7 +18,9 @@ import ccait.ccweb.interceptor.SecurityInterceptor;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import entity.query.core.ApplicationConfig;
 import entity.query.core.DataSourceFactory;
+import org.apache.catalina.connector.Connector;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -78,6 +80,26 @@ public class WebConfig implements WebMvcConfigurer {
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
         return bean;
+    }
+
+    @Bean
+    public Connector httpConnector() {
+        Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
+        connector.setScheme("http");
+
+        int httpPort = Integer.parseInt(ApplicationConfig.getInstance().get("${server.http}"));
+        //Connector监听的http的端口号
+        connector.setPort(httpPort);
+
+        if("true".equals(ApplicationConfig.getInstance().get("${server.ssl.enabled}"))) {
+            connector.setSecure(false);
+            int securePort = Integer.parseInt(ApplicationConfig.getInstance().get("${server.port}"));
+
+            //监听到http的端口号后转向到的https的端口号
+            connector.setRedirectPort(securePort);
+        }
+
+        return connector;
     }
 
     @Bean
