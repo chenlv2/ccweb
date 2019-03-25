@@ -70,6 +70,27 @@ public class SecurityInterceptor implements HandlerInterceptor {
         request.getSession().setAttribute(request.getSession().getId() +
                 CURRENT_MAX_PRIVILEGE_SCOPE, PrivilegeScope.DENIED);
 
+        Map<String, String > attrs = (Map<String, String>) request.getAttribute(VARS_PATH);
+        String datasource = null;
+
+        if(attrs != null) {
+            datasource = attrs.get("datasource");
+        }
+
+//        if(StringUtils.isEmpty(datasource) &&
+//                StringUtils.isEmpty(BaseController.threadLocal.get()
+//                        .getOrDefault(CURRENT_DATASOURCE, "").toString())){
+//            String path = request.getRequestURI();
+//            List<String> list = StringUtils.splitString2List(path, "/");
+//            list.set(1, list.get(1) + "/default");
+//            path = StringUtils.join("/", list);
+//            BaseController.threadLocal.get().put(CURRENT_DATASOURCE, "default");
+//            request.getRequestDispatcher(path).forward(request,response);
+//        }
+//        else if(StringUtils.isNotEmpty(datasource)){
+//            BaseController.threadLocal.get().put(CURRENT_DATASOURCE, datasource);
+//        }
+
         // 验证权限
         if (allowIp(request) && this.hasPermission(handler, request.getMethod(), request)) {
             return true;
