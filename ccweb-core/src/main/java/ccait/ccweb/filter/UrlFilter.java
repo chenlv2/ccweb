@@ -40,9 +40,9 @@ import java.util.concurrent.Executors;
 import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
 
 @WebFilter(urlPatterns = "/*")
-public class SecurityFilter extends ZuulFilter implements Filter  {
+public class UrlFilter extends ZuulFilter implements Filter  {
 
-    private static final Logger log = LogManager.getLogger( SecurityFilter.class );
+    private static final Logger log = LogManager.getLogger( UrlFilter.class );
 
     private final static ExecutorService executor = Executors.newFixedThreadPool( 5 );
 
