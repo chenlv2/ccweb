@@ -12,6 +12,7 @@
 package ccait.ccweb.filter;
 
 import ccait.ccweb.context.TriggerContext;
+import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.FastJsonUtils;
@@ -34,7 +35,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
-import static ccait.ccweb.controllers.BaseController.CURRENT_TABLE;
 
 @WebFilter(urlPatterns = "/*")
 public class RequestFilter implements Filter  {
@@ -102,9 +102,8 @@ public class RequestFilter implements Filter  {
                 }
                 log.info(LOG_PRE_SUFFIX + "responstBody：" + responstBody);
 
-                if(requestWrapper.getSession().getAttribute(requestWrapper.getSession().getId() + CURRENT_TABLE) != null)    {
-                    String tableName = requestWrapper.getSession().getAttribute(requestWrapper.getSession().getId() + CURRENT_TABLE).toString();
-                    TriggerContext.exec(tableName.toString(), EventType.Response, responseWrapper, requestWrapper);
+                if(StringUtils.isNotEmpty(BaseController.getTablename()))    {
+                    TriggerContext.exec(BaseController.getTablename(), EventType.Response, responseWrapper, requestWrapper);
                 }
             }
             catch (Exception ex) {
