@@ -16,9 +16,12 @@ import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.FastJsonUtils;
+import com.netflix.zuul.ZuulFilter;
+import com.netflix.zuul.context.RequestContext;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
 
 import javax.servlet.*;
 import javax.servlet.annotation.WebFilter;
@@ -37,9 +40,9 @@ import java.util.concurrent.Executors;
 import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
 
 @WebFilter(urlPatterns = "/*")
-public class RequestFilter implements Filter  {
+public class SecurityFilter extends ZuulFilter implements Filter  {
 
-    private static final Logger log = LogManager.getLogger( RequestFilter.class );
+    private static final Logger log = LogManager.getLogger( SecurityFilter.class );
 
     private final static ExecutorService executor = Executors.newFixedThreadPool( 5 );
 
@@ -133,6 +136,11 @@ public class RequestFilter implements Filter  {
         }
     }
 
+    @Override
+    public void destroy() {
+
+    }
+
     private String getErrorMessage(Exception e) {
         String message = e.getMessage();
         if(e.getCause() != null && ((InvocationTargetException)e.getCause()).getTargetException() != null) {
@@ -142,9 +150,36 @@ public class RequestFilter implements Filter  {
         return message;
     }
 
-    @Override
-    public void destroy() {
-        // TODO Auto-generated method stub
 
+    @Override
+    public String filterType() {
+        // return "pre";
+        return FilterConstants.PRE_TYPE;
+    }
+
+    @Override
+    public int filterOrder() {
+        return FilterConstants.SEND_FORWARD_FILTER_ORDER;
+    }
+
+    @Override
+    public boolean shouldFilter() {
+
+        return true;
+    }
+
+    @Override
+    public Object run() {
+
+        RequestContext ctx = RequestContext.getCurrentContext();
+        HttpServletRequest request = ctx.getRequest();
+        log.info(String.format("%s >>> %s", request.getMethod(), request.getRequestURL().toString()));
+
+        String requestURL = request.getRequestURL().toString();
+        String apiName = request.getParameter("apiName");
+        String data = request.getParameter("data");
+
+        log.info("ok");
+        return null;
     }
 }
