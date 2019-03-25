@@ -160,7 +160,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
     private Boolean canAccessTable(String method, HttpServletRequest request, AccessCtrl requiredPermission, Map<String, String> attrs, String table) throws Exception {
         String postString = BaseController.getRequestPostString(request);
 
-        request.getSession().setAttribute(request.getSession().getId() + CURRENT_TABLE, table);
+        BaseController.threadLocal.get().put(CURRENT_TABLE, table);
 
         if(requiredPermission == null) {
             return true;
