@@ -32,12 +32,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static ccait.ccweb.controllers.BaseController.CURRENT_TABLE;
 import static ccait.ccweb.controllers.BaseController.getTablename;
 import static ccait.ccweb.controllers.BaseController.isPrimitive;
 
@@ -115,19 +115,14 @@ public final class DefaultTrigger {
     @OnBuildTable
     public void onBuild(List<ColumnInfo> columns, HttpServletRequest request) throws Exception {
 
-        String table = request.getSession().getAttribute(request.getSession().getId() + CURRENT_TABLE).toString();
-        if(StringUtils.isEmpty(table)) {
-            throw new Exception("data table name can not be empty!!!");
-        }
-
-        Object entity = EntityContext.getEntity(table, queryInfo);
+        Object entity = EntityContext.getEntity(BaseController.getTablename(), queryInfo);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
         }
 
         Queryable query = (Queryable)entity;
 
-        if(Queryable.exist(query.dataSource().getId(), table)) {
+        if(Queryable.exist(query.dataSource().getId(), BaseController.getTablename())) {
             return;
         }
 
