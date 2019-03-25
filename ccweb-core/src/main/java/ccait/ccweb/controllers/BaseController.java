@@ -62,6 +62,8 @@ public abstract class BaseController {
 
     protected static final String NO_PRIVILEGE_MESSAGE = "没有足够的权限执行该操作(No Privilege)";
 
+    public final static InheritableThreadLocal<Map> threadLocal = new InheritableThreadLocal<Map>();
+
     public ResponseData<Object> RMessage;
 
     @Autowired
@@ -276,8 +278,14 @@ public abstract class BaseController {
         return ip;
     }
 
-    public String getTablename() {
-        return getSession(CURRENT_TABLE);
+    public static String getTablename() {
+        Map map = threadLocal.get();
+        if(!map.containsKey(CURRENT_TABLE)) {
+            return "";
+        }
+
+        return map.get(CURRENT_TABLE).toString();
+//        return getSession(CURRENT_TABLE);
     }
 
     protected String md5(String str) throws UnsupportedEncodingException, NoSuchAlgorithmException {
