@@ -52,13 +52,13 @@ public class ApplicationContext implements ApplicationContextAware {
     public static final String TABLE_ACL = "${entity.table.acl}";
     public static final String TABLE_PRIVILEGE = "${entity.table.privilege}";
 
-    public static Map<String, String> getThreadLocalMap() {
+    public static Map<String, Object> getThreadLocalMap() {
         return threadLocal.get();
     }
 
-    private final static InheritableThreadLocal<Map> threadLocal = new InheritableThreadLocal<Map>();
+    private final static InheritableThreadLocal<Map<String, Object>> threadLocal = new InheritableThreadLocal<Map<String, Object>>();
     static {
-        threadLocal.set(new HashMap<String, String>());
+        threadLocal.set(new HashMap<String, Object>());
     }
 
     @Value(TABLE_USER)
