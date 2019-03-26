@@ -26,7 +26,7 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 
 @RestController
-@RequestMapping( value = "asapi", produces="application/json;charset=UTF-8" )
+@RequestMapping( value = {"asapi/{datasource}", "asapi"}, produces="application/json;charset=UTF-8" )
 public class AsyncApiController extends BaseController {
 
     /***
@@ -35,7 +35,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/build", method = {RequestMethod.POST, RequestMethod.PUT}, produces="application/json;charset=UTF-8" )
     public Mono doBuild(@PathVariable String table, @RequestBody List<ColumnInfo> columns) {
         try{
 
