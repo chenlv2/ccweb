@@ -12,6 +12,7 @@
 package ccait.ccweb.interceptor;
 
 import ccait.ccweb.annotation.AccessCtrl;
+import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
@@ -159,7 +160,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
     private Boolean canAccessTable(String method, HttpServletRequest request, AccessCtrl requiredPermission, Map<String, String> attrs, String table) throws Exception {
         String postString = BaseController.getRequestPostString(request);
 
-        BaseController.threadLocal.get().put(CURRENT_TABLE, table);
+        ApplicationContext.getThreadLocalMap().put(CURRENT_TABLE, table);
 
         if(requiredPermission == null) {
             return true;
