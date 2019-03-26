@@ -45,7 +45,7 @@ feign:
     enabled: true
 
 websocket:
-  url: ws://127.0.0.1:8766/websocket
+  url: ws://127.0.0.1:8777/websocket
   enable: false
 
 entity:
