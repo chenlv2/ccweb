@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
@@ -59,16 +60,35 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Value("${entity.table.maxJoin:5}")
     private int maxJoin;
 
-//    @Value(TABLE_USER)
-//    private String userTablename;
-
     private static final Logger log = LogManager.getLogger( SecurityInterceptor.class );
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        request.getSession().setAttribute(request.getSession().getId() +
-                CURRENT_MAX_PRIVILEGE_SCOPE, PrivilegeScope.DENIED);
+        Map<String, String > attrs = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+        String datasource = null;
+
+        if(attrs != null) {
+            datasource = attrs.get("datasource");
+        }
+
+        if(StringUtils.isNotEmpty(datasource)){
+//            String path = request.getRequestURI();
+//            List<String> list = StringUtils.splitString2List(path, "/");
+//            list.set(1, list.get(1) + "/default");
+//            path = StringUtils.join("/", list);
+//            ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, "default");
+//            request.getRequestDispatcher(path).forward(request,response);
+//            return true;
+        }
+
+        else {
+            datasource = "default";
+        }
+
+        ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
+        ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE, PrivilegeScope.DENIED);
+
 
         // 验证权限
         if (allowIp(request) && this.hasPermission(handler, request.getMethod(), request)) {
@@ -177,9 +197,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             if( user != null && user.getUsername().equals(admin) ) { //超级管理员
                 log.info(String.format(LOG_PRE_SUFFIX + "超级管理员访问表[%s]，操作：%s！", table, method));
-
-                request.getSession().setAttribute(request.getSession().getId() +
-                        CURRENT_MAX_PRIVILEGE_SCOPE, PrivilegeScope.ALL);
+                ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE, PrivilegeScope.ALL);
                 return true;
             }
 
@@ -303,8 +321,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             }
         }
 
-        request.getSession().setAttribute(request.getSession().getId() +
-                CURRENT_MAX_PRIVILEGE_SCOPE, currentMaxScope);
+        ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE, currentMaxScope);
 
         if(currentMaxScope.equals(PrivilegeScope.DENIED)) {
             return false;
