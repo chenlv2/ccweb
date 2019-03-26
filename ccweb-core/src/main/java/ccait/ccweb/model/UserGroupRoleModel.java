@@ -5,15 +5,15 @@ import entity.query.Queryable;
 import entity.query.annotation.Fieldname;
 import entity.query.annotation.PrimaryKey;
 import entity.query.annotation.Tablename;
-import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 import java.sql.SQLException;
 import java.util.UUID;
 
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
+import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 @Component
 @Scope("prototype")
