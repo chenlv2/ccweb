@@ -72,17 +72,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             datasource = attrs.get("datasource");
         }
 
-        if(StringUtils.isNotEmpty(datasource)){
-//            String path = request.getRequestURI();
-//            List<String> list = StringUtils.splitString2List(path, "/");
-//            list.set(1, list.get(1) + "/default");
-//            path = StringUtils.join("/", list);
-//            ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, "default");
-//            request.getRequestDispatcher(path).forward(request,response);
-//            return true;
-        }
-
-        else {
+        if(StringUtils.isEmpty(datasource)){
             datasource = "default";
         }
 
