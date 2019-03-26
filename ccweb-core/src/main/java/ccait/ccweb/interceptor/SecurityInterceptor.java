@@ -35,15 +35,14 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
-import static ccait.ccweb.controllers.BaseController.*;
+import static ccait.ccweb.utils.NetworkUtils.getClientIp;
+import static ccait.ccweb.utils.StaticVars.*;
 
 /**
  * @description 访问权限拦截器
  */
 public class SecurityInterceptor implements HandlerInterceptor {
 
-    public static final String VARS_PATH = "org.springframework.web.servlet.HandlerMapping.uriTemplateVariables";
     @Value("${entity.security.admin.username:admin}")
     private String admin;
 
@@ -70,27 +69,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
         request.getSession().setAttribute(request.getSession().getId() +
                 CURRENT_MAX_PRIVILEGE_SCOPE, PrivilegeScope.DENIED);
 
-        Map<String, String > attrs = (Map<String, String>) request.getAttribute(VARS_PATH);
-        String datasource = null;
-
-        if(attrs != null) {
-            datasource = attrs.get("datasource");
-        }
-
-//        if(StringUtils.isEmpty(datasource) &&
-//                StringUtils.isEmpty(BaseController.threadLocal.get()
-//                        .getOrDefault(CURRENT_DATASOURCE, "").toString())){
-//            String path = request.getRequestURI();
-//            List<String> list = StringUtils.splitString2List(path, "/");
-//            list.set(1, list.get(1) + "/default");
-//            path = StringUtils.join("/", list);
-//            BaseController.threadLocal.get().put(CURRENT_DATASOURCE, "default");
-//            request.getRequestDispatcher(path).forward(request,response);
-//        }
-//        else if(StringUtils.isNotEmpty(datasource)){
-//            BaseController.threadLocal.get().put(CURRENT_DATASOURCE, datasource);
-//        }
-
         // 验证权限
         if (allowIp(request) && this.hasPermission(handler, request.getMethod(), request)) {
             return true;
@@ -109,12 +87,12 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         RequestWrapper rw = (RequestWrapper)request;
 
-        if(StringUtils.isEmpty(rw.getClientIp())) {
+        if(StringUtils.isEmpty(getClientIp(request))) {
             return false;
         }
 
         if(whiteList.size() > 0) {
-            if (whiteList.contains(rw.getClientIp())) {
+            if (whiteList.contains(getClientIp(request))) {
                 return true;
             }
 
@@ -124,7 +102,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         }
 
         if(blackList.size() > 0) {
-            if (blackList.contains(rw.getClientIp())) {
+            if (blackList.contains(getClientIp(request))) {
                 return false;
             }
         }
