@@ -13,7 +13,6 @@ package ccait.ccweb.model;
 
 
 import ccait.ccweb.context.EntityContext;
-import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.generator.EntitesGenerator;
 import entity.query.GroupBy;
@@ -39,6 +38,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
 import static entity.tool.util.StringUtils.cast;
 import static entity.tool.util.StringUtils.join;
 
@@ -185,7 +185,7 @@ public class QueryInfo implements Serializable {
         //控制查询权限
         DataSource dataSource = ConnectionFactory.getDataSource(entity.getClass());
 
-        UserModel user = (UserModel)context.request.getSession().getAttribute(context.request.getSession().getId() + BaseController.LOGIN_KEY);
+        UserModel user = (UserModel)context.request.getSession().getAttribute(context.request.getSession().getId() + LOGIN_KEY);
 
         String createByFieldString = String.format("[%s]", context.createByField);
         String userPathFieldString = String.format("[%s]", context.userPathField);
