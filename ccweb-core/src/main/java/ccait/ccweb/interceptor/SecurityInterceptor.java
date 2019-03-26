@@ -60,6 +60,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Value("${entity.table.maxJoin:5}")
     private int maxJoin;
 
+    @Value("${entity.datasource:}")
+    private String datasourceString;
+
     private static final Logger log = LogManager.getLogger( SecurityInterceptor.class );
 
     @Override
@@ -72,8 +75,14 @@ public class SecurityInterceptor implements HandlerInterceptor {
             datasource = attrs.get("datasource");
         }
 
-        if(StringUtils.isEmpty(datasource)){
-            datasource = "default";
+        if(StringUtils.isNotEmpty(datasource)){
+            final String ds = datasource;
+            List<String> datasourceList = StringUtils.splitString2List(datasourceString, ",");
+            Optional<String> opt = datasourceList.stream()
+                    .filter(a -> a.toLowerCase().equals(ds.toLowerCase())).findAny();
+            if(opt == null || !opt.isPresent()) {
+                throw new Exception(String.format("datasource '%s' not be defined in the application.yml!!!", datasource));
+            }
         }
 
         ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
