@@ -221,9 +221,12 @@ public abstract class BaseController {
     }
 
     protected PrivilegeScope getCurrentMaxPrivilegeScope() {
+        Map<String, Object> map = ApplicationContext.getThreadLocalMap();
+        if(!map.containsKey(CURRENT_MAX_PRIVILEGE_SCOPE)) {
+            return null;
+        }
 
-        return (PrivilegeScope) request.getSession().getAttribute(request.getSession().getId() +
-                CURRENT_MAX_PRIVILEGE_SCOPE);
+        return (PrivilegeScope) map.get(CURRENT_MAX_PRIVILEGE_SCOPE);
     }
 
     public static String getTablename() {
