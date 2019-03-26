@@ -57,9 +57,8 @@ public class ApplicationContext implements ApplicationContextAware {
     }
 
     private final static InheritableThreadLocal<Map> threadLocal = new InheritableThreadLocal<Map>();
-    private final static Map<String, String> threadLocalMap = new HashMap<String, String>();
     static {
-        threadLocal.set(threadLocalMap);
+        threadLocal.set(new HashMap<String, String>());
     }
 
     @Value(TABLE_USER)
