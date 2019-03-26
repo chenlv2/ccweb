@@ -13,6 +13,7 @@ package ccait.ccweb.model;
 
 
 import java.io.Serializable;
+import java.util.UUID;
 
 public class ResponseData<T> implements Serializable {
 
@@ -46,9 +47,17 @@ public class ResponseData<T> implements Serializable {
     public void setPageInfo(PageInfo pageInfo) {
         this.pageInfo = pageInfo;
     }
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(UUID uuid) {
+        this.uuid = uuid;
+    }
     private int code;
     private String message;
     private T data;
     private PageInfo pageInfo;
+    private UUID uuid;
 }
 
