@@ -68,7 +68,7 @@ public abstract class BaseController {
     private QueryInfo queryInfo;
 
     @Value("${entity.enableRxJdbc:false}")
-    protected boolean enableRxJdbc;
+    private boolean enableRxJdbc;
 
     @Value("${entity.security.admin.username:admin}")
     protected String admin;
@@ -125,6 +125,11 @@ public abstract class BaseController {
 
     public BaseController() {
         RMessage = new ResponseData<Object>();
+    }
+    
+    protected boolean isEnableRxJdbc() {
+        return enableRxJdbc && (ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) == null ||
+                StringUtils.isEmpty(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString()));
     }
 
     protected Logger getLogger()
@@ -649,7 +654,7 @@ public abstract class BaseController {
 
         entity.query.Where<UserModel> where = user.where("[username]=#{username}").and("[password]=#{password}");
 
-        if(enableRxJdbc) {
+        if(isEnableRxJdbc()) {
             Maybe<UserModel> flow = where.asyncFirst();
             user = flow.blockingGet();
         }
@@ -700,7 +705,7 @@ public abstract class BaseController {
         }
 
         Where where = null;
-        if(enableRxJdbc) {
+        if(isEnableRxJdbc()) {
             for (String id : idList) {
                 where = queryInfo.getWhereQueryableById(entity, id);
                 Maybe<Map> flow = where.asyncFirst(Map.class);
@@ -774,7 +779,7 @@ public abstract class BaseController {
 
         Integer result = null;
 
-        if(enableRxJdbc) {
+        if(isEnableRxJdbc()) {
 
             Flowable<Integer> flowable = where.asyncDelete();
             result = flowable.blockingFirst();
@@ -835,7 +840,7 @@ public abstract class BaseController {
 
         List list = null;
 
-        if(enableRxJdbc) {
+        if(isEnableRxJdbc()) {
             Flowable<List> flowable = ac.asyncQuery(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
 
             list = flowable.toList().blockingGet();
@@ -869,7 +874,7 @@ public abstract class BaseController {
         Where where = queryInfo.getWhereQueryableById(entity, id);
 
         Map data = null;
-        if(enableRxJdbc) {
+        if(isEnableRxJdbc()) {
             Maybe<Map> maybe =  where.asyncFirst(Map.class);
             data = maybe.blockingGet();
         }
@@ -944,7 +949,7 @@ public abstract class BaseController {
         }
 
         Integer result = 0;
-        if(enableRxJdbc) {
+        if(isEnableRxJdbc()) {
             Flowable<Integer> flowable = where.asyncUpdate(postData);
 
             result = flowable.blockingFirst();
@@ -975,7 +980,7 @@ public abstract class BaseController {
         fillData(postData, entity);
 
         Object result = null;
-        if(enableRxJdbc) {
+        if(isEnableRxJdbc()) {
             Flowable<Integer> flowable = ((Queryable) entity).asyncInsert();
 
             result = flowable.toList().blockingGet();
@@ -1002,7 +1007,7 @@ public abstract class BaseController {
 
         Long result = Long.valueOf(0);
 
-        if(enableRxJdbc) {
+        if(isEnableRxJdbc()) {
             Single<Long> single = ac.asyncCount();
 
             result = single.blockingGet();
@@ -1028,7 +1033,7 @@ public abstract class BaseController {
         QueryableAction ac = where;
 
         Boolean result = false;
-        if(enableRxJdbc) {
+        if(isEnableRxJdbc()) {
             Single<Integer> single = (Single<Integer>) ac.asyncExist().blockingGet();
             result = single.blockingGet() > 0;
         }
