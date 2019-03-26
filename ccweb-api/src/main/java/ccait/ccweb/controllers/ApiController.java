@@ -26,7 +26,7 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 
 @RestController
-@RequestMapping( value = {"asapi/{datasource}", "asapi"}, produces="application/json;charset=UTF-8" )
+@RequestMapping( value = {"api/{datasource}", "api"}, produces="application/json;charset=UTF-8" )
 public class ApiController extends BaseController {
 
     /***
