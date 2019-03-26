@@ -70,9 +70,11 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         Map<String, String > attrs = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
         String datasource = null;
+        String currentTable = null;
 
         if(attrs != null) {
             datasource = attrs.get("datasource");
+            currentTable = attrs.get("table");
         }
 
         if(StringUtils.isNotEmpty(datasource)){
@@ -87,10 +89,12 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
         ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE, PrivilegeScope.DENIED);
+        ApplicationContext.getThreadLocalMap().put(CURRENT_TABLE, currentTable);
 
 
         // 验证权限
-        if (allowIp(request) && this.hasPermission(handler, request.getMethod(), request)) {
+        if (allowIp(request) &&
+                this.hasPermission(handler, request.getMethod(), request, attrs, currentTable)) {
             return true;
         }
 
@@ -136,7 +140,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
      * @param handler
      * @return
      */
-    private boolean hasPermission(Object handler, String method, HttpServletRequest request) throws Exception {
+    private boolean hasPermission(Object handler, String method, HttpServletRequest request, Map<String, String> attrs, String table) throws Exception {
         if (handler instanceof HandlerMethod) {
             HandlerMethod handlerMethod = (HandlerMethod) handler;
             // 获取方法上的注解
@@ -147,8 +151,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
             }
 
             boolean x = true;
-            Map<String, String > attrs = (Map<String, String>) request.getAttribute(VARS_PATH);
-            String table = attrs.get("table");
             if(StringUtils.isNotEmpty(table)) {
                 x = canAccessTable(method, request, requiredPermission, attrs, table);
             }
@@ -178,8 +180,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
     private Boolean canAccessTable(String method, HttpServletRequest request, AccessCtrl requiredPermission, Map<String, String> attrs, String table) throws Exception {
         String postString = BaseController.getRequestPostString(request);
-
-        ApplicationContext.getThreadLocalMap().put(CURRENT_TABLE, table);
 
         if(requiredPermission == null) {
             return true;
