@@ -34,12 +34,13 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
 import static ccait.ccweb.utils.NetworkUtils.getClientIp;
+import static ccait.ccweb.utils.StaticVars.*;
 
 @WebFilter(urlPatterns = "/*")
 public class HttpLogFilter extends ZuulFilter implements Filter  {
@@ -63,6 +64,28 @@ public class HttpLogFilter extends ZuulFilter implements Filter  {
 
         RequestWrapper requestWrapper = new RequestWrapper(req);
 //        ResponseWrapper responseWrapper = new ResponseWrapper(res);
+
+
+        Map<String, String > attrs = (Map<String, String>) request.getAttribute(VARS_PATH);
+        String datasource = null;
+
+        if(attrs != null) {
+            datasource = attrs.get("datasource");
+        }
+
+        if(StringUtils.isEmpty(datasource) &&
+                StringUtils.isEmpty(BaseController.threadLocal.get()
+                        .getOrDefault(CURRENT_DATASOURCE, "").toString())){
+            String path = req.getRequestURI();
+            List<String> list = StringUtils.splitString2List(path, "/");
+            list.set(1, list.get(1) + "/default");
+            path = StringUtils.join("/", list);
+            BaseController.threadLocal.get().put(CURRENT_DATASOURCE, "default");
+            request.getRequestDispatcher(path).forward(request,response);
+        }
+        else if(StringUtils.isNotEmpty(datasource)){
+            BaseController.threadLocal.get().put(CURRENT_DATASOURCE, datasource);
+        }
 
         log.info(LOG_PRE_SUFFIX + "Request Url：" + requestWrapper.getRequestURL());
         final long startTime = System.currentTimeMillis();
