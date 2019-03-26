@@ -66,7 +66,7 @@ entity:
   security:
     encrypt:
       MD5:
-        fields: user.password #逗号分隔
+        fields: user.password #需要要加密的字段，逗号分隔
         publicKey: ccait@2019
       AES:
         publicKey: ccait@2019
