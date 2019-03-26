@@ -13,7 +13,7 @@ package ccait.ccweb.config;
 
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.context.TriggerContext;
-import ccait.ccweb.filter.UrlFilter;
+import ccait.ccweb.filter.HttpFilter;
 import ccait.ccweb.interceptor.SecurityInterceptor;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
