@@ -18,8 +18,8 @@ import javax.tools.ToolProvider;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
 import static ccait.ccweb.dynamic.MemoryJavaFileManager.getJavaFile;
+import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 public class DynamicClassBuilder {
 
