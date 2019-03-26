@@ -104,6 +104,7 @@ entity:
         password: hidden
 
   enableRxJdbc: true
+  enableFlux: true
 
   ip:
     whiteList: 127.0.0.1
