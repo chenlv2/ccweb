@@ -105,7 +105,7 @@ entity:
 
   enableRxJdbc: true
   enableFlux: true
-
+  datasource: mysql, mssql, sqlite
   ip:
     whiteList: 127.0.0.1
     blackList: 127.0.0.2
