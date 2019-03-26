@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 import static ccait.ccweb.controllers.BaseController.getTablename;
 import static ccait.ccweb.controllers.BaseController.isPrimitive;
+import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
 
 
 @Component
@@ -72,7 +73,7 @@ public final class DefaultTrigger {
 
         vaildPostData(data);
 
-        UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + BaseController.LOGIN_KEY);
+        UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
         if(user != null) {
             if(StringUtils.isEmpty(user.getPath())) {
                 data.put(userPathField, user.getId() + "/" + user.getId());
