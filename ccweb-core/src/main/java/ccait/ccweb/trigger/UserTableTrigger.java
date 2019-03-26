@@ -13,7 +13,6 @@ package ccait.ccweb.trigger;
 
 
 import ccait.ccweb.annotation.Trigger;
-import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EncryptMode;
 import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.QueryInfo;
@@ -25,17 +24,18 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
-import static ccait.ccweb.controllers.BaseController.decrypt;
-import static ccait.ccweb.controllers.BaseController.encrypt;
-import static ccait.ccweb.controllers.BaseController.isPrimitive;
-import static ccait.ccweb.interceptor.SecurityInterceptor.VARS_PATH;
+import static ccait.ccweb.controllers.BaseController.*;
+import static ccait.ccweb.utils.StaticVars.*;
 
 @Component
 @Scope("prototype")
@@ -118,7 +118,7 @@ public final class UserTableTrigger implements ITrigger {
     @Override
     public void onDelete(String id, HttpServletRequest request) throws Exception {
 
-        UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + BaseController.LOGIN_KEY);
+        UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
         if(user == null) {
             return;
         }
