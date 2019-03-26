@@ -1,12 +1,11 @@
 package ccait.ccweb.dynamic;
 
+import ccait.ccweb.context.ApplicationContext;
 import entity.query.ColumnInfo;
 import entity.query.Queryable;
-import entity.query.annotation.AutoIncrement;
-import entity.query.annotation.Fieldname;
-import entity.query.annotation.PrimaryKey;
-import entity.query.annotation.Tablename;
+import entity.query.annotation.*;
 import entity.query.core.ApplicationConfig;
+import entity.tool.util.StringUtils;
 import javapoet.*;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -23,6 +22,8 @@ import java.net.URI;
 import java.nio.CharBuffer;
 import java.sql.Blob;
 import java.util.*;
+
+import static ccait.ccweb.utils.StaticVars.CURRENT_DATASOURCE;
 
 /**
  * In-memory java file manager.
@@ -106,10 +107,15 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
     public static JavaFile getJavaFile(List<ColumnInfo> columns, String tablename, String primaryKey, String scope, String suffix) {
 
         String packagePath = ApplicationConfig.getInstance().get("entity.package", DEFAULT_PACKAGE);
-
         String className = String.format("%s%s", tablename.substring(0, 1).toUpperCase() + tablename.substring(1), suffix);
         TypeSpec.Builder builder = TypeSpec.classBuilder(className).addModifiers(getModifier(scope));
         builder.addAnnotation(Component.class);
+
+        String datasource = (String) ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE);
+        if(StringUtils.isNotEmpty(datasource)) {
+            AnnotationSpec annDataSource = AnnotationSpec.builder(DataSource.class).addMember("value", "$S", datasource).build();
+            builder.addAnnotation(annDataSource);
+        }
 
         AnnotationSpec annScopeSpec = AnnotationSpec.builder(Scope.class).addMember("value", "$S", "prototype").build();
         builder.addAnnotation(annScopeSpec);
