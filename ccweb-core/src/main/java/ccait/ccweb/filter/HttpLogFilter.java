@@ -11,7 +11,6 @@
 
 package ccait.ccweb.filter;
 
-import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
@@ -35,13 +34,12 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static ccait.ccweb.utils.NetworkUtils.getClientIp;
-import static ccait.ccweb.utils.StaticVars.*;
+import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 @WebFilter(urlPatterns = "/*")
 public class HttpLogFilter extends ZuulFilter implements Filter  {
@@ -65,26 +63,6 @@ public class HttpLogFilter extends ZuulFilter implements Filter  {
 
         RequestWrapper requestWrapper = new RequestWrapper(req);
 //        ResponseWrapper responseWrapper = new ResponseWrapper(res);
-
-
-        Map<String, String > attrs = (Map<String, String>) request.getAttribute(VARS_PATH);
-        String datasource = null;
-
-        if(attrs != null) {
-            datasource = attrs.get("datasource");
-        }
-
-        if(StringUtils.isEmpty(datasource)){
-            String path = req.getRequestURI();
-            List<String> list = StringUtils.splitString2List(path, "/");
-            list.set(1, list.get(1) + "/default");
-            path = StringUtils.join("/", list);
-            ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, "default");
-            request.getRequestDispatcher(path).forward(requestWrapper,response);
-            return;
-        }
-
-        ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
 
         log.info(LOG_PRE_SUFFIX + "Request Url：" + requestWrapper.getRequestURL());
         final long startTime = System.currentTimeMillis();
