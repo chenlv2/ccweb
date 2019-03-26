@@ -18,6 +18,7 @@ import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.FastJsonUtils;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +39,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
+import static ccait.ccweb.utils.NetworkUtils.getClientIp;
 
 @WebFilter(urlPatterns = "/*")
 public class HttpLogFilter extends ZuulFilter implements Filter  {
@@ -60,25 +62,28 @@ public class HttpLogFilter extends ZuulFilter implements Filter  {
         final HttpServletResponse res = (HttpServletResponse)response;
 
         RequestWrapper requestWrapper = new RequestWrapper(req);
-        ResponseWrapper responseWrapper = new ResponseWrapper(res);
+//        ResponseWrapper responseWrapper = new ResponseWrapper(res);
 
         log.info(LOG_PRE_SUFFIX + "Request Url：" + requestWrapper.getRequestURL());
         final long startTime = System.currentTimeMillis();
 
         try
         {
+            chain.doFilter(requestWrapper, res);
+            /*** don't need responseBody
             chain.doFilter(requestWrapper, responseWrapper);
+             ***/
 
             try {
-                log.info(LOG_PRE_SUFFIX + "Status：" + responseWrapper.getStatus());
-                log.info(LOG_PRE_SUFFIX + "Client Ip：" + requestWrapper.getClientIp());
+                log.info(LOG_PRE_SUFFIX + "Status：" + res.getStatus());
+                log.info(LOG_PRE_SUFFIX + "Client Ip：" + getClientIp(req));
                 try {
                     log.info(LOG_PRE_SUFFIX + "Server Ip：" +  InetAddress.getLocalHost().getHostAddress());
                 } catch (UnknownHostException e) {
                     log.error( LOG_PRE_SUFFIX + e.getMessage(), e );
                 }
 
-                log.info(LOG_PRE_SUFFIX + "Method：" + requestWrapper.getMethod());
+                log.info(LOG_PRE_SUFFIX + "Method：" + req.getMethod());
 
                 Map<String, Object> oHeaderMap = new HashMap<String, Object>();
                 Enumeration headerNames = requestWrapper.getHeaderNames();
@@ -96,17 +101,17 @@ public class HttpLogFilter extends ZuulFilter implements Filter  {
                     log.info(LOG_PRE_SUFFIX + "Post String：" + postString);
                 }
 
-                final String responstBody = responseWrapper.getResponseBody();
-                if(StringUtils.isNotEmpty(responstBody)) {
+                /*** don't need responseBody
+                final String responseBody = responseWrapper.getResponseBody();
+                if(StringUtils.isNotEmpty(responseBody)) {
                     responseWrapper.flushBuffer();
                 }
-                else {
-                    chain.doFilter(requestWrapper, res);
-                }
-                log.info(LOG_PRE_SUFFIX + "responstBody：" + responstBody);
+
+                log.info(LOG_PRE_SUFFIX + "responseBody：" + responseBody);
+                ***/
 
                 if(StringUtils.isNotEmpty(BaseController.getTablename()))    {
-                    TriggerContext.exec(BaseController.getTablename(), EventType.Response, responseWrapper, requestWrapper);
+                    TriggerContext.exec(BaseController.getTablename(), EventType.Response, res, requestWrapper);
                 }
             }
             catch (Exception ex) {
@@ -130,9 +135,10 @@ public class HttpLogFilter extends ZuulFilter implements Filter  {
             responseData.setCode(-2);
             responseData.setMessage(message);
 
-            responseWrapper.reset();
-            responseWrapper.writeBuffer(responseData);
-            responseWrapper.flushBuffer();
+            res.reset();
+            res.getWriter().write(JsonUtils.toJson(responseData));
+            res.getWriter().flush();
+            res.getWriter().close();
         }
     }
 
