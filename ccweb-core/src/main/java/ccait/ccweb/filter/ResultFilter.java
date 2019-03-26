@@ -18,6 +18,7 @@ import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.FastJsonUtils;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
+import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -34,6 +35,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,9 +44,9 @@ import static ccait.ccweb.utils.NetworkUtils.getClientIp;
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 @WebFilter(urlPatterns = "/*")
-public class HttpLogFilter extends ZuulFilter implements Filter  {
+public class ResultFilter extends ZuulFilter implements Filter  {
 
-    private static final Logger log = LogManager.getLogger( HttpLogFilter.class );
+    private static final Logger log = LogManager.getLogger( ResultFilter.class );
 
     private final static ExecutorService executor = Executors.newFixedThreadPool( 5 );
 
@@ -69,6 +71,18 @@ public class HttpLogFilter extends ZuulFilter implements Filter  {
 
         try
         {
+            if("true".equals(ApplicationConfig.getInstance().get("${entity.enableFlux}")) &&
+                    req.getRequestURI().toLowerCase().startsWith("/api")) {
+
+                String path = req.getRequestURI();
+                List<String> list = StringUtils.splitString2List(path, "/");
+                list.set(1, "asyncapi");
+                path = StringUtils.join("/", list);
+
+                request.getRequestDispatcher(path).forward(requestWrapper, response);
+                return;
+            }
+
             chain.doFilter(requestWrapper, res);
             /*** don't need responseBody
             chain.doFilter(requestWrapper, responseWrapper);
