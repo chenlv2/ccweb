@@ -60,7 +60,7 @@ public abstract class BaseController {
 
     @Autowired
     protected HttpServletRequest request;
-    
+
     @Autowired
     protected HttpServletResponse response;
 
@@ -836,7 +836,7 @@ public abstract class BaseController {
         List list = null;
 
         if(enableRxJdbc) {
-            Flowable<Map> flowable = ac.asyncQuery(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
+            Flowable<List> flowable = ac.asyncQuery(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
 
             list = flowable.toList().blockingGet();
         }
