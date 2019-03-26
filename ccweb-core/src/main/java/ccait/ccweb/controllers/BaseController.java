@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import reactor.core.publisher.Mono;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -47,6 +48,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import static ccait.ccweb.utils.StaticVars.*;
 import static entity.tool.util.StringUtils.cast;
 
@@ -58,6 +60,9 @@ public abstract class BaseController {
 
     @Autowired
     protected HttpServletRequest request;
+    
+    @Autowired
+    protected HttpServletResponse response;
 
     @Autowired
     private QueryInfo queryInfo;
