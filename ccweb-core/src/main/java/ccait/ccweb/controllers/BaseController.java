@@ -46,22 +46,12 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
+import static ccait.ccweb.utils.StaticVars.*;
 import static entity.tool.util.StringUtils.cast;
 
 public abstract class BaseController {
 
     private static final Logger log = LogManager.getLogger(BaseController.class);
-
-    public static final String LOGIN_KEY = "_USER_LOGIN_";
-
-    public static final String CURRENT_TABLE = "_CURRENT_TABLE_";
-
-    public static final String CURRENT_MAX_PRIVILEGE_SCOPE = "_CURRENT_MAX_PRIVILEGE_SCOPE_";
-
-    protected static final String NO_PRIVILEGE_MESSAGE = "没有足够的权限执行该操作(No Privilege)";
-
     public final static InheritableThreadLocal<Map> threadLocal = new InheritableThreadLocal<Map>();
 
     public ResponseData<Object> RMessage;
