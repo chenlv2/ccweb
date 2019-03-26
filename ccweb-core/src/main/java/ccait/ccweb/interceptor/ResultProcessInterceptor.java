@@ -76,6 +76,8 @@ public class ResultProcessInterceptor {
                 result.setData(obj);
             }
 
+            result.setUuid(UUID.randomUUID());
+
             if(result.getCode() != 0 || response.getStatus() != 200) {
                 errorTrigger(result.getMessage(), tablename);
             }
