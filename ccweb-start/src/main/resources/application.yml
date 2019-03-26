@@ -3,7 +3,6 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/ #注册中心
 server:
-  http: 6668
   port: 6666 #端口号
 
 spring:
