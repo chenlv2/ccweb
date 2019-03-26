@@ -52,6 +52,13 @@ public class ApplicationContext implements ApplicationContextAware {
     public static final String TABLE_ACL = "${entity.table.acl}";
     public static final String TABLE_PRIVILEGE = "${entity.table.privilege}";
 
+    public static Map<String, String> getThreadLocalMap() {
+        return threadLocal.get();
+    }
+
+    private final static InheritableThreadLocal<Map> threadLocal = new InheritableThreadLocal<Map>();
+
+
     @Value(TABLE_USER)
     private String userTablename;
 
