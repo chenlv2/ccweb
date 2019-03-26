@@ -11,7 +11,7 @@
 
 package ccait.ccweb.config;
 
-import ccait.ccweb.annotation.*;
+import ccait.ccweb.annotation.Trigger;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
@@ -20,8 +20,10 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProcessor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+
 import java.util.Map;
-import static ccait.ccweb.context.ApplicationContext.*;
+
+import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 
 @Lazy(true)
