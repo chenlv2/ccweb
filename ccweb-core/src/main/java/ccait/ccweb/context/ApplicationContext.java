@@ -29,11 +29,11 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
+import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
+
 
 @Service
 public class ApplicationContext implements ApplicationContextAware {
-
-    public final static String LOG_PRE_SUFFIX = "【ccweb】";
 
     private static final Logger log = LogManager.getLogger( ApplicationContext.class );
 
