@@ -1,14 +1,15 @@
 eureka:
   client:
     serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/ #注册中心
 server:
-  port: 6666
+  http: 6668
+  port: 6666 #端口号
 
 spring:
   application:
-    name: ccait.ccweb
-  zipkin:
+    name: ccait.ccweb #服务名
+  zipkin: #分布式链路配置
     base-url: http://localhost:9411
   thymeleaf:
     cache: false
@@ -101,6 +102,8 @@ entity:
     display:
       user:
         password: hidden
+
+  enableRxJdbc: true
 
   ip:
     whiteList: 127.0.0.1
