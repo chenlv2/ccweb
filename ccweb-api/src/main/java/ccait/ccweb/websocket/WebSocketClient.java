@@ -25,7 +25,8 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
+import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
+
 
 @Component
 @ClientEndpoint
