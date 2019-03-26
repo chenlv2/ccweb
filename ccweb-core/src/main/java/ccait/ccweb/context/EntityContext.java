@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
+import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 @Order(-55555)
 public final class EntityContext {
