@@ -35,8 +35,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
 import static ccait.ccweb.controllers.BaseController.isPrimitive;
+import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 @Aspect // FOR AOP
 @Order(-55555) // 控制多个Aspect的执行顺序，越小越先执行
