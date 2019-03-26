@@ -74,18 +74,17 @@ public class HttpLogFilter extends ZuulFilter implements Filter  {
             datasource = attrs.get("datasource");
         }
 
-        if(StringUtils.isEmpty(datasource) &&
-                StringUtils.isEmpty(ApplicationContext.getThreadLocalMap().getOrDefault(CURRENT_DATASOURCE, "").toString())){
+        if(StringUtils.isEmpty(datasource)){
             String path = req.getRequestURI();
             List<String> list = StringUtils.splitString2List(path, "/");
             list.set(1, list.get(1) + "/default");
             path = StringUtils.join("/", list);
             ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, "default");
-            request.getRequestDispatcher(path).forward(request,response);
+            request.getRequestDispatcher(path).forward(requestWrapper,response);
+            return;
         }
-        else if(StringUtils.isNotEmpty(datasource)){
-            ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
-        }
+
+        ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
 
         log.info(LOG_PRE_SUFFIX + "Request Url：" + requestWrapper.getRequestURL());
         final long startTime = System.currentTimeMillis();
