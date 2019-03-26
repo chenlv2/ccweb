@@ -11,6 +11,7 @@
 
 package ccait.ccweb.filter;
 
+import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
@@ -74,17 +75,16 @@ public class HttpLogFilter extends ZuulFilter implements Filter  {
         }
 
         if(StringUtils.isEmpty(datasource) &&
-                StringUtils.isEmpty(BaseController.threadLocal.get()
-                        .getOrDefault(CURRENT_DATASOURCE, "").toString())){
+                StringUtils.isEmpty(ApplicationContext.getThreadLocalMap().getOrDefault(CURRENT_DATASOURCE, "").toString())){
             String path = req.getRequestURI();
             List<String> list = StringUtils.splitString2List(path, "/");
             list.set(1, list.get(1) + "/default");
             path = StringUtils.join("/", list);
-            BaseController.threadLocal.get().put(CURRENT_DATASOURCE, "default");
+            ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, "default");
             request.getRequestDispatcher(path).forward(request,response);
         }
         else if(StringUtils.isNotEmpty(datasource)){
-            BaseController.threadLocal.get().put(CURRENT_DATASOURCE, datasource);
+            ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
         }
 
         log.info(LOG_PRE_SUFFIX + "Request Url：" + requestWrapper.getRequestURL());
