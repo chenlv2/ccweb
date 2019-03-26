@@ -13,7 +13,7 @@ package ccait.ccweb.config;
 
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.context.TriggerContext;
-import ccait.ccweb.filter.HttpFilter;
+import ccait.ccweb.filter.HttpLogFilter;
 import ccait.ccweb.interceptor.SecurityInterceptor;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
@@ -74,7 +74,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public FilterRegistrationBean requestFilter()
     {
-        FilterRegistrationBean bean = new FilterRegistrationBean(new HttpFilter());
+        FilterRegistrationBean bean = new FilterRegistrationBean(new HttpLogFilter());
         bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
 
         return bean;
