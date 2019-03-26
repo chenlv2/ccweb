@@ -30,8 +30,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static ccait.ccweb.context.ApplicationContext.LOG_PRE_SUFFIX;
-import static ccait.ccweb.controllers.BaseController.LOGIN_KEY;
+import static ccait.ccweb.utils.StaticVars.*;
+
 
 @Component
 @ServerEndpoint(value="/ws")
