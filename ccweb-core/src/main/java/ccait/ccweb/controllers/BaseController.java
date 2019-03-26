@@ -13,6 +13,7 @@ package ccait.ccweb.controllers;
 
 
 import ccait.ccweb.annotation.OnResult;
+import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.enums.DefaultValueMode;
 import ccait.ccweb.enums.EncryptMode;
@@ -52,7 +53,6 @@ import static entity.tool.util.StringUtils.cast;
 public abstract class BaseController {
 
     private static final Logger log = LogManager.getLogger(BaseController.class);
-    public final static InheritableThreadLocal<Map> threadLocal = new InheritableThreadLocal<Map>();
 
     public ResponseData<Object> RMessage;
 
@@ -226,56 +226,13 @@ public abstract class BaseController {
                 CURRENT_MAX_PRIVILEGE_SCOPE);
     }
 
-    /**
-     * 获取用户真实IP地址，不使用request.getRemoteAddr()的原因是有可能用户使用了代理软件方式避免真实IP地址,
-     * 可是，如果通过了多级反向代理的话，X-Forwarded-For的值并不止一个，而是一串IP值
-     *
-     * @return ip
-     */
-    protected String getClientIp() {
-
-        String ip = request.getHeader("x-forwarded-for");
-        System.out.println("x-forwarded-for ip: " + ip);
-        if (ip != null && ip.length() != 0 && !"unknown".equalsIgnoreCase(ip)) {
-            // 多次反向代理后会有多个ip值，第一个ip才是真实ip
-            if( ip.indexOf(",")!=-1 ){
-                ip = ip.split(",")[0];
-            }
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_CLIENT_IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("X-Real-IP");
-        }
-        if (ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
-        }
-
-        if(StringUtils.isEmpty(ip)) {
-            return "";
-        }
-
-        return ip;
-    }
-
     public static String getTablename() {
-        Map map = threadLocal.get();
+        Map map = ApplicationContext.getThreadLocalMap();
         if(!map.containsKey(CURRENT_TABLE)) {
             return "";
         }
 
         return map.get(CURRENT_TABLE).toString();
-//        return getSession(CURRENT_TABLE);
     }
 
     protected String md5(String str) throws UnsupportedEncodingException, NoSuchAlgorithmException {
