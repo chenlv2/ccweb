@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import static ccait.ccweb.context.ApplicationContext.*;
 import static ccait.ccweb.context.ApplicationContext.TABLE_ACL;
 import static ccait.ccweb.context.ApplicationContext.TABLE_PRIVILEGE;
+import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 @Order(-22222)
 public final class TriggerContext {
