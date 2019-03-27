@@ -22,6 +22,7 @@ import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
 import entity.query.*;
 import entity.query.core.ApplicationConfig;
+import entity.query.enums.JoinMode;
 import entity.tool.util.DBUtils;
 import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
@@ -230,13 +231,13 @@ public abstract class BaseController {
         return (UserModel) this.getSession( LOGIN_KEY );
     }
 
-    protected PrivilegeScope getCurrentMaxPrivilegeScope() {
+    protected PrivilegeScope getCurrentMaxPrivilegeScope(String table) {
         Map<String, Object> map = ApplicationContext.getThreadLocalMap();
-        if(!map.containsKey(CURRENT_MAX_PRIVILEGE_SCOPE)) {
+        if(!map.containsKey(CURRENT_MAX_PRIVILEGE_SCOPE + table)) {
             return null;
         }
 
-        return (PrivilegeScope) map.get(CURRENT_MAX_PRIVILEGE_SCOPE);
+        return (PrivilegeScope) map.get(CURRENT_MAX_PRIVILEGE_SCOPE + table);
     }
 
     public static String getTablename() {
@@ -583,8 +584,8 @@ public abstract class BaseController {
         }
     }
 
-    protected boolean checkDataPrivilege(Map data) throws SQLException {
-        switch(getCurrentMaxPrivilegeScope()) {
+    protected boolean checkDataPrivilege(String table, Map data) throws SQLException {
+        switch(getCurrentMaxPrivilegeScope(table)) {
             case ALL:
                 return true;
             case SELF:
@@ -714,7 +715,7 @@ public abstract class BaseController {
                     throw new Exception("Can not find data for delete!!!");
                 }
 
-                if(!checkDataPrivilege(data)) {
+                if(!checkDataPrivilege(table, data)) {
                     throw new Exception(NO_PRIVILEGE_MESSAGE);
                 }
 
@@ -735,7 +736,7 @@ public abstract class BaseController {
                     throw new Exception("Can not find data for delete!!!");
                 }
 
-                if(!checkDataPrivilege(data)) {
+                if(!checkDataPrivilege(table, data)) {
                     throw new Exception(NO_PRIVILEGE_MESSAGE);
                 }
 
@@ -773,7 +774,7 @@ public abstract class BaseController {
             throw new Exception("Can not find data for delete!!!");
         }
 
-        if(!checkDataPrivilege(data)) {
+        if(!checkDataPrivilege(table, data)) {
             throw new Exception(NO_PRIVILEGE_MESSAGE);
         }
 
@@ -792,6 +793,65 @@ public abstract class BaseController {
         return result;
     }
 
+
+    /***
+     * query select data
+     * @param tablenames
+     * @param joinMode
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    public List joinQuery(List<String> tablenames, JoinMode joinMode, QueryInfo queryInfo) throws Exception {
+
+        encrypt(queryInfo.getConditionList());
+        String[] aliases =  { "a", "b" };
+
+        StringBuilder sbOn = new StringBuilder();
+        for(int i=0; i<queryInfo.getOn().size(); i++) {
+            ConditionInfo on = queryInfo.getOn().get(i);
+            if(StringUtils.isEmpty(on.getName()) || on.getValue() == null) {
+                continue;
+            }
+
+            sbOn.append(String.format("[%s]%s%s", on.getName(), on.getAlgorithm().getValue(), on.getValue()));
+        }
+
+        Queryable q = null;
+        List<TableInfo> tableList = new ArrayList<TableInfo>();
+        for(int i=0; i<tablenames.size(); i++) {
+            String table = tablenames.get(i);
+            Object entity = EntityContext.getEntity(table, queryInfo);
+
+            Queryable query = (Queryable) entity;
+            if(query == null) {
+                continue;
+            }
+
+            else if (q == null){
+                q = query;
+            }
+
+            TableInfo tableInfo = new TableInfo();
+
+            tableInfo.setTablename(table);
+            tableInfo.setEntity(entity);
+            tableInfo.setAlias(aliases[i]);
+            tableInfo.setPrivilegeScope(getCurrentMaxPrivilegeScope(table));
+
+            tableList.add(tableInfo);
+        }
+
+        On on = q.as(tableList.get(0).getAlias())
+                .join(joinMode, q, tableList.get(1).getAlias())
+                .on(sbOn.toString());
+        
+        Where where = queryInfo
+                .getWhereQuerableByJoin(tableList, on);
+
+        return getQueryDataByWhere(queryInfo, where);
+    }
+
     /***
      * query select data
      * @param table
@@ -807,8 +867,12 @@ public abstract class BaseController {
 
         encrypt(queryInfo.getConditionList());
 
-        Where where = queryInfo.getWhereQuerable(getTablename(), entity, getCurrentMaxPrivilegeScope());
+        Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
+        return getQueryDataByWhere(queryInfo, where);
+    }
+
+    protected List getQueryDataByWhere(QueryInfo queryInfo, Where where) throws Exception {
         QueryableAction ac = where;
 
         long total = 0;
@@ -887,7 +951,7 @@ public abstract class BaseController {
             return data;
         }
 
-        if(!checkDataPrivilege(data)) {
+        if(!checkDataPrivilege(table, data)) {
             new Exception(NO_PRIVILEGE_MESSAGE);
         }
 
@@ -944,7 +1008,7 @@ public abstract class BaseController {
             throw new Exception("Can not find data for update!!!");
         }
 
-        if(!checkDataPrivilege(data)) {
+        if(!checkDataPrivilege(table, data)) {
             throw new Exception(NO_PRIVILEGE_MESSAGE);
         }
 
@@ -1001,7 +1065,7 @@ public abstract class BaseController {
 
         encrypt(queryInfo.getConditionList());
 
-        Where where = queryInfo.getWhereQuerable(getTablename(), entity, getCurrentMaxPrivilegeScope());
+        Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
         QueryableAction ac = where;
 
@@ -1028,7 +1092,7 @@ public abstract class BaseController {
 
         encrypt(queryInfo.getConditionList());
 
-        Where where = queryInfo.getWhereQuerable(getTablename(), entity, getCurrentMaxPrivilegeScope());
+        Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
         QueryableAction ac = where;
 
