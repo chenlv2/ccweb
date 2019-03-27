@@ -132,6 +132,17 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
         try {
             for(ColumnInfo col : columns) {
 
+                if(col.getColumnName().indexOf(".") > 0) {
+                    List<String> data = StringUtils.splitString2List(col.getColumnName(), ".");
+                    if(data.get(0).toLowerCase()
+                            .equals(tablename.toLowerCase())) {
+                        col.setColumnName(data.get(1));
+                    }
+                    else {
+                        continue;
+                    }
+                }
+
                 FieldSpec.Builder fldSpec = FieldSpec.builder(getFieldType(col.getDataType()), col.getColumnName(), Modifier.PRIVATE);
 
                 if(col.getColumnComment() != null) {
