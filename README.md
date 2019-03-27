@@ -23,6 +23,7 @@
 </p>
 
 # 起手式
+***ccweb-start是ccwec-api的启动包，其中包含了springcloud的微服务组件与springboos2.0***
 ## 文件结构
 * ccweb-start-1.0.0-SNAPSHOT.jar 【ccweb服务启动包，[下载](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)】
 * application.yml 【应用程序主配置文件，[查看配置](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/application.yml)】
@@ -32,7 +33,7 @@
 ## 服务启动命令
 java -jar ccweb-start-1.0.0-SNAPSHOT.jar
 ## 接口说明
-## 系统表结构
+## 系统表结构说明
 
 # 二次开发
 ## Maven仓库
@@ -67,4 +68,5 @@ public class Application {
 ｝
 ```
 ## 自定义控制器
-## 触发器
+## BaseContoller
+## 事件触发器Tagger
