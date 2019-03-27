@@ -15,10 +15,7 @@ package ccait.ccweb.model;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.generator.EntitesGenerator;
-import entity.query.GroupBy;
-import entity.query.OrderBy;
-import entity.query.QueryableAction;
-import entity.query.Where;
+import entity.query.*;
 import entity.query.core.ConnectionFactory;
 import entity.query.core.DataSource;
 import entity.tool.util.DBUtils;
@@ -142,6 +139,45 @@ public class QueryInfo implements Serializable {
 
         Where where = (Where) ReflectionUtils.invoke(entity.getClass(), entity, "where", "1=1");
 
+        where = ensureWhereQuerable(where, fields, privilegeScope, entity, tablename, alias);
+
+        return where;
+    }
+
+
+    /***
+     * 获取查询条件
+     * @param tableList
+     * @return
+     */
+    public Where getWhereQuerableByJoin(List<TableInfo> tableList, On on) throws Exception {
+
+        if(tableList == null) {
+            throw new IllegalAccessException("condition can not be empty!!!");
+        }
+
+        Where result = on.where("1=1");
+        for(TableInfo table : tableList) {
+            table.setFields(EntityContext.getFields(table.getEntity()));
+
+            Where where = (Where) ReflectionUtils.invoke(table.getEntity().getClass(), table.getEntity(), "where", "1=1");
+
+            where = ensureWhereQuerable(where, table.getFields(), table.getPrivilegeScope(), table.getEntity(),
+                    table.getTablename(), table.getAlias());
+
+            String strWhere = where.toString().replaceAll("[\\s]*1=1[\\s,]*", "");
+            if(StringUtils.isEmpty(strWhere)) {
+                continue;
+            }
+
+            result.and(strWhere);
+        }
+
+        return result;
+    }
+
+    private Where ensureWhereQuerable(Where where, List<Field> fields, PrivilegeScope privilegeScope, Object entity,
+                                      String tablename, String alias) throws Exception {
         if(this.getConditionList() != null) {
             for(ConditionInfo info : this.getConditionList()) {
                 Optional<Field> opt = fields.stream().filter(a->a.getName().equals(info.getName())).findFirst();
