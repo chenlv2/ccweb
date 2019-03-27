@@ -16,9 +16,11 @@ import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.model.QueryInfo;
 import ccait.ccweb.model.UserModel;
 import entity.query.ColumnInfo;
+import entity.query.enums.JoinMode;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -132,6 +134,87 @@ public class AsyncApiController extends BaseController {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
             return errorAs(112, e);
+        }
+    }
+
+    /***
+     * inner join query
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/{table1}/join/{table2}", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    public Mono doJoinQuery(@PathVariable String table1, String table2, @RequestBody QueryInfo queryInfo) {
+
+        try {
+
+            List<String> tableList = new ArrayList<String>();
+            tableList.add(table1);
+            tableList.add(table2);
+
+            List result = super.joinQuery(tableList, JoinMode.Inner, queryInfo);
+
+            queryInfo.getPageInfo().setPageCount();
+
+            return successAs( result, queryInfo.getPageInfo() );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return errorAs(113, e);
+        }
+    }
+
+    /***
+     * left join query
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/{table1}/left/{table2}", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    public Mono doLeftQuery(@PathVariable String table1, String table2, @RequestBody QueryInfo queryInfo) {
+
+        try {
+
+            List<String> tableList = new ArrayList<String>();
+            tableList.add(table1);
+            tableList.add(table2);
+
+            List result = super.joinQuery(tableList, JoinMode.Left, queryInfo);
+
+            queryInfo.getPageInfo().setPageCount();
+
+            return successAs( result, queryInfo.getPageInfo() );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return errorAs(113, e);
+        }
+    }
+
+    /***
+     * right join query
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/{table1}/right/{table2}", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    public Mono doRightQuery(@PathVariable String table1, String table2, @RequestBody QueryInfo queryInfo) {
+
+        try {
+
+            List<String> tableList = new ArrayList<String>();
+            tableList.add(table1);
+            tableList.add(table2);
+
+            List result = super.joinQuery(tableList, JoinMode.Right, queryInfo);
+
+            queryInfo.getPageInfo().setPageCount();
+
+            return successAs( result, queryInfo.getPageInfo() );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return errorAs(113, e);
         }
     }
 
