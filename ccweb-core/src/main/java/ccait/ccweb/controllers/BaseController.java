@@ -897,7 +897,7 @@ public abstract class BaseController {
     }
 
     protected List getQueryDataByWhere(QueryInfo queryInfo, Where where) throws Exception {
-        QueryableAction ac = where;
+        QueryableAction ac = queryInfo.getSelectQuerable(where);
 
         long total = 0;
 
@@ -910,20 +910,19 @@ public abstract class BaseController {
 
         GroupBy groupBy = queryInfo.getGroupByQuerable(where);
         if(groupBy != null) {
-            ac = groupBy;
+            ac = queryInfo.getSelectQuerable(groupBy);
         }
 
         OrderBy orderBy = queryInfo.getOrderByQuerable(groupBy);
         if(orderBy != null) {
-            ac = orderBy;
+            ac = queryInfo.getSelectQuerable(orderBy);
         }
 
         else {
-            ac = queryInfo.getOrderByQuerable(where);
-        }
-
-        if(queryInfo.getSelectList() != null && queryInfo.getSelectList().size() > 0) {
-            ac = queryInfo.getSelectQuerable(where);
+            orderBy = queryInfo.getOrderByQuerable(where);
+            if(orderBy != null) {
+                ac = queryInfo.getSelectQuerable(orderBy);
+            }
         }
 
         if(maxPageSize != null && queryInfo.getPageInfo().getPageSize() > maxPageSize) {

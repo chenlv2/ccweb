@@ -173,6 +173,86 @@ public class QueryInfo implements Serializable {
         return result;
     }
 
+    public QueryableAction getSelectQuerable(GroupBy groupBy) {
+
+        if(this.getSelectList() == null || this.getSelectList().size() < 1) {
+            return groupBy;
+        }
+
+        List<String> list = new ArrayList<String>();
+        for(SelectInfo info : this.getSelectList()) {
+            if(StringUtils.isEmpty(info.getField())) {
+                continue;
+            }
+
+            String field = info.getField();
+            if(!Pattern.matches("^\\w[A-Za-z0-9_]*$", field)) {
+                continue;
+            }
+
+            String regSqlInject = "(?:')|(?:--)|(/\\*(?:.|[\\n\\r])*?\\*/)|"
+                    + "(\\b(select|update|union|and|or|delete|insert|trancate|char|into|substr|ascii|declare|exec|count|master|into|drop|execute)\\b)";
+
+            if(Pattern.matches(regSqlInject, field)) {
+                continue;
+            }
+
+            if(info.getFunction() == Function.NONE) {
+                list.add(field);
+            }
+
+            else {
+                list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+            }
+        }
+
+        if(list.size() < 1) {
+            return groupBy;
+        }
+
+        return groupBy.select(StringUtils.join(", ", list.toArray()));
+    }
+
+    public QueryableAction getSelectQuerable(OrderBy orderBy) {
+
+        if(this.getSelectList() == null || this.getSelectList().size() < 1) {
+            return orderBy;
+        }
+
+        List<String> list = new ArrayList<String>();
+        for(SelectInfo info : this.getSelectList()) {
+            if(StringUtils.isEmpty(info.getField())) {
+                continue;
+            }
+
+            String field = info.getField();
+            if(!Pattern.matches("^\\w[A-Za-z0-9_]*$", field)) {
+                continue;
+            }
+
+            String regSqlInject = "(?:')|(?:--)|(/\\*(?:.|[\\n\\r])*?\\*/)|"
+                    + "(\\b(select|update|union|and|or|delete|insert|trancate|char|into|substr|ascii|declare|exec|count|master|into|drop|execute)\\b)";
+
+            if(Pattern.matches(regSqlInject, field)) {
+                continue;
+            }
+
+            if(info.getFunction() == Function.NONE) {
+                list.add(field);
+            }
+
+            else {
+                list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+            }
+        }
+
+        if(list.size() < 1) {
+            return orderBy;
+        }
+
+        return orderBy.select(StringUtils.join(", ", list.toArray()));
+    }
+
     public QueryableAction getSelectQuerable(Where where) {
 
         if(this.getSelectList() == null || this.getSelectList().size() < 1) {
@@ -363,10 +443,10 @@ public class QueryInfo implements Serializable {
         return where.groupby(list.toArray(new String[]{}));
     }
 
-    public QueryableAction getOrderByQuerable(Where where) {
+    public OrderBy getOrderByQuerable(Where where) {
 
         if(this.getSortList() == null || this.getSortList().size() < 1) {
-            return where;
+            return null;
         }
 
         List<String> list = new ArrayList<String>();
