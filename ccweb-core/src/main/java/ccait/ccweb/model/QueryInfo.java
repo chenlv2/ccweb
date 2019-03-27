@@ -186,7 +186,7 @@ public class QueryInfo implements Serializable {
                 }
 
                 Field fld = opt.get();
-                String column =fld.getName();
+                String column = DBUtils.getSqlInjValue(fld.getName()).replaceAll("\\s", "");
                 where.and(String.format("[%s]%s#{%s}", column, info.getAlgorithm().getValue(), fld.getName()));
                 ReflectionUtils.setFieldValue(entity, fld.getName(), cast(fld.getType(), info.getValue().toString()));
             }
@@ -316,7 +316,7 @@ public class QueryInfo implements Serializable {
             if(StringUtils.isEmpty(group.trim())) {
                 continue;
             }
-            list.add(group.trim());
+            list.add(DBUtils.getSqlInjValue(group.trim()));
         }
 
         if(list.size() < 1) {
@@ -338,7 +338,7 @@ public class QueryInfo implements Serializable {
             if(StringUtils.isEmpty(sort.getName().trim())) {
                 continue;
             }
-            list.add(String.format("[%s] %s", sort.getName().trim(), sort.isDesc() ? "DESC" : "ASC"));
+            list.add(String.format("[%s] %s", DBUtils.getSqlInjValue(sort.getName().trim()), sort.isDesc() ? "DESC" : "ASC"));
         }
 
         if(list.size() < 1) {
@@ -364,7 +364,7 @@ public class QueryInfo implements Serializable {
             if(StringUtils.isEmpty(sort.getName().trim())) {
                 continue;
             }
-            list.add(String.format("[%s] %s", sort.getName().trim(), sort.isDesc() ? "DESC" : "ASC"));
+            list.add(String.format("[%s] %s", DBUtils.getSqlInjValue(sort.getName().trim()), sort.isDesc() ? "DESC" : "ASC"));
         }
 
         if(list.size() < 1) {
