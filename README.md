@@ -31,8 +31,8 @@
 * log4j.properties 【可选，log4j日志配置文件，记录ORM异常信息，[查看配置](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j.properties)】
 ## 服务启动命令
 java -jar ccweb-start-1.0.0-SNAPSHOT.jar
-## 接口规则
-## 系统默认表
+## 接口说明
+## 系统表结构
 
 # 二次开发
 ## Maven仓库
