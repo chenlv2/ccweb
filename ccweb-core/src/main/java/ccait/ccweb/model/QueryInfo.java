@@ -107,11 +107,20 @@ public class QueryInfo implements Serializable {
         this.keywords = keywords;
     }
 
+    public List<ConditionInfo> getOn() {
+        return on;
+    }
+
+    public void setOn(List<ConditionInfo> on) {
+        this.on = on;
+    }
+
     private PageInfo pageInfo;
     private List<ConditionInfo> conditionList;
     private List<SortInfo> sortList;
     private List<String> groupList;
     private List<FieldInfo> keywords;
+    private List<ConditionInfo> on;
 
     /***
      * 获取查询条件
@@ -166,7 +175,7 @@ public class QueryInfo implements Serializable {
 
                 if(info.getValue().getClass().equals(String.class)) {
 
-                    sb.append(String.format("[%s] LIKE %s", fld.getName(), "%"+ DBUtils.getSqlInjValue(info.getValue())+"%"));
+                    sb.append(String.format("[%s] LIKE %s", fld.getName(), "%"+ DBUtils.getSqlInjValue(info.getValue()) +"%"));
                 }
 
                 else {
