@@ -38,7 +38,7 @@ java -jar ccweb-start-1.0.0-SNAPSHOT.jar
 
 # 二次开发
 ***ccweb的二次开发实际就是自定义ccweb-start包的过程，只需rest则引入ccweb-api，需要视图模板则引入ccweb-mvc***
-## ccweb
+## ccweb包介绍
 ## Maven仓库
 ```xml
     <repositories>
