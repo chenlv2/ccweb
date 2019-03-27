@@ -88,9 +88,10 @@ public class SecurityInterceptor implements HandlerInterceptor {
         }
 
         ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
-        ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE, PrivilegeScope.DENIED);
-        ApplicationContext.getThreadLocalMap().put(CURRENT_TABLE, currentTable);
-
+        if(StringUtils.isNotEmpty(currentTable)) {
+            ApplicationContext.getThreadLocalMap().put(CURRENT_TABLE, currentTable);
+            ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + currentTable, PrivilegeScope.DENIED);
+        }
 
         // 验证权限
         if (allowIp(request) &&
@@ -169,6 +170,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                     }
 
                     table = attrs.get(key);
+
                     x = x && canAccessTable(method, request, requiredPermission, attrs, table);
                 }
             }
@@ -196,7 +198,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             if( user != null && user.getUsername().equals(admin) ) { //超级管理员
                 log.info(String.format(LOG_PRE_SUFFIX + "超级管理员访问表[%s]，操作：%s！", table, method));
-                ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE, PrivilegeScope.ALL);
+                ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
                 return true;
             }
 
@@ -248,7 +250,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             }
 
             List<UUID> aclIds = aclList.stream().map(a->a.getAclId()).collect(Collectors.toList());
-            if(!checkPrivilege(user, aclIds, method, attrs, postString, request)){
+            if(!checkPrivilege(table, user, aclIds, method, attrs, postString, request)){
                 log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]对表%s没有%s的操作权限！", user.getUsername(), table, method));
                 return false;
             }
@@ -257,7 +259,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         return null;
     }
 
-    private boolean checkPrivilege(UserModel user, List<UUID> aclIds, String method, Map<String, String > attrs,
+    private boolean checkPrivilege(String table, UserModel user, List<UUID> aclIds, String method, Map<String, String > attrs,
                                    String postString, HttpServletRequest request) throws Exception {
 
         String privilegeWhere = null;
@@ -320,7 +322,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             }
         }
 
-        ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE, currentMaxScope);
+        ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, currentMaxScope);
 
         if(currentMaxScope.equals(PrivilegeScope.DENIED)) {
             return false;
