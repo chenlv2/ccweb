@@ -1,6 +1,7 @@
 package ccait.ccweb.model;
 
 import ccait.ccweb.enums.PrivilegeScope;
+import entity.query.enums.JoinMode;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -46,9 +47,28 @@ public class TableInfo {
         this.privilegeScope = privilegeScope;
     }
 
+    public JoinMode getJoinMode() {
+        return joinMode;
+    }
+
+    public void setJoinMode(JoinMode joinMode) {
+        this.joinMode = joinMode;
+    }
+
+    public List<ConditionInfo> getOnList() {
+        return onList;
+    }
+
+    public void setOnList(List<ConditionInfo> onList) {
+        this.onList = onList;
+    }
+
     private String tablename;
     private String alias;
     private List<Field> fields;
     private Object entity;
     private PrivilegeScope privilegeScope;
+    private JoinMode joinMode;
+    private List<ConditionInfo> onList;
+
 }

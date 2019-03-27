@@ -18,6 +18,8 @@ import ccait.generator.EntitesGenerator;
 import entity.query.*;
 import entity.query.core.ConnectionFactory;
 import entity.query.core.DataSource;
+import entity.query.enums.Function;
+import entity.tool.util.CollectionUtils;
 import entity.tool.util.DBUtils;
 import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
@@ -31,8 +33,10 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
@@ -104,20 +108,13 @@ public class QueryInfo implements Serializable {
         this.keywords = keywords;
     }
 
-    public List<ConditionInfo> getOn() {
-        return on;
-    }
-
-    public void setOn(List<ConditionInfo> on) {
-        this.on = on;
-    }
-
     private PageInfo pageInfo;
     private List<ConditionInfo> conditionList;
     private List<SortInfo> sortList;
     private List<String> groupList;
     private List<FieldInfo> keywords;
-    private List<ConditionInfo> on;
+    private List<TableInfo> joinTables;
+    private List<SelectInfo> selectList;
 
     /***
      * 获取查询条件
@@ -174,6 +171,46 @@ public class QueryInfo implements Serializable {
         }
 
         return result;
+    }
+
+    public QueryableAction getSelectQuerable(Where where) {
+
+        if(this.getSelectList() == null || this.getSelectList().size() < 1) {
+            return where;
+        }
+
+        List<String> list = new ArrayList<String>();
+        for(SelectInfo info : this.getSelectList()) {
+            if(StringUtils.isEmpty(info.getField())) {
+                continue;
+            }
+
+            String field = info.getField();
+            if(!Pattern.matches("^\\w[A-Za-z0-9_]*$", field)) {
+                continue;
+            }
+
+            String regSqlInject = "(?:')|(?:--)|(/\\*(?:.|[\\n\\r])*?\\*/)|"
+                    + "(\\b(select|update|union|and|or|delete|insert|trancate|char|into|substr|ascii|declare|exec|count|master|into|drop|execute)\\b)";
+
+            if(Pattern.matches(regSqlInject, field)) {
+                continue;
+            }
+
+            if(info.getFunction() == Function.NONE) {
+                list.add(field);
+            }
+
+            else {
+                list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+            }
+        }
+
+        if(list.size() < 1) {
+            return where;
+        }
+
+        return where.select(StringUtils.join(", ", list.toArray()));
     }
 
     private Where ensureWhereQuerable(Where where, List<Field> fields, PrivilegeScope privilegeScope, Object entity,
@@ -385,5 +422,21 @@ public class QueryInfo implements Serializable {
 
     public Connection getConnection(Object entity) {
         return (Connection) ReflectionUtils.invoke(entity.getClass(), entity, "connection");
+    }
+
+    public List<TableInfo> getJoinTables() {
+        return joinTables;
+    }
+
+    public void setJoinTables(List<TableInfo> joinTables) {
+        this.joinTables = joinTables;
+    }
+
+    public List<SelectInfo> getSelectList() {
+        return selectList;
+    }
+
+    public void setSelectList(List<SelectInfo> selectList) {
+        this.selectList = selectList;
     }
 }

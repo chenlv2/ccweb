@@ -796,32 +796,37 @@ public abstract class BaseController {
 
     /***
      * query select data
-     * @param tablenames
-     * @param joinMode
      * @param queryInfo
      * @return
      * @throws Exception
      */
-    public List joinQuery(List<String> tablenames, JoinMode joinMode, QueryInfo queryInfo) throws Exception {
+    public List joinQuery(QueryInfo queryInfo) throws Exception {
+
+        if(queryInfo.getJoinTables() == null || queryInfo.getJoinTables().size() < 1) {
+            throw new Exception("join tables can not be empty!!!");
+        }
+
+        if(queryInfo.getJoinTables().size() < 2) {
+            throw new Exception("join tables can not be less tow!!!");
+        }
 
         encrypt(queryInfo.getConditionList());
-        String[] aliases =  { "a", "b" };
 
-        StringBuilder sbOn = new StringBuilder();
-        for(int i=0; i<queryInfo.getOn().size(); i++) {
-            ConditionInfo on = queryInfo.getOn().get(i);
-            if(StringUtils.isEmpty(on.getName()) || on.getValue() == null) {
+        Queryable q = null;
+        String[] aliases =  { "a", "b", "c", "d", "e", "f", "g", "h", "i",
+                "j", "k", "l", "m", "n", "o", "p", "q", "e", "r", "s", "t",
+                "u", "v", "w", "x", "y", "z" };
+
+        int i = 0;
+        Map<String, String> tableOnMap = new HashMap<String, String>();
+        List<TableInfo> tableList = new ArrayList<TableInfo>();
+        for(TableInfo table : queryInfo.getJoinTables()) {
+
+            if(StringUtils.isEmpty(table.getTablename())) {
                 continue;
             }
 
-            sbOn.append(String.format("[%s]%s%s", on.getName(), on.getAlgorithm().getValue(), on.getValue()));
-        }
-
-        Queryable q = null;
-        List<TableInfo> tableList = new ArrayList<TableInfo>();
-        for(int i=0; i<tablenames.size(); i++) {
-            String table = tablenames.get(i);
-            Object entity = EntityContext.getEntity(table, queryInfo);
+            Object entity = EntityContext.getEntity(table.getTablename(), queryInfo);
 
             Queryable query = (Queryable) entity;
             if(query == null) {
@@ -832,22 +837,41 @@ public abstract class BaseController {
                 q = query;
             }
 
-            TableInfo tableInfo = new TableInfo();
+            table.setEntity(entity);
+            if(StringUtils.isEmpty(table.getAlias())) {
+                table.setAlias(aliases[i]);
+                i++;
+            }
 
-            tableInfo.setTablename(table);
-            tableInfo.setEntity(entity);
-            tableInfo.setAlias(aliases[i]);
-            tableInfo.setPrivilegeScope(getCurrentMaxPrivilegeScope(table));
+            table.setPrivilegeScope(getCurrentMaxPrivilegeScope(table.getTablename()));
 
-            tableList.add(tableInfo);
+            tableList.add(table);
+
+            StringBuilder sbOn = new StringBuilder();
+            for(ConditionInfo on : table.getOnList()) {
+                if(StringUtils.isEmpty(on.getName()) || on.getValue() == null) {
+                    continue;
+                }
+
+                sbOn.append(String.format("[%s]%s%s", on.getName(), on.getAlgorithm().getValue(), on.getValue()));
+            }
+
+            tableOnMap.put(table.getTablename(), sbOn.toString());
         }
 
-        On on = q.as(tableList.get(0).getAlias())
-                .join(joinMode, q, tableList.get(1).getAlias())
-                .on(sbOn.toString());
+        Join join = q.as(tableList.get(0).getAlias())
+                .join(tableList.get(1).getJoinMode(), q, tableList.get(1).getAlias());
+
+        if(tableList.size() > 2) {
+            for (int j=2; j<tableList.size();j++) {
+                join = join.on(tableOnMap.get(tableList.get(j))).select("*")
+                        .join(tableList.get(j).getJoinMode(), q, tableList.get(j).getAlias());
+            }
+        }
         
         Where where = queryInfo
-                .getWhereQuerableByJoin(tableList, on);
+                .getWhereQuerableByJoin(tableList,
+                        join.on(tableOnMap.get(tableList.get(tableList.size() - 1))) );
 
         return getQueryDataByWhere(queryInfo, where);
     }
@@ -896,6 +920,10 @@ public abstract class BaseController {
 
         else {
             ac = queryInfo.getOrderByQuerable(where);
+        }
+
+        if(queryInfo.getSelectList() != null && queryInfo.getSelectList().size() > 0) {
+            ac = queryInfo.getSelectQuerable(where);
         }
 
         if(maxPageSize != null && queryInfo.getPageInfo().getPageSize() > maxPageSize) {
