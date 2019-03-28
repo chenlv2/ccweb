@@ -22,7 +22,6 @@ import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
 import entity.query.*;
 import entity.query.core.ApplicationConfig;
-import entity.query.enums.JoinMode;
 import entity.tool.util.DBUtils;
 import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
@@ -993,7 +992,7 @@ public abstract class BaseController {
      * @param columns
      * @throws Exception
      */
-    public void build(String table, List<ColumnInfo> columns) throws Exception {
+    public void createOrAlterTable(String table, List<ColumnInfo> columns) throws Exception {
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
@@ -1001,13 +1000,103 @@ public abstract class BaseController {
 
         Queryable query = (Queryable)entity;
 
-        if(!Queryable.exist(query.dataSource().getId(), table)) {
-            Queryable.createTable(query.dataSource().getId(), table, columns);
+        if(Queryable.exist(query.dataSource().getId(), table)) {
+            Queryable.alterTable(query.dataSource().getId(), table, columns);
         }
 
         else {
-            Queryable.alterTable(query.dataSource().getId(), table, columns);
+            Queryable.createTable(query.dataSource().getId(), table, columns);
         }
+    }
+
+    /***
+     * Create or Alter View
+     * @param viewName
+     * @param queryInfo
+     * @throws Exception
+     */
+    public void createOrAlterView(String viewName, QueryInfo queryInfo) throws Exception {
+
+        if(queryInfo.getJoinTables() == null || queryInfo.getJoinTables().size() < 1) {
+            throw new Exception("join tables can not be empty!!!");
+        }
+
+        if(queryInfo.getJoinTables().size() < 2) {
+            throw new Exception("join tables can not be less tow!!!");
+        }
+
+        encrypt(queryInfo.getConditionList());
+
+        Queryable q = null;
+        String[] aliases =  { "a", "b", "c", "d", "e", "f", "g", "h", "i",
+                "j", "k", "l", "m", "n", "o", "p", "q", "e", "r", "s", "t",
+                "u", "v", "w", "x", "y", "z" };
+
+        int i = 0;
+        Map<String, String> tableOnMap = new HashMap<String, String>();
+        List<TableInfo> tableList = new ArrayList<TableInfo>();
+        for(TableInfo table : queryInfo.getJoinTables()) {
+
+            if(StringUtils.isEmpty(table.getTablename())) {
+                continue;
+            }
+
+            Object entity = EntityContext.getEntity(table.getTablename(), queryInfo);
+
+            Queryable query = (Queryable) entity;
+            if(query == null) {
+                continue;
+            }
+
+            else if (q == null){
+                q = query;
+            }
+
+            table.setEntity(entity);
+            if(StringUtils.isEmpty(table.getAlias())) {
+                table.setAlias(aliases[i]);
+                i++;
+            }
+
+            table.setPrivilegeScope(getCurrentMaxPrivilegeScope(table.getTablename()));
+
+            tableList.add(table);
+
+            StringBuilder sbOn = new StringBuilder();
+            for(ConditionInfo on : table.getOnList()) {
+                if(StringUtils.isEmpty(on.getName()) || on.getValue() == null) {
+                    continue;
+                }
+
+                sbOn.append(String.format("[%s]%s%s", on.getName(), on.getAlgorithm().getValue(), on.getValue()));
+            }
+
+            tableOnMap.put(table.getTablename(), sbOn.toString());
+        }
+
+        Join join = q.as(tableList.get(0).getAlias())
+                .join(tableList.get(1).getJoinMode(), q, tableList.get(1).getAlias());
+
+        if(tableList.size() > 2) {
+            for (int j=2; j<tableList.size();j++) {
+                join = join.on(tableOnMap.get(tableList.get(j))).select("*")
+                        .join(tableList.get(j).getJoinMode(), q, tableList.get(j).getAlias());
+            }
+        }
+
+        Where where = queryInfo
+                .getWhereQuerableByJoin(tableList,
+                        join.on(tableOnMap.get(tableList.get(tableList.size() - 1))) );
+
+        String datasourceId = (String) ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE);
+        if(Queryable.exist(datasourceId, viewName)) {
+            where.select("*").alterView(viewName);
+        }
+
+        else {
+            where.select("*").createView(viewName);
+        }
+
     }
 
     /***
