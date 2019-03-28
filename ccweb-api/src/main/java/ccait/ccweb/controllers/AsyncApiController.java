@@ -16,6 +16,7 @@ import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.model.QueryInfo;
 import ccait.ccweb.model.UserModel;
 import entity.query.ColumnInfo;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -26,7 +27,7 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 
 @RestController
-@RequestMapping( value = {"asyncapi/{datasource}", "asyncapi"}, produces="application/json;charset=UTF-8" )
+@RequestMapping( value = {"asyncapi/{datasource}", "asyncapi"}, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
 public class AsyncApiController extends BaseController {
 
     /***
@@ -35,7 +36,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build/table", method = {RequestMethod.POST, RequestMethod.PUT}, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/build/table", method = {RequestMethod.POST, RequestMethod.PUT}, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doCreateOrAlterTable(@PathVariable String table, @RequestBody List<ColumnInfo> columns) {
         try{
 
@@ -54,7 +55,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build/view", method = {RequestMethod.POST, RequestMethod.PUT}, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/build/view", method = {RequestMethod.POST, RequestMethod.PUT}, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doCreateOrAlterView(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try{
 
@@ -74,7 +75,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.GET, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.GET, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doGet(@PathVariable String table, @PathVariable String id)  {
         try {
 
@@ -96,7 +97,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}", method = RequestMethod.POST, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doQuery(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -119,7 +120,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/exist", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/exist", method = RequestMethod.POST, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doExist(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try {
 
@@ -140,7 +141,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/count", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/count", method = RequestMethod.POST, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doCount(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try {
 
@@ -160,7 +161,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/join", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/join", method = RequestMethod.POST, produces= MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doJoinQuery(@RequestBody QueryInfo queryInfo) {
 
         try {
@@ -182,7 +183,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}", method = RequestMethod.PUT, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doInsert(@PathVariable String table, @RequestBody Map<String, Object> postData)
     {
         try {
@@ -205,7 +206,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.PUT, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doUpdate(@PathVariable String table, @PathVariable String id, @RequestBody Map<String, Object> postData) {
         try {
 
@@ -227,7 +228,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.DELETE, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono doDelete(@PathVariable String table, @PathVariable String id) {
         try {
 
@@ -250,7 +251,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/list", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/list", method = RequestMethod.DELETE, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono deleteByIds(@PathVariable String table, @RequestBody List<String> idList) {
 
         List result = null;
@@ -270,7 +271,7 @@ public class AsyncApiController extends BaseController {
      * @return
      */
     @ResponseBody
-    @RequestMapping( value = "login", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "login", method = RequestMethod.POST, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono loginByPassword(@RequestBody UserModel user) {
         try {
 
@@ -290,7 +291,7 @@ public class AsyncApiController extends BaseController {
      * @return
      */
     @ResponseBody
-    @RequestMapping( value = "logout", method = RequestMethod.GET, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "logout", method = RequestMethod.GET, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
     public Mono logouted() {
 
         super.logout();

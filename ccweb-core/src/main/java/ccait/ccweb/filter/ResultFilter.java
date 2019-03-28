@@ -16,17 +16,17 @@ import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.FastJsonUtils;
-import com.netflix.zuul.ZuulFilter;
-import com.netflix.zuul.context.RequestContext;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
+import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.server.WebFilter;
+import org.springframework.web.server.WebFilterChain;
+import reactor.core.publisher.Mono;
 
 import javax.servlet.*;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -37,18 +37,13 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import static ccait.ccweb.utils.NetworkUtils.getClientIp;
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
-@WebFilter(urlPatterns = "/*")
-public class ResultFilter extends ZuulFilter implements Filter  {
+@javax.servlet.annotation.WebFilter(urlPatterns = "/*")
+public class ResultFilter implements WebFilter, Filter {
 
     private static final Logger log = LogManager.getLogger( ResultFilter.class );
-
-    private final static ExecutorService executor = Executors.newFixedThreadPool( 5 );
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -170,36 +165,8 @@ public class ResultFilter extends ZuulFilter implements Filter  {
         return message;
     }
 
-
     @Override
-    public String filterType() {
-        // return "pre";
-        return FilterConstants.PRE_TYPE;
-    }
-
-    @Override
-    public int filterOrder() {
-        return FilterConstants.SEND_FORWARD_FILTER_ORDER;
-    }
-
-    @Override
-    public boolean shouldFilter() {
-
-        return true;
-    }
-
-    @Override
-    public Object run() {
-
-        RequestContext ctx = RequestContext.getCurrentContext();
-        HttpServletRequest request = ctx.getRequest();
-        log.info(String.format("%s >>> %s", request.getMethod(), request.getRequestURL().toString()));
-
-        String requestURL = request.getRequestURL().toString();
-        String apiName = request.getParameter("apiName");
-        String data = request.getParameter("data");
-
-        log.info("ok");
+    public Mono<Void> filter(ServerWebExchange serverWebExchange, WebFilterChain webFilterChain) {
         return null;
     }
 }
