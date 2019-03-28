@@ -16,11 +16,9 @@ import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.model.QueryInfo;
 import ccait.ccweb.model.UserModel;
 import entity.query.ColumnInfo;
-import entity.query.enums.JoinMode;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,16 +30,35 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 public class AsyncApiController extends BaseController {
 
     /***
-     * build
+     * create or alter table
      * @return
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build", method = {RequestMethod.POST, RequestMethod.PUT}, produces="application/json;charset=UTF-8" )
-    public Mono doBuild(@PathVariable String table, @RequestBody List<ColumnInfo> columns) {
+    @RequestMapping( value = "/{table}/build/table", method = {RequestMethod.POST, RequestMethod.PUT}, produces="application/json;charset=UTF-8" )
+    public Mono doCreateOrAlterTable(@PathVariable String table, @RequestBody List<ColumnInfo> columns) {
         try{
 
-            super.build(table, columns);
+            super.createOrAlterTable(table, columns);
+
+            return successAs();
+        }
+        catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+            return errorAs(e.getMessage());
+        }
+    }
+    /***
+     * create or alter view
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/{table}/build/view", method = {RequestMethod.POST, RequestMethod.PUT}, produces="application/json;charset=UTF-8" )
+    public Mono doCreateOrAlterView(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
+        try{
+
+            super.createOrAlterView(table, queryInfo);
 
             return successAs();
         }
