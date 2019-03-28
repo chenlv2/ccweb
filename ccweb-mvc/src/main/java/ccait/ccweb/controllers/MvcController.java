@@ -14,40 +14,22 @@ package ccait.ccweb.controllers;
 
 import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.model.QueryInfo;
-import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.model.UserModel;
-import entity.query.ColumnInfo;
+import entity.tool.util.StringUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 
-@RestController
-@RequestMapping( value = "api", produces="application/json;charset=UTF-8" )
+@Controller
 public class MvcController extends BaseController {
-
-    /***
-     * build
-     * @return
-     */
-    @ResponseBody
-    @AccessCtrl
-    @RequestMapping( value = "/{table}/build", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
-    public ResponseData doBuild(@PathVariable String table, @RequestBody List<ColumnInfo> columns) {
-        try{
-
-            super.build(table, columns);
-
-            return success();
-        }
-        catch (Exception e) {
-            getLogger().error(LOG_PRE_SUFFIX + e, e);
-            return error(e.getMessage());
-        }
-    }
 
     /***
      * get
@@ -56,18 +38,20 @@ public class MvcController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}/{id}", method = RequestMethod.GET, produces="application/json;charset=UTF-8" )
-    public ResponseData doGet(@PathVariable String table, @PathVariable String id)  {
+    public Mono doGet(@PathVariable String table, @PathVariable String id, final Model model)  {
         try {
 
             Map data = super.get(table, id);
 
-            return success( data );
+            model.addAttribute("data", data);
+
+            return Mono.create(monoSink -> monoSink.success(String.format("%s/get", table)));
         }
 
         catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
-            return error(100, e);
+            return Mono.create(monoSink -> monoSink.error(e));
         }
     }
 
@@ -78,7 +62,7 @@ public class MvcController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
-    public ResponseData doQuery(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
+    public Mono doQuery(@PathVariable String table, @RequestBody QueryInfo queryInfo, final Model model) {
 
         try {
 
@@ -86,11 +70,14 @@ public class MvcController extends BaseController {
 
             queryInfo.getPageInfo().setPageCount();
 
-            return success( result, queryInfo.getPageInfo() );
+            model.addAttribute("data", result);
+            model.addAttribute("pageInfo", queryInfo.getPageInfo());
+
+            return Mono.create(monoSink -> monoSink.success(String.format("%s/query", table)));
         } catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
-            return error(110, e);
+            return Mono.create(monoSink -> monoSink.error(e));
         }
     }
 
@@ -101,17 +88,19 @@ public class MvcController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}/exist", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
-    public ResponseData doExist(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
+    public Mono doExist(@PathVariable String table, @RequestBody QueryInfo queryInfo, final Model model) {
         try {
 
             Boolean result = super.exist(table, queryInfo);
 
-            return success( result );
+            model.addAttribute(result);
+
+            return Mono.create(monoSink -> monoSink.success(String.format("%s/exist", table)));
 
         } catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
-            return error(111, e);
+            return Mono.create(monoSink -> monoSink.error(e));
         }
     }
 
@@ -122,16 +111,49 @@ public class MvcController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}/count", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
-    public ResponseData doCount(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
+    public Mono doCount(@PathVariable String table, @RequestBody QueryInfo queryInfo, final Model model) {
         try {
 
             Long result = super.count(table, queryInfo);
-            return success( result );
+
+            model.addAttribute(result);
+
+            return Mono.create(monoSink -> monoSink.success(String.format("%s/count", table)));
 
         } catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
-            return error(112, e);
+            return Mono.create(monoSink -> monoSink.error(e));
+        }
+    }
+
+    /***
+     * join query
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/join", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    public Mono doJoinQuery(@RequestBody QueryInfo queryInfo, final Model model) {
+
+        try {
+            List result = super.joinQuery(queryInfo);
+
+            queryInfo.getPageInfo().setPageCount();
+
+
+            model.addAttribute("data", result);
+            model.addAttribute("pageInfo", queryInfo.getPageInfo());
+
+            List<String> tablenames = queryInfo.getJoinTables().stream()
+                    .map(a->a.getTablename()).collect(Collectors.toList());
+
+            return Mono.create(monoSink -> monoSink.success(String.format("join/%s", StringUtils.join("/", tablenames))));
+
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return Mono.create(monoSink -> monoSink.error(e));
         }
     }
 
@@ -142,19 +164,21 @@ public class MvcController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
-    public ResponseData doInsert(@PathVariable String table, @RequestBody Map<String, Object> postData)
+    public Mono doInsert(@PathVariable String table, @RequestBody Map<String, Object> postData, final Model model)
     {
         try {
 
             Object result = super.insert(table, postData);
 
-            return success(result);
+            model.addAttribute(result);
+
+            return Mono.create(monoSink -> monoSink.success(String.format("%s/insert", table)));
         }
 
         catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
-            return error(120, e);
+            return Mono.create(monoSink -> monoSink.error(e));
         }
     }
 
@@ -165,18 +189,21 @@ public class MvcController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}/{id}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
-    public ResponseData doUpdate(@PathVariable String table, @PathVariable String id, @RequestBody Map<String, Object> postData) {
+    public Mono doUpdate(@PathVariable String table, @PathVariable String id,
+                         @RequestBody Map<String, Object> postData, final Model model) {
         try {
 
             Integer result = super.update(table, id, postData);
 
-            return success(result);
+            model.addAttribute(result);
+
+            return Mono.create(monoSink -> monoSink.success(String.format("%s/update", table)));
         }
 
         catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
-            return error(130, e);
+            return Mono.create(monoSink -> monoSink.error(e));
         }
     }
 
@@ -187,18 +214,20 @@ public class MvcController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}/{id}", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
-    public ResponseData doDelete(@PathVariable String table, @PathVariable String id) {
+    public Mono doDelete(@PathVariable String table, @PathVariable String id, final Model model) {
         try {
 
             Integer result = super.delete(table, id);
 
-            return success(result);
+            model.addAttribute(result);
+
+            return Mono.create(monoSink -> monoSink.success(String.format("%s/delete", table)));
         }
 
         catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
-            return error(140, e);
+            return Mono.create(monoSink -> monoSink.error(e));
         }
     }
 
@@ -210,18 +239,20 @@ public class MvcController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}/list", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
-    public ResponseData deleteByIds(@PathVariable String table, @RequestBody List<String> idList) {
+    public Mono deleteByIds(@PathVariable String table, @RequestBody List<String> idList, final Model model) {
 
         List result = null;
         try {
             result = super.deleteByIdList(table, idList);
+
+            model.addAttribute(result);
+
+            return Mono.create(monoSink -> monoSink.success(String.format("%s/delete", table)));
         } catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
-            return error(140, e);
+            return Mono.create(monoSink -> monoSink.error(e));
         }
-
-        return success(result);
     }
 
     /***
@@ -230,17 +261,19 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @RequestMapping( value = "login", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
-    public ResponseData loginByPassword(@RequestBody UserModel user) {
+    public Mono loginByPassword(@RequestBody UserModel user, final Model model) {
         try {
 
             user = super.logoin(user);
 
-            return success(user);
+            model.addAttribute(user);
+
+            return Mono.create(monoSink -> monoSink.success("login"));
 
         } catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
-            return error(150, e);
+            return Mono.create(monoSink -> monoSink.error(e));
         }
     }
 
@@ -250,10 +283,10 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @RequestMapping( value = "logout", method = RequestMethod.GET, produces="application/json;charset=UTF-8" )
-    public ResponseData logouted() {
+    public Mono logouted() {
 
         super.logout();
 
-        return success();
+        return Mono.create(monoSink -> monoSink.success());
     }
 }
