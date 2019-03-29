@@ -13,7 +13,6 @@ package ccait.ccweb.filter;
 
 
 import ccait.ccweb.utils.FastJsonUtils;
-import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
 import org.springframework.util.StreamUtils;
 
@@ -132,6 +131,6 @@ public class RequestWrapper extends HttpServletRequestWrapper {
 
     public void setPostParameter(Object parameter) {
         this.params = parameter;
-        this.postString = JsonUtils.toJson(parameter); //这里不允许使用fastjson，否则日期格式转为map用作查询会有问题
+        this.postString = FastJsonUtils.convertObjectToJSON(parameter);
     }
 }
