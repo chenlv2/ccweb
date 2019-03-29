@@ -14,7 +14,7 @@
     =========================================================================
     :: CCWEB :: (v1.0.0-SNAPSHOT)  Author: 草耑(linlurui) 2019@copyright
 
-CCWEB是基于springboot设计的CURD敏捷web api开发框架，CCWEB提倡动态向前端提供基础数据，由前端根据基础数据组装业务来提高开发效率;内置用户管理、权限设置 等安全模块，启动服务后无需添加任何后端代码前端便可以通过默认接口直接访问到自己在数据库建的表；底层orm采用entityQueryable访问数据，支持多种数据库，支持SpringCloud微服务扩展；项目包含ccweb-core，ccweb-api，ccweb-mvc，ccweb-admin，ccweb-start
+CCWEB是基于springboot设计的CURD敏捷web api开发框架，CCWEB提倡动态向前端提供基础数据，由前端根据基础数据组装业务来提高开发效率;内置用户管理、权限设置 等安全模块，启动服务后无需添加任何后端代码前端便可以通过默认接口直接访问到自己在数据库建的表；底层orm采用entityQueryable访问数据，支持多种数据库，支持SpringCloud微服务扩展；项目包含ccweb-core，ccweb-api，ccweb-admin，ccweb-start
 </p>
     <img align="right" src="https://github.com/linlurui/entityQueryable/blob/master/pay5.jpg" alt="捐赠给作者"  width="200">
     <p align="right">
@@ -46,8 +46,6 @@ ccweb的二次开发实际就是自定义ccweb-start包的过程，只需RESTful
 #### ccweb-core: ccweb的核心公共库
 
 #### ccweb-api: 提供RESTful接口服务和websocket服务，内置ccweb-core，不能直接起动，需要在ccweb-start中提供入口启动jar包。
-
-#### ccweb-mvc: 在ccweb-api提供服务基础上增加Thymeleaf网页模版引擎，需要在ccweb-start中提供入口启动jar包。
 
 ## Maven仓库中引入jar包
 ```xml
