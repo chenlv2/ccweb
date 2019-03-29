@@ -29,11 +29,12 @@ ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组�
 * jdk1.8
 
 ## 文件结构
-* ccweb-start-1.0.0-SNAPSHOT.jar 【ccweb默认服务启动包 [下载jar包](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)】
-* application.yml 【应用程序主配置文件 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/application.yml)】
-* db-config.xml 【数据库连接配置文件 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/db-config.xml)】
-* install.sh【linux系统依赖包安装脚本，windows下需要安装cygwin来运行该脚本 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j.properties)】
-* log4j2.xml 【可选，log4j2日志配置文件，记录ccweb服务异常信息 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j2.xml)】
+* ccweb-start-1.0.0-SNAPSHOT.jar 【ccweb默认服务启动包 [下载](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)】
+* application.yml 【应用程序主配置文件 [详情](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/application.yml)】
+* db-config.xml 【数据库连接配置文件 [详情](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/db-config.xml)】
+* tools.jar【动态实体加载器所需的依赖包，需要拷贝到jre目录下或通过install.sh安装 [下载](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)】
+* install.sh【linux系统依赖包安装脚本，windows下需要安装cygwin来运行该脚本 [详情](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j.properties)】
+* log4j2.xml 【可选，log4j2日志配置文件，记录ccweb服务异常信息 [详情](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j2.xml)】
 * log4j.properties 【可选，log4j日志配置文件，记录ORM异常信息 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j.properties)】
 ## 服务启动命令
 ***java -jar ccweb-start-1.0.0-SNAPSHOT.jar***
@@ -41,7 +42,7 @@ ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组�
 ## 接口说明
 ## 系统表结构说明
 # ccweb-admin
-ccweb-admin是为超级管理员在设计阶段准备的数据管理界面，包含用户管理、用户组管理、权限管理、表结构与视图管理 [下载jar包](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)
+ccweb-admin是为超级管理员在设计阶段准备的数据管理界面，包含用户管理、用户组管理、权限管理、表结构与视图管理 [下载](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)
 
 ## 启动命令
 ## 访问地址
@@ -49,9 +50,8 @@ ccweb-admin是为超级管理员在设计阶段准备的数据管理界面，包
 # 二次开发
 ccweb的二次开发实际就是自定义ccweb-start包的过程，只需RESTful则引入ccweb-api，需要视图模板则引入ccweb-mvc
 ## jar包介绍
-#### ccweb-core: ccweb的核心公共库
-
-#### ccweb-api: 提供RESTful接口服务和websocket服务，内置ccweb-core，不能直接起动，需要在ccweb-start中提供入口启动jar包。
+* ccweb-core: ccweb的核心公共库
+* ccweb-api: 提供RESTful接口服务和websocket服务，内置ccweb-core，不能直接起动，需要在ccweb-start中提供入口启动jar包。
 
 ## Maven仓库中引入jar包
 ```xml
