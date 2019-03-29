@@ -22,17 +22,22 @@ CCWEB是基于springboot设计的CURD敏捷web api开发框架，CCWEB提倡动�
     </p>
 </p>
 
-# ccweb-start [下载](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar?_blank)
+# ccweb-start
 ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组件与springboos2.0
 
+## 运行环境
+* jdk1.8
+
 ## 文件结构
-* ccweb-start-1.0.0-SNAPSHOT.jar 【ccweb默认服务启动包】
-* application.yml 【应用程序主配置文件，[查看配置](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/application.yml)】
-* db-config.xml 【数据库连接配置文件，[查看配置](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/db-config.xml)】
-* log4j2.xml 【可选，log4j2日志配置文件，记录ccweb服务异常信息，[查看配置](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j2.xml)】
-* log4j.properties 【可选，log4j日志配置文件，记录ORM异常信息，[查看配置](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j.properties)】
+* ccweb-start-1.0.0-SNAPSHOT.jar 【ccweb默认服务启动包 [下载](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)】
+* application.yml 【应用程序主配置文件 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/application.yml)】
+* db-config.xml 【数据库连接配置文件 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/db-config.xml)】
+* install.sh【linux系统依赖包安装脚本，windows下需要安装cygwin来运行该脚本 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j.properties)】
+* log4j2.xml 【可选，log4j2日志配置文件，记录ccweb服务异常信息 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j2.xml)】
+* log4j.properties 【可选，log4j日志配置文件，记录ORM异常信息 [查看](https://github.com/linlurui/ccweb/blob/master/ccweb-start/src/main/resources/log4j.properties)】
 ## 服务启动命令
 ***java -jar ccweb-start-1.0.0-SNAPSHOT.jar***
+
 ## 接口说明
 ## 系统表结构说明
 # ccweb-admin [下载](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)
