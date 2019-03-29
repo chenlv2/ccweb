@@ -41,7 +41,7 @@ ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组�
 ## 接口说明
 ## 系统表结构说明
 # ccweb-admin
-# ccweb-admin是为超级管理员在设计阶段准备的数据管理界面，包含用户管理、用户组管理、权限管理、表结构与视图管理 [下载](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)
+* ccweb-admin是为超级管理员在设计阶段准备的数据管理界面，包含用户管理、用户组管理、权限管理、表结构与视图管理 [下载](https://github.com/linlurui/ccweb/blob/master/ccweb-start/target/ccweb-start-1.0.0-SNAPSHOT.jar)
 
 ## 启动命令
 ## 访问地址
