@@ -11,10 +11,8 @@ import javapoet.JavaFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.ToolProvider;
+import javax.tools.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -37,7 +35,8 @@ public class DynamicClassBuilder {
 
             String packagePath = ApplicationConfig.getInstance().get("entity.package", DEFAULT_PACKAGE);
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            StandardJavaFileManager stdManager = compiler.getStandardFileManager(null, null, null);
+            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+            StandardJavaFileManager stdManager = compiler.getStandardFileManager(diagnostics, Locale.CHINESE, StandardCharsets.UTF_8);
             try (MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)) {
                 JavaFileObject javaFileObject = manager.makeStringSource(String.format("%s.java", className), javaFile.toString());
                 JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, null, null, Arrays.asList(javaFileObject));
