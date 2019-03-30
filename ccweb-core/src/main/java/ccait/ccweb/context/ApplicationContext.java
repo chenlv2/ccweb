@@ -232,13 +232,14 @@ public class ApplicationContext implements ApplicationContextAware {
             user.setCreateTime(Datetime.getTime());
             user.setUsername(admin);
             user.setPassword(pwd);
-            user = user.where("[username]=#{username}").first();
-            if(user == null) {
+            user.setPath("0");
+            UserModel admin = user.where("[username]=#{username}").first();
+            if(null == admin) {
                 user.insert();
             }
 
-            else if(!pwd.equals(user.getPassword())) {
-                user.where("[username]=#{username}").update(String.format("[password]='%s'", pwd));
+            else if(!pwd.equals(admin.getPassword())) {
+                admin.where("[username]=#{username}").update(String.format("[password]='%s'", pwd));
             }
 
         } catch (Exception e) {

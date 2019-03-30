@@ -53,6 +53,15 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowCredentials(true);
     }
 
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(securityInterceptor())
+                .excludePathPatterns("/static/*")
+                .excludePathPatterns("/error")
+                .excludePathPatterns("/template")
+                .addPathPatterns("/**");
+    }
+
     @Bean
     public EntityContext entityContext()
     {
@@ -84,15 +93,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public SecurityInterceptor securityInterceptor() {
         return new SecurityInterceptor();
-    }
-
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(securityInterceptor())
-                .excludePathPatterns("/static/*")
-                .excludePathPatterns("/error")
-                .excludePathPatterns("/template")
-                .addPathPatterns("/**");
     }
 
     @Bean

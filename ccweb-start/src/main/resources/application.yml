@@ -21,7 +21,6 @@ spring:
       max-age: 43200000
     persistent: false
 
-
   mvc:
     async:
       request-timeout: 5000
@@ -34,11 +33,12 @@ spring:
     port: 6667
     database: 0
     timeout: 6000000
-    pool:
-      max-active: 8
-      max-wait: -1
-      max-idle: 8
-      min-idle: 0
+
+log4j:
+  logger:
+    org:
+      springframework:
+        cloud: OFF
 
 feign:
   hystrix:

@@ -11,9 +11,10 @@
 
 package ccait.ccweb.filter;
 
-
 import ccait.ccweb.utils.FastJsonUtils;
 import entity.tool.util.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.util.StreamUtils;
 
 import javax.servlet.ReadListener;
@@ -35,6 +36,8 @@ public class RequestWrapper extends HttpServletRequestWrapper {
     private String postString;
     private HttpServletRequest req;
 
+    private static final Logger log = LogManager.getLogger(RequestWrapper.class);
+
     public RequestWrapper(HttpServletRequest request) {
         super(request);
         req = request;
@@ -54,7 +57,9 @@ public class RequestWrapper extends HttpServletRequestWrapper {
                 this.params = FastJsonUtils.convertJsonToObject(postString, Map.class);
             }
 
-        } catch (IOException e) {}
+        } catch (IOException e) {
+            log.error(e);
+        }
     }
 
     private Object params;

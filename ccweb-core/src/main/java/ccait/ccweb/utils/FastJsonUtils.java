@@ -4,13 +4,14 @@ package ccait.ccweb.utils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.JSONLibDataFormatSerializer;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import entity.tool.util.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 
 /**
@@ -20,6 +21,7 @@ import entity.tool.util.StringUtils;
 public class FastJsonUtils {
 
     private static final SerializeConfig config;
+    private static final Logger log = LogManager.getLogger(FastJsonUtils.class);
 
     static {
         config = new SerializeConfig();
@@ -41,25 +43,42 @@ public class FastJsonUtils {
             return null;
         }
 
-        if(object instanceof String) {
-            return object.toString();
-        }
+        try {
+            if (object instanceof String) {
+                return object.toString();
+            }
 
-        return JSON.toJSONString(object, config, features);
+            return JSON.toJSONString(object, config, features);
+        }
+        catch (Exception e) {
+            log.error(e);
+            return null;
+        }
     }
 
     public static String toJSONNoFeatures(Object object) {
         return JSON.toJSONString(object, config);
     }
 
-
-
     public static Object toBean(String text) {
-        return JSON.parse(text);
+        try {
+            return JSON.parse(text);
+        }
+        catch (Exception e) {
+            log.error(e);
+            return null;
+        }
     }
 
     public static <T> T toBean(String text, Class<T> clazz) {
-        return JSON.parseObject(text, clazz);
+
+        try {
+            return JSON.parseObject(text, clazz);
+        }
+        catch (Exception e) {
+            log.error(e);
+            return null;
+        }
     }
 
     // 转换为数组
@@ -69,32 +88,35 @@ public class FastJsonUtils {
 
     // 转换为数组
     public static <T> T[] toArray(String text, Class<T> clazz) {
-        Object[] arr = JSON.parseArray(text, clazz).toArray();
-        if(arr == null) {
+        try {
+            return (T[]) toList(text, clazz).toArray();
+        }
+        catch (Exception e) {
+            log.error(e);
             return null;
         }
-
-        List<T> list = new ArrayList<T>();
-        for(Object item : arr) {
-            list.add((T)item);
-        }
-
-        return (T[]) list.toArray();
     }
 
     // 转换为List
     public static <T> List<T> toList(String text, Class<T> clazz) {
-        return JSON.parseArray(text, clazz);
-    }
+        List<T> list = new ArrayList<T>();
 
-    /**
-     * 将string转化为序列化的json字符串
-     * @param text
-     * @return
-     */
-    public static Object textToJson(String text) {
-        Object objectJson  = JSON.parse(text);
-        return objectJson;
+        try {
+            Object[] arr = JSON.parseArray(text, clazz).toArray();
+            if (arr == null) {
+                return null;
+            }
+
+            for (Object item : arr) {
+                list.add((T) item);
+            }
+
+            return list;
+        }
+        catch(Exception e) {
+            log.error(e);
+            return list;
+        }
     }
 
     /**
@@ -115,15 +137,21 @@ public class FastJsonUtils {
      */
     public static <T> T convertJsonToObject(String jsonData, Class<?> clazz) {
 
-        if(StringUtils.isEmpty(jsonData)) {
+        try {
+            if (StringUtils.isEmpty(jsonData)) {
+                return null;
+            }
+
+            if (List.class.equals(clazz)) {
+                return (T) toList(jsonData, Map.class);
+            }
+
+            return (T) toBean(jsonData, clazz);
+        }
+        catch (Exception e) {
+            log.error(e);
             return null;
         }
-
-        if(List.class.equals(clazz)) {
-            return (T)JSONObject.parseArray(jsonData, Map.class);
-        }
-
-        return (T)JSONObject.parseObject(jsonData, clazz);
     }
 
     /**
@@ -133,7 +161,7 @@ public class FastJsonUtils {
      * @return
      */
     public static <T> T convert(Object obj, Class<?> clazz) {
-        return (T)JSONObject.parseObject(convertObjectToJSON(obj), clazz);
+        return convertJsonToObject(convertObjectToJSON(obj), clazz);
     }
 
     /**

@@ -65,19 +65,18 @@ public class DynamicClassBuilder {
         List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
         if(data != null) {
             for(Map.Entry<String, Object> item : data.entrySet()) {
-                if("id".equals(item.getKey().toLowerCase())) {
-                    continue;
-                }
+
                 ColumnInfo col = new ColumnInfo();
                 col.setColumnName(item.getKey());
                 col.setDefaultValue(item.getValue().toString());
                 col.setDataType(item.getValue().getClass().getTypeName());
+                if("id".equals(item.getKey().toLowerCase())) {
+                    col.setPrimaryKey(true);
+                }
 
                 columns.add(col);
             }
         }
-
-        columns.add(new ColumnInfo("id", "text", true));
 
         //去重
         columns = columns.stream().collect(

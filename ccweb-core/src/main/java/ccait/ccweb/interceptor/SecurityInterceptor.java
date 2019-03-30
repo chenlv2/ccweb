@@ -83,7 +83,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
             Optional<String> opt = datasourceList.stream()
                     .filter(a -> a.toLowerCase().equals(ds.toLowerCase())).findAny();
             if(opt == null || !opt.isPresent()) {
-                throw new Exception(String.format("datasource '%s' not be defined in the application.yml!!!", datasource));
+                response.sendError(HttpStatus.NOT_FOUND.value(), "没有找到匹配的url");
+                return false;
             }
         }
 
@@ -338,7 +339,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 TriggerContext.exec(table, EventType.View, attrs.get("id"), request);
                 break;
             case "POST":
-                if(Pattern.matches("^/api/[^/]+/build$", request.getRequestURI())) {
+                Pattern pattern = Pattern.compile("^/(api|asyncapi)/[^/]+/build/(table|view)$", Pattern.CASE_INSENSITIVE);
+                if(pattern.matcher(request.getRequestURI()).find()) {
                     List<ColumnInfo> columns = FastJsonUtils.toList(postString, ColumnInfo.class);
                     TriggerContext.exec(table, EventType.BuildTable, columns, request);
                     break;

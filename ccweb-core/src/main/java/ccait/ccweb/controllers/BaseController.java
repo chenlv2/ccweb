@@ -21,6 +21,7 @@ import ccait.ccweb.enums.PrivilegeScope;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
 import entity.query.*;
+import entity.query.annotation.PrimaryKey;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.DBUtils;
 import entity.tool.util.ReflectionUtils;
@@ -296,6 +297,17 @@ public abstract class BaseController {
             if(value == null) {
                 if(type.equals(Date.class) && defaultDateByNow) {
                     value = Datetime.now();
+                }
+
+                else if(opt.get().getAnnotation(PrimaryKey.class) != null) {
+                    if(type.equals(String.class)) {
+                        value = UUID.randomUUID().toString().replace("-", "");
+                    }
+
+                    else if(type.equals(Integer.class) || type.equals(int.class) ||
+                            type.equals(Long.class) || type.equals(long.class)) {
+                        value = 0;
+                    }
                 }
             }
 
