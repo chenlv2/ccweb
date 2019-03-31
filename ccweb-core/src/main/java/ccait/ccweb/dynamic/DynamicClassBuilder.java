@@ -1,18 +1,24 @@
 package ccait.ccweb.dynamic;
 
 
+
 import ccait.ccweb.model.ConditionInfo;
 import ccait.ccweb.model.FieldInfo;
 import ccait.ccweb.model.QueryInfo;
 import ccait.ccweb.model.SortInfo;
 import entity.query.ColumnInfo;
 import entity.query.core.ApplicationConfig;
+import entity.tool.util.StringUtils;
 import javapoet.JavaFile;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.tools.*;
-import java.nio.charset.StandardCharsets;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -35,11 +41,45 @@ public class DynamicClassBuilder {
 
             String packagePath = ApplicationConfig.getInstance().get("entity.package", DEFAULT_PACKAGE);
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
-            StandardJavaFileManager stdManager = compiler.getStandardFileManager(diagnostics, Locale.CHINESE, StandardCharsets.UTF_8);
+
+            StandardJavaFileManager stdManager = compiler.getStandardFileManager(null, null, null);
             try (MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)) {
                 JavaFileObject javaFileObject = manager.makeStringSource(String.format("%s.java", className), javaFile.toString());
-                JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, null, null, Arrays.asList(javaFileObject));
+
+                StringBuffer sb = new StringBuffer();
+                List<String> options = null;
+
+                URLClassLoader urlClassLoader = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+                for (URL url : urlClassLoader.getURLs()) {
+                    sb.append(url.getFile()).append(File.pathSeparator);
+                }
+
+                if(sb.length() > 0) {
+                    options = new ArrayList<String>();
+                    options.add("-classpath");
+                    options.add(sb.toString());
+                    log.info("-classpath --> " + sb.toString());
+                }
+
+                else {
+                    /**
+                     * 编译选项，在编译java文件时，编译程序会自动的去寻找java文件引用的其他的java源文件或者class。 -sourcepath选项就是定义java源文件的查找目录， -classpath选项就是定义class文件的查找目录。
+                     */
+
+                    options = null;
+                    String sourceDir = System.getProperty("user.dir") + "/src";
+                    String jarPath = Thread.currentThread().getContextClassLoader().getResource("").getPath().replace("!/BOOT-INF/classes!/", "");
+                    log.info("jarPath: " + jarPath);
+                    String targetDir = System.getProperty("user.dir");
+                    jarPath = getJarFiles(jarPath);
+
+                    if(StringUtils.isNotEmpty(jarPath)) {
+                        options = Arrays.asList("-encoding", "UTF-8", "-classpath", jarPath, "-d", targetDir, "-sourcepath", sourceDir);
+                        log.info("-classpath --> " + jarPath);
+                    }
+                }
+
+                JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, options, null, Arrays.asList(javaFileObject));
                 if (task.call()) {
                     Map<String, byte[]> results = manager.getClassBytes();
                     try (MemoryClassLoader classLoader = new MemoryClassLoader(results)) {
@@ -152,5 +192,36 @@ public class DynamicClassBuilder {
                         new TreeSet<>(Comparator.comparing(o -> o.getColumnName()))), ArrayList::new));
 
         return create(tablename, columns);
+    }
+
+    /**
+     * 查找该目录下的所有的jar文件
+     *
+     * @param jarPath
+     * @throws Exception
+     */
+    public static String getJarFiles(String jarPath) throws Exception {
+        File sourceFile = new File(jarPath);
+        final String[] jars = {""};
+        if (sourceFile.exists()) {// 文件或者目录必须存在
+            if (sourceFile.isDirectory()) {// 若file对象为目录
+                // 得到该目录下以.java结尾的文件或者目录
+                File[] childrenFiles = sourceFile.listFiles(new FileFilter() {
+                    public boolean accept(File pathname) {
+                        if (pathname.isDirectory()) {
+                            return true;
+                        } else {
+                            String name = pathname.getName();
+                            if (name.endsWith(".jar") ? true : false) {
+                                jars[0] = jars[0] + pathname.getPath() + ";";
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                });
+            }
+        }
+        return jars[0];
     }
 }
