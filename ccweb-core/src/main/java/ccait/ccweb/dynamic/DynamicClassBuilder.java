@@ -80,6 +80,7 @@ public class DynamicClassBuilder {
                 }
 
                 JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, options, null, Arrays.asList(javaFileObject));
+
                 if (task.call()) {
                     Map<String, byte[]> results = manager.getClassBytes();
                     try (MemoryClassLoader classLoader = new MemoryClassLoader(results)) {
