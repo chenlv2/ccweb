@@ -241,7 +241,7 @@ public class Application {
 ｝
 ```
 ## 生成实体类
-* 虽然在windows环境下支持通过请求动态生成数据查询实体类，但推荐在二次开发的时候通过实体生成器生成数据查询的实体以提高请求的性能，实体生在器在ccweb-core包里，包路径为package ccait.generator，启动类EntitesGenerator，生成的路径与包名可在application.yml中设置。
+* ccweb虽然支持通过请求动态生成数据查询实体类，但推荐在二次开发的时候通过实体生成器生成数据查询的实体以提高访问的性能，实体生在器在ccweb-core包里，包路径为package ccait.generator，启动类EntitesGenerator，生成的路径与包名可在application.yml中设置。
 
 ## 编写控制器
 ```java
@@ -424,3 +424,6 @@ public final class DefaultTrigger {
     private int pageSize;  //每页显示记录数
     private long totalRecords; //总记录数
 ```
+
+## 打包说明
+项目部署时如果要使用动态查询功能，打包时建议打成war包部署在tomcat，jar包目前只有在windows下支持使用动态查询功能。
