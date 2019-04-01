@@ -1,6 +1,15 @@
+/**
+ *
+ *  License: http://www.apache.org/licenses/LICENSE-2.0
+ *  Home page: https://github.com/linlurui/ccweb
+ *  Note: to build on java, include the jdk1.8+ compiler symbol (and yes,
+ *  I know the difference between language and runtime versions; this is a compromise).
+ * @author linlurui
+ * @Date Date: 2019-02-10
+ */
+
+
 package ccait.ccweb.dynamic;
-
-
 
 import ccait.ccweb.model.ConditionInfo;
 import ccait.ccweb.model.FieldInfo;
@@ -53,14 +62,13 @@ public class DynamicClassBuilder {
                  */
 
                 options = null;
-                String targetDir = System.getProperty("user.dir");
-                String sourceDir = targetDir + "/src";
-                log.info("-----user.dir-----: " + sourceDir);
+                String targetDir = Thread.currentThread().getContextClassLoader().getResource("").getPath().replaceAll("/[^/]+\\.jar!/BOOT-INF/classes!/", "").replace("file:", "");
+                log.info("-----user.dir-----: " + targetDir);
                 String jarPath = getJarFiles(targetDir);
-                log.info("-----jarPath-----: " + sourceDir);
+                log.info("-----jarPath-----: " + jarPath);
 
                 if(StringUtils.isNotEmpty(jarPath)) {
-                    options = Arrays.asList("-encoding", "UTF-8", "-classpath", jarPath, "-d", targetDir, "-sourcepath", sourceDir);
+                    options = Arrays.asList("-encoding", "UTF-8", "-classpath", jarPath, "-d", targetDir, "-sourcepath", targetDir);
                     log.info("-classpath --> " + jarPath);
                 }
 
@@ -191,15 +199,15 @@ public class DynamicClassBuilder {
         final String[] jars = {""};
         if (sourceFile.exists()) {// 文件或者目录必须存在
             if (sourceFile.isDirectory()) {// 若file对象为目录
-                // 得到该目录下以.java结尾的文件或者目录
+                // 得到该目录下以.jar 结尾的文件或者目录
                 File[] childrenFiles = sourceFile.listFiles(new FileFilter() {
                     public boolean accept(File pathname) {
                         if (pathname.isDirectory()) {
                             return true;
                         } else {
                             String name = pathname.getName();
-                            if (name.endsWith(".jar") ? true : false) {
-                                log.info("-----jar_path: " + pathname.getPath());
+                            if (name.endsWith(".jar")) {
+                                log.info("-----jar: " + pathname.getPath());
                                 jars[0] = jars[0] + pathname.getPath() + ";";
                                 return true;
                             }
