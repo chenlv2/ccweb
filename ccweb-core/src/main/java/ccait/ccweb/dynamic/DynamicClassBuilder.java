@@ -41,7 +41,6 @@ public class DynamicClassBuilder {
 
             String packagePath = ApplicationConfig.getInstance().get("entity.package", DEFAULT_PACKAGE);
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            System.out.println("-----testtttttttttttttttttttttttttttttt-----");
 
             StandardJavaFileManager stdManager = compiler.getStandardFileManager(null, null, null);
             try (MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)) {
@@ -56,9 +55,9 @@ public class DynamicClassBuilder {
                 options = null;
                 String targetDir = System.getProperty("user.dir");
                 String sourceDir = targetDir + "/src";
-                System.out.println("-----user.dir-----: " + sourceDir);
+                log.info("-----user.dir-----: " + sourceDir);
                 String jarPath = getJarFiles(targetDir);
-                System.out.println("-----jarPath-----: " + sourceDir);
+                log.info("-----jarPath-----: " + sourceDir);
 
                 if(StringUtils.isNotEmpty(jarPath)) {
                     options = Arrays.asList("-encoding", "UTF-8", "-classpath", jarPath, "-d", targetDir, "-sourcepath", sourceDir);
@@ -200,7 +199,7 @@ public class DynamicClassBuilder {
                         } else {
                             String name = pathname.getName();
                             if (name.endsWith(".jar") ? true : false) {
-                                System.out.println("-----jar_path: " + pathname.getPath());
+                                log.info("-----jar_path: " + pathname.getPath());
                                 jars[0] = jars[0] + pathname.getPath() + ";";
                                 return true;
                             }
