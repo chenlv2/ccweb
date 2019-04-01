@@ -71,9 +71,6 @@ public abstract class BaseController {
     @Value("${entity.enableRxJdbc:false}")
     private boolean enableRxJdbc;
 
-    @Value("${entity.security.admin.username:admin}")
-    protected String admin;
-
     @Value("${entity.queryable.ignoreTotalCount:true}")
     protected boolean ignoreTotalCount;
 
@@ -123,6 +120,9 @@ public abstract class BaseController {
     @Value("${entity.defaultDateByNow:false}")
     private boolean defaultDateByNow;
     private Map<String, Object> data;
+
+    @Value("${entity.security.admin.username:admin}")
+    private String admin;
 
     public BaseController() {
         RMessage = new ResponseData<Object>();
@@ -1005,6 +1005,12 @@ public abstract class BaseController {
      * @throws Exception
      */
     public void createOrAlterTable(String table, List<ColumnInfo> columns) throws Exception {
+
+        UserModel user = getLoginUser();
+        if(user == null || !admin.equals(user.getUsername())) {
+            throw new Exception("You are not administrator!!!");
+        }
+
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
@@ -1028,6 +1034,11 @@ public abstract class BaseController {
      * @throws Exception
      */
     public void createOrAlterView(String viewName, QueryInfo queryInfo) throws Exception {
+
+        UserModel user = getLoginUser();
+        if(user == null || !admin.equals(user.getUsername())) {
+            throw new Exception("You are not administrator!!!");
+        }
 
         if(queryInfo.getJoinTables() == null || queryInfo.getJoinTables().size() < 1) {
             throw new Exception("join tables can not be empty!!!");
