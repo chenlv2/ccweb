@@ -54,12 +54,11 @@ public class DynamicClassBuilder {
                  */
 
                 options = null;
-                String sourceDir = System.getProperty("user.dir") + "/src";
-                System.out.println("-----sourceDir: " + sourceDir);
-                String jarPath = System.getProperty("user.dir");
-                System.out.println("-----jarPath: " + jarPath);
                 String targetDir = System.getProperty("user.dir");
-                jarPath = getJarFiles(jarPath);
+                String sourceDir = targetDir + "/src";
+                System.out.println("-----user.dir-----: " + sourceDir);
+                String jarPath = getJarFiles(targetDir);
+                System.out.println("-----jarPath-----: " + sourceDir);
 
                 if(StringUtils.isNotEmpty(jarPath)) {
                     options = Arrays.asList("-encoding", "UTF-8", "-classpath", jarPath, "-d", targetDir, "-sourcepath", sourceDir);
