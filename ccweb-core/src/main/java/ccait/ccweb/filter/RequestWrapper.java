@@ -47,7 +47,12 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
         req = request;
         //缓存请求body
         try {
-            postString = RequestWrapper.getRequestPostString(request);
+            requestBody = readBody(request);
+            if(requestBody == null) {
+                requestBody = new byte[0];
+            }
+            postString = new String(requestBody, "ISO-8859-1");
+
             Map<String, Object> map = new HashMap<String, Object>();
             List<String> list = StringUtils.splitString2List(postString, "(\\-\\-)+\\-*[\\d\\w]+");
             for(String content : list) {
@@ -57,7 +62,11 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
                     String key = m.group(1);
                     Object value = m.group(5);
                     if(m.group(4) != null && Pattern.matches("[^/]+/.+", m.group(4))) {
-                        value = m.group(5).getBytes();
+
+//                        String filename = key;
+//                        Position p = getFilePosition(request, postString);
+//                        byte[] bytes = readFile(filename, body, p);
+                        value = m.group(5).getBytes("ISO-8859-1");
                     }
 
                     map.put(key, value);
@@ -65,22 +74,21 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
             }
 
             if(map.size() > 0) {
-//                multipartResolver = new CommonsMultipartResolver(request.getSession().getServletContext());
                 postString = FastJsonUtils.convertObjectToJSON(map);
-                if ( StringUtils.isNotEmpty(postString) ) {
-                    requestBody = StreamUtils.copyToByteArray(request.getInputStream());
-                } else {
-                    requestBody = new byte[0];
-                }
+//                if ( StringUtils.isNotEmpty(postString) ) {
+//                    requestBody = readBody(request);
+//                } else {
+//                    requestBody = new byte[0];
+//                }
 
-                this.params = request.getInputStream();
+                this.params = map;
             }
             else {
-                if ( StringUtils.isNotEmpty(postString) ) {
-                    requestBody = postString.getBytes(charSet);
-                } else {
-                    requestBody = new byte[0];
-                }
+//                if ( StringUtils.isNotEmpty(postString) ) {
+//                    requestBody = readBody(request);
+//                } else {
+//                    requestBody = new byte[0];
+//                }
 
                 if(Pattern.matches("\\s*^\\[[^\\[\\]]+\\]$\\s*", postString)) {
                     this.params = FastJsonUtils.convertJsonToObject(postString, List.class);
@@ -218,32 +226,66 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
         return ((MultipartHttpServletRequest)req).getMultipartContentType(s);
     }
 
-    public void getUploadFileToTemp() throws IOException {
-        String filePath = null;
+    public static byte[] readBody(HttpServletRequest request)
+            throws IOException{
+        int formDataLength = request.getContentLength();
+        DataInputStream dataStream = new DataInputStream(request.getInputStream());
+        byte body[] = new byte[formDataLength];
+        int totalBytes = 0;
+        while (totalBytes < formDataLength) {
+            int bytes = dataStream.read(body, totalBytes, formDataLength);
+            totalBytes += bytes;
+        }
+        return body;
+    }
 
-        List<String> fileNames = new ArrayList<>();
+    private Position getFilePosition(HttpServletRequest request, String textBody) throws IOException {
 
-        multipartResolver = new CommonsMultipartResolver(req.getSession().getServletContext());
+        String contentType = request.getContentType();
+        String boundaryText = contentType.substring(
+                contentType.lastIndexOf("=") + 1, contentType.length());
+        int pos = textBody.indexOf("filename=\"");
+        pos = textBody.indexOf("\n", pos) + 1;
+        pos = textBody.indexOf("\n", pos) + 1;
+        pos = textBody.indexOf("\n", pos) + 1;
+        int boundaryLoc = textBody.indexOf(boundaryText, pos) -4;
+        int begin = ((textBody.substring(0,
+                pos)).getBytes("ISO-8859-1")).length;
+        int end = ((textBody.substring(0,
+                boundaryLoc)).getBytes("ISO-8859-1")).length;
 
-        if(multipartResolver.isMultipart(req)) {
+        return new Position(begin, end);
+    }
 
-            MultipartHttpServletRequest multiRequest =multipartResolver.resolveMultipart(req);
-            MultiValueMap<String,MultipartFile> multiFileMap = multiRequest.getMultiFileMap();
-            List<MultipartFile> fileSet = new LinkedList<>();
-            for(Map.Entry<String, List<MultipartFile>> temp : multiFileMap.entrySet()){
-                fileSet = temp.getValue();
-            }
-            String rootPath=System.getProperty("user.dir");
-            for(MultipartFile temp : fileSet){
-                filePath=rootPath+"/tem/"+temp.getOriginalFilename();
-                File file = new File(filePath);
-                if(!file.exists()){
-                    file.mkdirs();
-                }
+    private String getFilename(String reqBody) {
+        String filename = reqBody.substring(
+                reqBody.indexOf("filename=\"") + 10);
+        filename = filename.substring(0, filename.indexOf("\n"));
+        filename = filename.substring(
+                filename.lastIndexOf("\\") + 1, filename.indexOf("\""));
+        return filename;
+    }
 
-                fileNames.add(temp.getOriginalFilename());
-                temp.transferTo(file);
-            }
+    private byte[] readFile(String filename, byte[] body, Position p)
+            throws FileNotFoundException, IOException {
+
+        ByteArrayInputStream stream = new ByteArrayInputStream(body, p.begin, (p.end - p.begin));
+        ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+        byte[] buff = new byte[100]; //buff用于存放循环读取的临时数据
+        int rc = 0;
+        while ((rc = stream.read(buff, 0, 100)) > 0) {
+            swapStream.write(buff, 0, rc);
+        }
+
+        return swapStream.toByteArray();
+    }
+
+    class Position {
+        int begin;
+        int end;
+        Position(int begin, int end) {
+            this.begin = begin;
+            this.end = end;
         }
     }
 }
