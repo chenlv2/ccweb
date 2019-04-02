@@ -26,7 +26,7 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 
 @RestController
-@RequestMapping( value = {"api/{datasource}", "api"}, produces="application/json;charset=UTF-8" )
+@RequestMapping( value = {"api/{datasource}", "api"} )
 public class ApiController extends BaseController {
 
     /***
@@ -35,7 +35,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build/table", method = {RequestMethod.POST, RequestMethod.PUT}, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/build/table", method = {RequestMethod.POST, RequestMethod.PUT} )
     public ResponseData doCreateOrAlterTable(@PathVariable String table, @RequestBody List<ColumnInfo> columns) {
         try{
 
@@ -54,7 +54,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build/view", method = {RequestMethod.POST, RequestMethod.PUT}, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/build/view", method = {RequestMethod.POST, RequestMethod.PUT} )
     public ResponseData doCreateOrAlterView(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try{
 
@@ -74,7 +74,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.GET, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.GET )
     public ResponseData doGet(@PathVariable String table, @PathVariable String id)  {
         try {
 
@@ -96,7 +96,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}", method = RequestMethod.POST )
     public ResponseData doQuery(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -119,7 +119,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/exist", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/exist", method = RequestMethod.POST )
     public ResponseData doExist(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try {
 
@@ -140,7 +140,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/count", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/count", method = RequestMethod.POST )
     public ResponseData doCount(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try {
 
@@ -160,7 +160,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/join", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/join", method = RequestMethod.POST )
     public ResponseData doJoinQuery(@RequestBody QueryInfo queryInfo) {
 
         try {
@@ -182,7 +182,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}", method = RequestMethod.PUT )
     public ResponseData doInsert(@PathVariable String table, @RequestBody Map<String, Object> postData)
     {
         try {
@@ -205,7 +205,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.PUT )
     public ResponseData doUpdate(@PathVariable String table, @PathVariable String id, @RequestBody Map<String, Object> postData) {
         try {
 
@@ -227,7 +227,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.DELETE )
     public ResponseData doDelete(@PathVariable String table, @PathVariable String id) {
         try {
 
@@ -250,7 +250,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/list", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "/{table}/list", method = RequestMethod.DELETE )
     public ResponseData deleteByIds(@PathVariable String table, @RequestBody List<String> idList) {
 
         List result = null;
@@ -270,7 +270,7 @@ public class ApiController extends BaseController {
      * @return
      */
     @ResponseBody
-    @RequestMapping( value = "login", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "login", method = RequestMethod.POST )
     public ResponseData loginByPassword(@RequestBody UserModel user) {
         try {
 
@@ -290,7 +290,7 @@ public class ApiController extends BaseController {
      * @return
      */
     @ResponseBody
-    @RequestMapping( value = "logout", method = RequestMethod.GET, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "logout", method = RequestMethod.GET )
     public ResponseData logouted() {
 
         super.logout();
