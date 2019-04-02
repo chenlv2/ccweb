@@ -207,6 +207,7 @@ public class DynamicClassBuilder {
                         } else {
                             String name = pathname.getName();
                             if (name.endsWith(".jar")) {
+                                pathname.setReadable(true);
                                 log.info("-----jar: " + pathname.getPath());
                                 jars[0] = jars[0] + pathname.getPath() + ";";
                                 return true;
