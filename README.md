@@ -249,7 +249,7 @@ public class Application {
 public class ApiController extends BaseController {
 
     @ResponseBody
-    @RequestMapping( value = "login", method = RequestMethod.POST, produces=MediaType.APPLICATION_STREAM_JSON_VALUE )
+    @RequestMapping( value = "login", method = RequestMethod.POST )
     public Mono loginByPassword(@RequestBody UserModel user) {
         try {
 
