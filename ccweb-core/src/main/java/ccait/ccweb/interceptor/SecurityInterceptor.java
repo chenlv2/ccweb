@@ -17,7 +17,6 @@ import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
 import ccait.ccweb.enums.PrivilegeScope;
-import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.FastJsonUtils;
 import entity.query.ColumnInfo;
@@ -110,8 +109,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         List<String> whiteList = StringUtils.splitString2List(whiteListText, ",");
         List<String> blackList = StringUtils.splitString2List(blackListText, ",");
-
-        RequestWrapper rw = (RequestWrapper)request;
 
         if(StringUtils.isEmpty(getClientIp(request))) {
             return false;
