@@ -21,11 +21,15 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -48,13 +52,19 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
         //缓存请求body
         try {
             postString = RequestWrapper.getRequestPostString(request);
-            Map<String, String> map = new HashMap<String, String>();
+            Map<String, Object> map = new HashMap<String, Object>();
             List<String> list = StringUtils.splitString2List(postString, "(\\-\\-)+\\-*\\d{24}");
             for(String content : list) {
-                Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"[^\"]+\")?\\s*(Content-Type:\\s*image/\\w+\\s*)?\\s*?([\\w\\W]+)");
+                Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"[^\"]+\")?\\s*(Content-Type:\\s*(image/\\w+)\\s*)?\\s*?([\\w\\W]+)");
                 Matcher m = regex.matcher(content);
                 while (m.find()) {
-                    map.put(m.group(1), m.group(4));
+                    String key = m.group(1);
+                    Object value = m.group(5);
+                    if(m.group(4) != null && Pattern.matches("[^/]+/.+", m.group(4))) {
+                        value = m.group(5).getBytes();
+                    }
+
+                    map.put(key, value);
                 }
             }
 
