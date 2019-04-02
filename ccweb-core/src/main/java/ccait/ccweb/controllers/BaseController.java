@@ -44,6 +44,7 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -123,6 +124,9 @@ public abstract class BaseController {
 
     @Value("${entity.security.admin.username:admin}")
     private String admin;
+
+    @Value("${entity.upload.max:10}")
+    private int uploadMax;
 
     public BaseController() {
         RMessage = new ResponseData<Object>();
@@ -254,7 +258,7 @@ public abstract class BaseController {
         return EncryptionUtil.md5(str, md5PublicKey, encoding);
     }
 
-    protected void fillData(@RequestBody Map<String, Object> postData, Object entity) throws IOException {
+    protected void fillData(@RequestBody Map<String, Object> postData, Object entity) throws Exception {
         List<Field> fields = EntityContext.getFields(entity);
         List<String> argNames = postData.keySet().stream().collect(Collectors.toList());
         for(final String argname : argNames) {
@@ -265,9 +269,15 @@ public abstract class BaseController {
                 continue;
             }
 
+            String valString = DBUtils.getSqlInjValue(postData.get(argname).toString());
             String fieldName = opt.get().getName();
             Class<?> type = opt.get().getType();
-            String valString = DBUtils.getSqlInjValue(postData.get(argname).toString());
+            if(Blob.class.equals(type) && StringUtils.isNotEmpty(valString)) {
+                if(valString.getBytes().length > 1024 * 1024 * uploadMax) {
+                    throw new Exception("Upload field to be long!!!");
+                }
+            }
+
             Object value = cast(type, valString);
 
             String key = fieldName;
