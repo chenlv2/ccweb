@@ -57,10 +57,10 @@ entity:
         password: hidden
 
   upload:
-    maxSize: 10 #上传文件最大尺寸，单位: MB
+    max: 10 #上传文件最大尺寸，单位: MB
 
   enableRxJdbc: true #是否开启异步数据库连接池
-  enableFlux: true   #是否开启web异步响应流
+  enableFlux: false   #是否开启web异步响应流
 
   #设置开放的数据源，对应db-config.xml的environment id
   datasource: mysql, mssql, sqlite #可通过url的{datasource}参数访问到该数据库，没有在此设置的environment不能通过url访问到
@@ -114,15 +114,12 @@ spring:
     timeout: 6000000
 
 
-
 # 3.log4j配置###########################################################################
 log4j:
   logger:
     org:
       springframework:
         cloud: OFF
-
-
 
 
 # 4.websocket配置###########################################################################
