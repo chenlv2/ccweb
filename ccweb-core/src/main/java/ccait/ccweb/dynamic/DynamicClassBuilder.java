@@ -201,15 +201,15 @@ public class DynamicClassBuilder {
             if (sourceFile.isDirectory()) {// 若file对象为目录
                 // 得到该目录下以.jar 结尾的文件或者目录
                 File[] childrenFiles = sourceFile.listFiles(new FileFilter() {
-                    public boolean accept(File pathname) {
-                        if (pathname.isDirectory()) {
+                    public boolean accept(File file) {
+                        if (file.isDirectory()) {
                             return true;
                         } else {
-                            String name = pathname.getName();
+                            String name = file.getName();
                             if (name.endsWith(".jar")) {
-                                pathname.setReadable(true);
-                                log.info("-----jar: " + pathname.getPath());
-                                jars[0] = jars[0] + pathname.getPath() + ";";
+                                file.setReadable(true);
+                                log.info("-----jar: " + file.getPath());
+                                jars[0] = jars[0] + file.getPath() + ";";
                                 return true;
                             }
                             return false;
