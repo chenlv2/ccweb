@@ -14,9 +14,9 @@ package ccait.ccweb.interceptor;
 import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.TriggerContext;
-import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
 import ccait.ccweb.enums.PrivilegeScope;
+import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.FastJsonUtils;
 import entity.query.ColumnInfo;
@@ -151,7 +151,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             boolean x = true;
             if(StringUtils.isNotEmpty(table)) {
-                x = canAccessTable(method, request, requiredPermission, attrs, table);
+                x = canAccessTable(method, (RequestWrapper) request, requiredPermission, attrs, table);
             }
 
             else {
@@ -169,7 +169,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
                     table = attrs.get(key);
 
-                    x = x && canAccessTable(method, request, requiredPermission, attrs, table);
+                    x = x && canAccessTable(method, (RequestWrapper) request, requiredPermission, attrs, table);
                 }
             }
 
@@ -178,15 +178,14 @@ public class SecurityInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    private Boolean canAccessTable(String method, HttpServletRequest request, AccessCtrl requiredPermission, Map<String, String> attrs, String table) throws Exception {
-        String postString = BaseController.getRequestPostString(request);
+    private Boolean canAccessTable(String method, RequestWrapper request, AccessCtrl requiredPermission, Map<String, String> attrs, String table) throws Exception {
 
         if(requiredPermission == null) {
             return true;
         }
 
         //先执行触发器
-        runTrigger(table, method, attrs, postString, request);
+        runTrigger(table, method, attrs, request.getRequestPostString(), request);
 
         // 如果标记了注解，则判断权限
         if (requiredPermission != null) {
@@ -248,7 +247,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             }
 
             List<UUID> aclIds = aclList.stream().map(a->a.getAclId()).collect(Collectors.toList());
-            if(!checkPrivilege(table, user, aclIds, method, attrs, postString, request)){
+            if(!checkPrivilege(table, user, aclIds, method, attrs, request.getRequestPostString(), request)){
                 log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]对表%s没有%s的操作权限！", user.getUsername(), table, method));
                 return false;
             }
