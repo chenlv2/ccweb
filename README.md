@@ -426,4 +426,4 @@ public final class DefaultTrigger {
 ```
 
 ## 打包说明
-项目部署时如果要使用动态查询功能，打包时建议打成war包部署在tomcat，jar包目前只有在windows下支持使用动态查询功能。
+项目部署时如果要使用动态查询功能，打包时建议打成war包部署在tomcat，jar包目前只有在windows下支持使用动态查询功能，在linul环境下由于目录权限问题可能会加载不到依赖包。
