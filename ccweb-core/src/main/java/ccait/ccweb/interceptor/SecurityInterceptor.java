@@ -208,7 +208,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             List<AclModel> aclList = acl.where("[tableName]=#{tableName}").query();
             if(aclList == null || aclList.size() < 1) {
 
-                if(method.equals("GET") || method.equals("POST")) {
+                if(method.equals("GET") || method.equals("POST") || user.getUsername().equals(admin)) {
                     log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，允许查询！", table));
                     return true;
                 }
