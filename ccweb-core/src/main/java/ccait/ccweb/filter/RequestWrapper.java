@@ -21,20 +21,15 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
+import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,6 +38,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
     private static Charset charSet;
     private String postString;
     private HttpServletRequest req;
+    private CommonsMultipartResolver multipartResolver;
 
     private static final Logger log = LogManager.getLogger(RequestWrapper.class);
 
@@ -53,7 +49,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
         try {
             postString = RequestWrapper.getRequestPostString(request);
             Map<String, Object> map = new HashMap<String, Object>();
-            List<String> list = StringUtils.splitString2List(postString, "(\\-\\-)+\\-*\\d{24}");
+            List<String> list = StringUtils.splitString2List(postString, "(\\-\\-)+\\-*[\\d\\w]+");
             for(String content : list) {
                 Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"[^\"]+\")?\\s*(Content-Type:\\s*(image/\\w+)\\s*)?\\s*?([\\w\\W]+)");
                 Matcher m = regex.matcher(content);
@@ -69,6 +65,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
             }
 
             if(map.size() > 0) {
+//                multipartResolver = new CommonsMultipartResolver(request.getSession().getServletContext());
                 postString = FastJsonUtils.convertObjectToJSON(map);
                 if ( StringUtils.isNotEmpty(postString) ) {
                     requestBody = StreamUtils.copyToByteArray(request.getInputStream());
@@ -219,5 +216,34 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
     @Override
     public String getMultipartContentType(String s) {
         return ((MultipartHttpServletRequest)req).getMultipartContentType(s);
+    }
+
+    public void getUploadFileToTemp() throws IOException {
+        String filePath = null;
+
+        List<String> fileNames = new ArrayList<>();
+
+        multipartResolver = new CommonsMultipartResolver(req.getSession().getServletContext());
+
+        if(multipartResolver.isMultipart(req)) {
+
+            MultipartHttpServletRequest multiRequest =multipartResolver.resolveMultipart(req);
+            MultiValueMap<String,MultipartFile> multiFileMap = multiRequest.getMultiFileMap();
+            List<MultipartFile> fileSet = new LinkedList<>();
+            for(Map.Entry<String, List<MultipartFile>> temp : multiFileMap.entrySet()){
+                fileSet = temp.getValue();
+            }
+            String rootPath=System.getProperty("user.dir");
+            for(MultipartFile temp : fileSet){
+                filePath=rootPath+"/tem/"+temp.getOriginalFilename();
+                File file = new File(filePath);
+                if(!file.exists()){
+                    file.mkdirs();
+                }
+
+                fileNames.add(temp.getOriginalFilename());
+                temp.transferTo(file);
+            }
+        }
     }
 }
