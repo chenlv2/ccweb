@@ -1,15 +1,28 @@
+/**
+ *
+ *  License: http://www.apache.org/licenses/LICENSE-2.0
+ *  Home page: https://github.com/linlurui/ccweb
+ *  Note: to build on java, include the jdk1.8+ compiler symbol (and yes,
+ *  I know the difference between language and runtime versions; this is a compromise).
+ * @author linlurui
+ * @Date Date: 2019-02-10
+ */
+
 package ccait.ccweb;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+
 @SpringBootApplication
 public class Application {
 
     private static final Logger log = LogManager.getLogger( Application.class );
     private static boolean uat = false;
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException, MalformedURLException {
 
         String flag = System.getProperty("isuat");
         if("true".equals( flag )) {
