@@ -186,7 +186,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 ### 8. 登出
-* URL：/api/login 
+* URL：/api/logout 
 * 请求方式：GET
 
 ## 系统用户/权限表结构说明
