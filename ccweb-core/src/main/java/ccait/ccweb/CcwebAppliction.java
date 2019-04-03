@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 
 //import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 //import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
@@ -66,13 +67,33 @@ public class CcwebAppliction {
             String logConfigPath = System.getProperty("user.dir") + "/" +
                     ApplicationConfig.getInstance().get("${log4j.config.path}");
 
-            PropertyConfigurator.configure(logConfigPath);
+            File file = new File(logConfigPath);
+            if(!file.exists()) {
+                try {
+                    logConfigPath = Thread.currentThread().getContextClassLoader()
+                            .getResource(ApplicationConfig.getInstance()
+                                    .get("${log4j.config.path}")).toURI().getPath();
 
-            ConfigurationSource source = new ConfigurationSource(new FileInputStream(logConfigPath), new File(logConfigPath).toURL());
+                    file = new File(logConfigPath);
+                    if(!file.exists()) {
+                        logConfigPath = null;
+                    }
+                } catch (URISyntaxException e) {
+                    log.error(e);
+                    logConfigPath = null;
+                }
+            }
 
-            Configurator.initialize(null, source);
+            if(StringUtils.isNotEmpty(logConfigPath)) {
 
-            log.info("Current log4j path: " + logConfigPath);
+                PropertyConfigurator.configure(logConfigPath);
+
+                ConfigurationSource source = new ConfigurationSource(new FileInputStream(logConfigPath), file);
+
+                Configurator.initialize(null, source);
+
+                log.info("Current log4j path: " + logConfigPath);
+            }
         }
 
         log.info( "---------------------------------------------------------------------------------------" );
