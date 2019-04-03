@@ -205,7 +205,7 @@ ccweb-admin是为超级管理员在设计阶段准备的数据管理界面，包
 ## 访问地址
 
 # 二次开发
-ccweb的二次开发实际就是自定义ccweb-start包的过程，只需RESTful则引入ccweb-api，需要视图模板则引入ccweb-mvc
+ccweb的二次开发实际就是自定义ccweb-start包的过程
 ## jar包介绍
 * ccweb-core: ccweb的核心公共库
 * ccweb-api: 提供RESTful接口服务和websocket服务，内置ccweb-core，不能直接起动，需要在ccweb-start中提供入口启动jar包。
