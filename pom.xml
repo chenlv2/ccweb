@@ -14,7 +14,7 @@
         <module>ccweb-core</module>
         <module>ccweb-api</module>
         <module>ccweb-admin</module>
-        <!--<module>ccweb-start</module>-->
+        <module>ccweb-start</module>
     </modules>
 
     <parent>
