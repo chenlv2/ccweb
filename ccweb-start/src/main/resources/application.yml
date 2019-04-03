@@ -116,6 +116,8 @@ spring:
 
 # 3.log4j配置###########################################################################
 log4j:
+  config:
+    path: log4j2.xml #日志配置路径，可选
   logger:
     org:
       springframework:
