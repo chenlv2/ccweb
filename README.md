@@ -280,9 +280,9 @@ BaseContoller规范了ResponseData返回数据的格式，并为用户封装了�
 * base64Decode(text)【base64解码】
 * checkDataPrivilege(table, data)【检查当前用户对数据的访问权限】
 * success(data)【成功返回方法】
-* error(data)【错误返回方法】
+* error(message)【错误返回方法】
 * successAs(data)【异步IO成功返回方法】
-* errorAs(data)【异步IO错误返回方法】
+* errorAs(message)【异步IO错误返回方法】
 * ResponseData【数据响应封装类】
 
 ## 事件触发器Tagger
