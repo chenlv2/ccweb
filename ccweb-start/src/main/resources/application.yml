@@ -58,6 +58,9 @@ entity:
 
   upload:
     max: 10 #上传文件最大尺寸，单位: MB
+    mimeType: #允许上传的文件格式
+      testtt: #对应表名
+        content: gif, jpeg, png #对应字段，没有设置的字段为不限制，值为文件后辍名(逗号分隔)
 
   enableRxJdbc: true #是否开启异步数据库连接池
   enableFlux: false   #是否开启web异步响应流
