@@ -16,3 +16,4 @@ then
 else
     echo "Please install JDK1.8 first!!!"
 fi
+read -p "Press any key to continue." var
