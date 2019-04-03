@@ -22,6 +22,7 @@ import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
@@ -29,11 +30,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class RequestWrapper extends HttpServletRequestWrapper implements MultipartHttpServletRequest {
+
+    private static final String FILE_CHARSET = "ISO-8859-1";
     private byte[] requestBody;
     private static Charset charSet;
     private String postString;
@@ -42,31 +48,39 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
 
     private static final Logger log = LogManager.getLogger(RequestWrapper.class);
 
+    public RequestWrapper(HttpServletRequest request, Map newParams)
+    {
+        super(request);
+        this.params = newParams;
+        this.postString = FastJsonUtils.convertObjectToJSON(newParams);
+    }
+
     public RequestWrapper(HttpServletRequest request) {
         super(request);
         req = request;
+
         //缓存请求body
         try {
             requestBody = readBody(request);
             if(requestBody == null) {
                 requestBody = new byte[0];
             }
-            postString = new String(requestBody, "ISO-8859-1");
+            postString = new String(requestBody, FILE_CHARSET);
 
             Map<String, Object> map = new HashMap<String, Object>();
             List<String> list = StringUtils.splitString2List(postString, "(\\-\\-)+\\-*[\\d\\w]+");
             for(String content : list) {
-                Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"[^\"]+\")?\\s*(Content-Type:\\s*(image/\\w+)\\s*)?\\s*?([\\w\\W]+)");
+                Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?\\s*?([\\w\\W]+)", Pattern.CASE_INSENSITIVE);
                 Matcher m = regex.matcher(content);
                 while (m.find()) {
                     String key = m.group(1);
-                    Object value = m.group(5);
-                    if(m.group(4) != null && Pattern.matches("[^/]+/.+", m.group(4))) {
+                    Object value = m.group(6);
+                    if(m.group(5) != null && Pattern.matches("[^/]+/.+", m.group(5))) {
 
-//                        String filename = key;
-//                        Position p = getFilePosition(request, postString);
-//                        byte[] bytes = readFile(filename, body, p);
-                        value = m.group(5).getBytes("ISO-8859-1");
+                        //对字节数组Base64编码
+                        BASE64Encoder encoder = new BASE64Encoder();
+                        //返回Base64编码过的字节数组字符串
+                        value = String.format("%s&&%s|-|", m.group(5), m.group(3)) + encoder.encode(m.group(6).getBytes(FILE_CHARSET));
                     }
 
                     map.put(key, value);
@@ -75,21 +89,9 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
 
             if(map.size() > 0) {
                 postString = FastJsonUtils.convertObjectToJSON(map);
-//                if ( StringUtils.isNotEmpty(postString) ) {
-//                    requestBody = readBody(request);
-//                } else {
-//                    requestBody = new byte[0];
-//                }
-
                 this.params = map;
             }
             else {
-//                if ( StringUtils.isNotEmpty(postString) ) {
-//                    requestBody = readBody(request);
-//                } else {
-//                    requestBody = new byte[0];
-//                }
-
                 if(Pattern.matches("\\s*^\\[[^\\[\\]]+\\]$\\s*", postString)) {
                     this.params = FastJsonUtils.convertJsonToObject(postString, List.class);
                 }
@@ -104,13 +106,6 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
     }
 
     private Object params;
-
-    public RequestWrapper(HttpServletRequest request, Map newParams)
-    {
-        super(request);
-        this.params = newParams;
-        this.postString = FastJsonUtils.convertObjectToJSON(newParams);
-    }
 
     public Object getParameters()
     {
@@ -237,55 +232,5 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
             totalBytes += bytes;
         }
         return body;
-    }
-
-    private Position getFilePosition(HttpServletRequest request, String textBody) throws IOException {
-
-        String contentType = request.getContentType();
-        String boundaryText = contentType.substring(
-                contentType.lastIndexOf("=") + 1, contentType.length());
-        int pos = textBody.indexOf("filename=\"");
-        pos = textBody.indexOf("\n", pos) + 1;
-        pos = textBody.indexOf("\n", pos) + 1;
-        pos = textBody.indexOf("\n", pos) + 1;
-        int boundaryLoc = textBody.indexOf(boundaryText, pos) -4;
-        int begin = ((textBody.substring(0,
-                pos)).getBytes("ISO-8859-1")).length;
-        int end = ((textBody.substring(0,
-                boundaryLoc)).getBytes("ISO-8859-1")).length;
-
-        return new Position(begin, end);
-    }
-
-    private String getFilename(String reqBody) {
-        String filename = reqBody.substring(
-                reqBody.indexOf("filename=\"") + 10);
-        filename = filename.substring(0, filename.indexOf("\n"));
-        filename = filename.substring(
-                filename.lastIndexOf("\\") + 1, filename.indexOf("\""));
-        return filename;
-    }
-
-    private byte[] readFile(String filename, byte[] body, Position p)
-            throws FileNotFoundException, IOException {
-
-        ByteArrayInputStream stream = new ByteArrayInputStream(body, p.begin, (p.end - p.begin));
-        ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
-        byte[] buff = new byte[100]; //buff用于存放循环读取的临时数据
-        int rc = 0;
-        while ((rc = stream.read(buff, 0, 100)) > 0) {
-            swapStream.write(buff, 0, rc);
-        }
-
-        return swapStream.toByteArray();
-    }
-
-    class Position {
-        int begin;
-        int end;
-        Position(int begin, int end) {
-            this.begin = begin;
-            this.end = end;
-        }
     }
 }
