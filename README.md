@@ -42,7 +42,8 @@ ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组�
 ***java -jar ccweb-start-1.0.0-SNAPSHOT.jar***
 
 ## 接口说明
-ccweb-start内置了默认的api接口可以让前端直接通过表名操作数据，需要限制访问的可以设置系统默认创建的用户权限表进行控制。
+ccweb-start内置了默认的api接口可以让前端直接通过表名操作数据，需要限制访问的可以设置系统默认创建的用户权限表进行控制，接口的请求类型同时支持json和表单提交，表单中存在文件上传的会自动上传到表的字段中，字段类型必须为blob。
+
 ### 1. 新增
 * URL：/api/{table} 
 * 请求方式：PUT
