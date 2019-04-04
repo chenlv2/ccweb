@@ -57,7 +57,7 @@ public class ResultProcessInterceptor {
     public Object processing(ProceedingJoinPoint proceedingJoinPoint) {
 
         ResponseData result = new ResponseData();
-        result.setCode(0);
+        result.setStatus(0);
 
         try {
 
@@ -78,7 +78,7 @@ public class ResultProcessInterceptor {
 
             result.setUuid(UUID.randomUUID());
 
-            if(result.getCode() != 0 || response.getStatus() != 200) {
+            if(result.getStatus() != 0 || response.getStatus() != 200) {
                 errorTrigger(result.getMessage(), tablename);
             }
 

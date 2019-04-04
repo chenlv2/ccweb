@@ -52,6 +52,9 @@ public class EventInfo {
     private Set<Method> onSuccessMethodSet;
     private Set<Method> onErrorMethodSet;
     private Set<Method> onBuildMethodSet;
+    private Set<Method> onDownloadMethodSet;
+    private Set<Method> onPreviewDocMethodSet;
+    private Set<Method> onUploadMethodSet;
     private String tablename;
     private Class<?> type;
     private int order;
@@ -67,6 +70,9 @@ public class EventInfo {
         onSuccessMethodSet = new TreeSet<Method>(new EventComparator());
         onErrorMethodSet = new TreeSet<Method>(new EventComparator());
         onBuildMethodSet = new TreeSet<Method>(new EventComparator());
+        onDownloadMethodSet = new TreeSet<Method>(new EventComparator());
+        onPreviewDocMethodSet = new TreeSet<Method>(new EventComparator());
+        onUploadMethodSet = new TreeSet<Method>(new EventComparator());
     }
 
     public Class<?> getType() {
@@ -171,5 +177,17 @@ public class EventInfo {
 
     public void setOnBuildMethodSet(Set<Method> onBuildMethodSet) {
         this.onBuildMethodSet = onBuildMethodSet;
+    }
+
+    public Set<Method> getOnDownloadMethodSet() {
+        return onDownloadMethodSet;
+    }
+
+    public Set<Method> getOnPreviewDocMethodSet() {
+        return onPreviewDocMethodSet;
+    }
+
+    public Set<Method> getOnUploadMethodSet() {
+        return onUploadMethodSet;
     }
 }

@@ -68,6 +68,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
     private static final Logger log = LogManager.getLogger( SecurityInterceptor.class );
 
+    private boolean hasUploadFile;
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
@@ -100,12 +102,18 @@ public class SecurityInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        if(!(request.getParameters() instanceof HashMap)) {
+            return true;
+        }
+
         HashMap<String, Object> data = (HashMap) request.getParameters();
         List<Map.Entry<String, Object>> files = data.entrySet().stream()
                 .filter(a -> a.getValue() instanceof byte[]).collect(Collectors.toList());
         if(files == null || files.size() < 1) {
             return true;
         }
+
+        hasUploadFile = true;
 
         for(Map.Entry<String, Object> fileEntry : files) {
             byte[] fileBytes = (byte[]) fileEntry.getValue();
@@ -235,7 +243,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 return true;
             }
 
-            if(Pattern.matches("^/api/[^/]+/build$", request.getRequestURI())) {
+            if(Pattern.matches("^/(?i)(as)?(?i)api/[^/]+(/[^/]+)?/(?i)build$", request.getRequestURI())) {
                 return false;
             }
 
@@ -298,10 +306,20 @@ public class SecurityInterceptor implements HandlerInterceptor {
         String privilegeWhere = null;
         switch (method.toUpperCase()) {
             case "GET":
-                privilegeWhere = "(canQuery=1 OR canList=1 OR canView=1 OR canDecrypt=1)";
+                if(Pattern.matches("^/(?i)(as)?(?i)api/(?i)download/[^/]+/[^/]+/[^/]+$", request.getRequestURI())) {
+                    privilegeWhere = "canDownload=1 AND (canQuery=1 OR canList=1 OR canView=1 OR canDecrypt=1)";
+                }
+
+                else if(Pattern.matches("^/(?i)(as)?(?i)api/(?i)preview/[^/]+/[^/]+/[^/]+$", request.getRequestURI())) {
+                    privilegeWhere = "canPreview=1 AND (canQuery=1 OR canList=1 OR canView=1 OR canDecrypt=1)";
+                }
+
+                else {
+                    privilegeWhere = "(canQuery=1 OR canList=1 OR canView=1 OR canDecrypt=1)";
+                }
                 break;
             case "POST":
-                if(Pattern.matches("^/api/[^/]+/build$", request.getRequestURI())) {
+                if(Pattern.matches("^/(?i)(as)?(?i)api/[^/]+(/[^/]+)?/(?i)build$", request.getRequestURI())) {
                     break;
                 }
 
@@ -321,6 +339,10 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
                 else {
                     privilegeWhere = "canUpdate=1";
+                }
+
+                if(hasUploadFile) {
+                    privilegeWhere += " AND canUpload=1";
                 }
                 break;
             case "DELETE":
@@ -402,6 +424,10 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
                 else {
                     TriggerContext.exec(table, EventType.Update, data, request);
+                }
+
+                if(hasUploadFile) {
+                    TriggerContext.exec(table, EventType.Upload, ((RequestWrapper)request).getParameters(), request);
                 }
                 break;
             case "DELETE":

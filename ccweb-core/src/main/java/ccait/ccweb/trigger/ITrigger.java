@@ -12,6 +12,7 @@
 package ccait.ccweb.trigger;
 
 import ccait.ccweb.annotation.*;
+import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.model.QueryInfo;
 import ccait.ccweb.model.ResponseData;
 import org.springframework.core.annotation.Order;
@@ -113,4 +114,34 @@ public interface ITrigger {
     @OnError
     @Order(-55555)
     void onError(Exception ex, HttpServletRequest request);
+
+    /***
+     * 上传文件时触发
+     * @param data （文件字节数组）
+     * @param request （当前请求）
+     * @throws Exception
+     */
+    @OnUpload
+    @Order(-55555)
+    void onUpload(byte[] data, HttpServletRequest request);
+
+    /***
+     * 下载文件时触发
+     * @param data （文件对象）
+     * @param request （当前请求）
+     * @throws Exception
+     */
+    @OnDownload
+    @Order(-55555)
+    void onDownload(BaseController.DownloadData data, HttpServletRequest request);
+
+    /***
+     * 预览文档时触发
+     * @param data （文件对象）
+     * @param request （当前请求）
+     * @throws Exception
+     */
+    @OnPreviewDoc
+    @Order(-55555)
+    void onPreviewDoc(BaseController.DownloadData data, HttpServletRequest request);
 }

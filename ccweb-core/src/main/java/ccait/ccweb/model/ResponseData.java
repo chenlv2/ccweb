@@ -23,11 +23,11 @@ public class ResponseData<T> implements Serializable {
         pageInfo = new PageInfo();
     }
 
-    public int getCode() {
-        return code;
+    public int getStatus() {
+        return status;
     }
-    public void setCode(int code) {
-        this.code = code;
+    public void setStatus(int status) {
+        this.status = status;
     }
     public String getMessage() {
         return message;
@@ -54,7 +54,7 @@ public class ResponseData<T> implements Serializable {
     public void setUuid(UUID uuid) {
         this.uuid = uuid;
     }
-    private int code;
+    private int status;
     private String message;
     private T data;
     private PageInfo pageInfo;

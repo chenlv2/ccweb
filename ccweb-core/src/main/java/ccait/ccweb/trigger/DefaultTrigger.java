@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.servlet.http.HttpServletRequest;
+import java.sql.Blob;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -244,6 +245,10 @@ public final class DefaultTrigger {
                 List<String> keyList = (List<String>) list.get(i).keySet().stream().map(a->a.toString()).collect(Collectors.toList());
                 for(Object key : keyList) {
                     if(ApplicationConfig.getInstance().get(String.format("${entity.table.display.%s.%s}", BaseController.getTablename(), key.toString())).equals("hidden")) {
+                        list.get(i).remove(key);
+                    }
+
+                    else if(list.get(i).get(key) instanceof Blob) {
                         list.get(i).remove(key);
                     }
                 }

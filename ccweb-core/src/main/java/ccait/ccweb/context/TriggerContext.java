@@ -153,6 +153,21 @@ public final class TriggerContext {
                     eventInfo.getOnBuildMethodSet().add(method);
                     continue;
                 }
+
+                if(m.getAnnotation(OnDownload.class) != null) {
+                    eventInfo.getOnDownloadMethodSet().add(method);
+                    continue;
+                }
+
+                if(m.getAnnotation(OnPreviewDoc.class) != null) {
+                    eventInfo.getOnPreviewDocMethodSet().add(method);
+                    continue;
+                }
+
+                if(m.getAnnotation(OnUpload.class) != null) {
+                    eventInfo.getOnUploadMethodSet().add(method);
+                    continue;
+                }
             }
 
             eventList.add(eventInfo);
@@ -204,6 +219,15 @@ public final class TriggerContext {
                     break;
                 case BuildTable:
                     invoke(eventInfo.getOnBuildMethodSet(), obj, params, request);
+                    break;
+                case Download:
+                    invoke(eventInfo.getOnDownloadMethodSet(), obj, params, request);
+                    break;
+                case PreviewDoc:
+                    invoke(eventInfo.getOnPreviewDocMethodSet(), obj, params, request);
+                    break;
+                case Upload:
+                    invoke(eventInfo.getOnUploadMethodSet(), obj, params, request);
                     break;
                 default:
                     throw new IllegalAccessException("Invalid event type!!!");

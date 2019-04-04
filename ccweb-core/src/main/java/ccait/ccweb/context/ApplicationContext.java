@@ -361,6 +361,24 @@ public class ApplicationContext implements ApplicationContextAware {
         columns.add(col);
 
         col = new ColumnInfo();
+        col.setColumnName("canDownload");
+        col.setCanNotNull(true);
+        col.setType(Integer.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName("canPreviewDoc");
+        col.setCanNotNull(true);
+        col.setType(Integer.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName("canUpload");
+        col.setCanNotNull(true);
+        col.setType(Integer.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
         col.setColumnName("canDecrypt");
         col.setCanNotNull(true);
         col.setType(Integer.class);

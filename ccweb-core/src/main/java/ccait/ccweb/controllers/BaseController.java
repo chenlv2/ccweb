@@ -15,8 +15,10 @@ package ccait.ccweb.controllers;
 import ccait.ccweb.annotation.OnResult;
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.enums.DefaultValueMode;
 import ccait.ccweb.enums.EncryptMode;
+import ccait.ccweb.enums.EventType;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
@@ -46,6 +48,7 @@ import sun.misc.BASE64Decoder;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -57,6 +60,7 @@ import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -216,7 +220,7 @@ public abstract class BaseController {
     protected <T> ResponseData<T> result(int code, String message, T data, PageInfo pageInfo) {
         ResponseData<T> result = new ResponseData<T>();
 
-        result.setCode(code);
+        result.setStatus(code);
         result.setMessage(message);
         result.setData(data);
         result.setPageInfo(pageInfo);
@@ -1276,7 +1280,10 @@ public abstract class BaseController {
 
     protected void download(String table, String field, String id) throws Exception {
         DownloadData downloadData = new DownloadData(table, field, id).invoke();
-        byte[] buffer = downloadData.getBuffer();
+
+        TriggerContext.exec(table, EventType.Download, downloadData, request);
+
+        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType(), false);
 
         download(downloadData.getFilename(), downloadData.getMimeType(), downloadData.getBuffer());
     }
@@ -1293,7 +1300,10 @@ public abstract class BaseController {
 
     protected Mono downloadAs(String table, String field, String id) throws Exception {
         DownloadData downloadData = new DownloadData(table, field, id).invoke();
-        byte[] buffer = downloadData.getBuffer();
+
+        TriggerContext.exec(table, EventType.Download, downloadData, request);
+
+        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType(), false);
 
         return downloadAs(downloadData.getFilename(), downloadData.getMimeType(), downloadData.getBuffer());
     }
@@ -1313,21 +1323,9 @@ public abstract class BaseController {
             throw new  Exception("不支持预览的文件格式");
         }
 
-        byte[] buffer = downloadData.getBuffer();
+        TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
 
-        if(scalRatio > 0 || fixedWidth > 0) {
-
-            BufferedImage image = ImageUtils.getImage(buffer);
-            if(scalRatio > 0) {
-                image = ImageUtils.zoomImage(image, scalRatio);
-            }
-
-            if(fixedWidth > 0) {
-                image = ImageUtils.resizeImage(image, fixedWidth);
-            }
-
-            buffer = ImageUtils.toBytes(image, downloadData.getExtension());
-        }
+        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType(), true);
 
         preview(downloadData.getMimeType(), buffer);
     }
@@ -1347,21 +1345,9 @@ public abstract class BaseController {
             throw new  Exception("不支持预览的文件格式");
         }
 
-        byte[] buffer = downloadData.getBuffer();
+        TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
 
-        if(scalRatio > 0 || fixedWidth > 0) {
-
-            BufferedImage image = ImageUtils.getImage(buffer);
-            if(scalRatio > 0) {
-                image = ImageUtils.zoomImage(image, scalRatio);
-            }
-
-            if(fixedWidth > 0) {
-                image = ImageUtils.resizeImage(image, fixedWidth);
-            }
-
-            buffer = ImageUtils.toBytes(image, downloadData.getExtension());
-        }
+        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType(), true);
 
         return previewAs(downloadData.getMimeType(), buffer);
     }
@@ -1376,12 +1362,46 @@ public abstract class BaseController {
                 .body(BodyInserters.fromResource(resource)).switchIfEmpty(Mono.empty());
     }
 
+    private byte[] preDownloadProcess(DownloadData downloadData, MediaType mediaType, boolean isPreview) throws IOException {
+
+        if(mediaType.getType().equalsIgnoreCase("image")) {
+            BufferedImage image = ImageUtils.getImage(downloadData.getBuffer());
+
+            if(isPreview) {
+                image = previewProcess(image);
+            }
+
+            image = ImageUtils.watermark(image, "ccait.cn", new Color(41,35,255,33), new Font("微软雅黑", Font.PLAIN, 35));
+
+            return ImageUtils.toBytes(image, downloadData.getExtension());
+        }
+
+        return downloadData.getBuffer();
+    }
+
+    private BufferedImage previewProcess(BufferedImage image) throws IOException {
+
+        if (scalRatio > 0 || fixedWidth > 0) {
+
+            if (scalRatio > 0) {
+                image = ImageUtils.zoomImage(image, scalRatio);
+            }
+
+            if (fixedWidth > 0) {
+                image = ImageUtils.resizeImage(image, fixedWidth);
+            }
+        }
+
+        return image;
+    }
+
     public class DownloadData {
         private String table;
         private String field;
         private String id;
         private String[] arrMessage;
         private byte[] buffer;
+        private MediaType mediaType;
 
         public DownloadData(String table, String field, String id) {
             this.table = table;
@@ -1418,9 +1438,16 @@ public abstract class BaseController {
             String fileString = content.substring(splitPoint + 4);
             String messageBody = content.substring(0, splitPoint);
             arrMessage = messageBody.split("::");
+            String[] arr = getMimeType().split("/");
+
+            mediaType = new MediaType(arr[0], arr[1]);
 
             buffer = new BASE64Decoder().decodeBuffer(fileString);
             return this;
+        }
+
+        public MediaType getMediaType() {
+            return mediaType;
         }
     }
 }

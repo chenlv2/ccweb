@@ -13,6 +13,7 @@ package ccait.ccweb.trigger;
 
 
 import ccait.ccweb.annotation.Trigger;
+import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EncryptMode;
 import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.QueryInfo;
@@ -155,5 +156,17 @@ public final class UserGroupRoleTableTrigger implements ITrigger {
     @Override
     public void onError(Exception ex, HttpServletRequest request) {
 
+    }
+
+    @Override
+    public void onUpload(byte[] data, HttpServletRequest request) {
+    }
+
+    @Override
+    public void onDownload(BaseController.DownloadData data, HttpServletRequest request) {
+    }
+
+    @Override
+    public void onPreviewDoc(BaseController.DownloadData data, HttpServletRequest request) {
     }
 }

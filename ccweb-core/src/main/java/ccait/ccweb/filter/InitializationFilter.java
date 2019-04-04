@@ -141,7 +141,7 @@ public class InitializationFilter implements WebFilter, Filter {
             log.error( LOG_PRE_SUFFIX + message, e );
 
             ResponseData responseData = new ResponseData();
-            responseData.setCode(-2);
+            responseData.setStatus(-2);
             responseData.setMessage(message);
 
             res.reset();
