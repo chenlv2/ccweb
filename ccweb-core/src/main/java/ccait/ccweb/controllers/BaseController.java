@@ -20,6 +20,7 @@ import ccait.ccweb.enums.EncryptMode;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
+import ccait.ccweb.utils.ImageUtils;
 import entity.query.*;
 import entity.query.annotation.PrimaryKey;
 import entity.query.core.ApplicationConfig;
@@ -33,15 +34,23 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
+import sun.misc.BASE64Decoder;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Blob;
@@ -53,6 +62,7 @@ import java.util.stream.Collectors;
 
 import static ccait.ccweb.utils.StaticVars.*;
 import static entity.tool.util.StringUtils.cast;
+import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 public abstract class BaseController {
 
@@ -127,6 +137,12 @@ public abstract class BaseController {
 
     @Value("${entity.upload.max:10}")
     private int uploadMax;
+
+    @Value("${entity.download.thumb.fixedWidth:0}")
+    private int fixedWidth;
+
+    @Value("${entity.download.thumb.scalRatio:0}")
+    private int scalRatio;
 
     public BaseController() {
         RMessage = new ResponseData<Object>();
@@ -509,14 +525,14 @@ public abstract class BaseController {
 
             List<String> fieldList = StringUtils.splitString2List(aesFields, ",");
 
-            encrypt((Map<String, Object>)data, fieldList, EncryptMode.AES);
+            decrypt((Map<String, Object>)data, fieldList, EncryptMode.AES);
         }
 
         if(StringUtils.isNotEmpty(base64Fields)) {
 
             List<String> fieldList = StringUtils.splitString2List(base64Fields, ",");
 
-            encrypt((Map<String, Object>)data, fieldList, EncryptMode.BASE64);
+            decrypt((Map<String, Object>)data, fieldList, EncryptMode.BASE64);
         }
     }
 
@@ -972,7 +988,7 @@ public abstract class BaseController {
      * @return
      * @throws Exception
      */
-    public Map get(String table, String id) throws Exception {
+    public Map get( String table, String id ) throws Exception {
         Object entity = EntityContext.getEntityId(table, id);
         if(entity == null) {
             new Exception("Can not find entity!!!");
@@ -1256,5 +1272,155 @@ public abstract class BaseController {
         }
 
         return result;
+    }
+
+    protected void download(String table, String field, String id) throws Exception {
+        DownloadData downloadData = new DownloadData(table, field, id).invoke();
+        byte[] buffer = downloadData.getBuffer();
+
+        download(downloadData.getFilename(), downloadData.getMimeType(), downloadData.getBuffer());
+    }
+
+    protected void download(String filename, String mimeType, byte[] data) throws IOException {
+
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
+                URLEncoder.encode(filename, "UTF-8") );
+        response.setHeader(HttpHeaders.CONTENT_TYPE, mimeType);
+
+        ServletOutputStream output = response.getOutputStream();
+        output.write(data);
+    }
+
+    protected Mono downloadAs(String table, String field, String id) throws Exception {
+        DownloadData downloadData = new DownloadData(table, field, id).invoke();
+        byte[] buffer = downloadData.getBuffer();
+
+        return downloadAs(downloadData.getFilename(), downloadData.getMimeType(), downloadData.getBuffer());
+    }
+
+    protected Mono downloadAs(String filename, String mimeType, byte[] data) throws IOException {
+
+        ByteArrayResource resource = new ByteArrayResource(data);
+
+        return ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + URLEncoder.encode(filename, "UTF-8"))
+                .contentType(new MediaType("application", "force-download"))
+                .body(BodyInserters.fromResource(resource)).switchIfEmpty(Mono.empty());
+    }
+
+    protected void preview(String table, String field, String id) throws Exception {
+        DownloadData downloadData = new DownloadData(table, field, id).invoke();
+        if(downloadData.getMimeType().indexOf("image") != 0) {
+            throw new  Exception("不支持预览的文件格式");
+        }
+
+        byte[] buffer = downloadData.getBuffer();
+
+        if(scalRatio > 0 || fixedWidth > 0) {
+
+            BufferedImage image = ImageUtils.getImage(buffer);
+            if(scalRatio > 0) {
+                image = ImageUtils.zoomImage(image, scalRatio);
+            }
+
+            if(fixedWidth > 0) {
+                image = ImageUtils.resizeImage(image, fixedWidth);
+            }
+
+            buffer = ImageUtils.toBytes(image, downloadData.getExtension());
+        }
+
+        preview(downloadData.getMimeType(), buffer);
+    }
+
+    protected void preview(String mimeType, byte[] data) throws IOException {
+
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "inline;" );
+        response.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE);
+        response.setHeader(HttpHeaders.CONTENT_TYPE, mimeType);
+        ServletOutputStream output = response.getOutputStream();
+        output.write(data);
+    }
+
+    protected Mono previewAs(String table, String field, String id) throws Exception {
+        DownloadData downloadData = new DownloadData(table, field, id).invoke();
+        if(downloadData.getMimeType().indexOf("image") != 0) {
+            throw new  Exception("不支持预览的文件格式");
+        }
+
+        byte[] buffer = downloadData.getBuffer();
+
+        if(scalRatio > 0 || fixedWidth > 0) {
+
+            BufferedImage image = ImageUtils.getImage(buffer);
+            if(scalRatio > 0) {
+                image = ImageUtils.zoomImage(image, scalRatio);
+            }
+
+            if(fixedWidth > 0) {
+                image = ImageUtils.resizeImage(image, fixedWidth);
+            }
+
+            buffer = ImageUtils.toBytes(image, downloadData.getExtension());
+        }
+
+        return previewAs(downloadData.getMimeType(), buffer);
+    }
+
+    protected Mono previewAs(String mimeType, byte[] data) throws IOException {
+
+        ByteArrayResource resource = new ByteArrayResource(data);
+
+        return ok().header(HttpHeaders.CONTENT_DISPOSITION, "inline;")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
+                .header(HttpHeaders.CONTENT_TYPE, mimeType)
+                .body(BodyInserters.fromResource(resource)).switchIfEmpty(Mono.empty());
+    }
+
+    public class DownloadData {
+        private String table;
+        private String field;
+        private String id;
+        private String[] arrMessage;
+        private byte[] buffer;
+
+        public DownloadData(String table, String field, String id) {
+            this.table = table;
+            this.field = field;
+            this.id = id;
+        }
+
+        public String getFilename() {
+            return arrMessage[2];
+        }
+
+        public String getExtension() {
+            return arrMessage[1];
+        }
+
+        public String getMimeType() {
+            return arrMessage[0];
+        }
+
+        public byte[] getBuffer() {
+            return buffer;
+        }
+
+        public DownloadData invoke() throws Exception {
+            Map<String, Object> data = get(table, id);
+            if(!data.containsKey(field)) {
+                throw new Exception("wrong field name!!!");
+            }
+
+            decrypt(data);
+
+            String content = data.get(field).toString();
+            int splitPoint = content.indexOf("|::|");
+            String fileString = content.substring(splitPoint + 4);
+            String messageBody = content.substring(0, splitPoint);
+            arrMessage = messageBody.split("::");
+
+            buffer = new BASE64Decoder().decodeBuffer(fileString);
+            return this;
+        }
     }
 }
