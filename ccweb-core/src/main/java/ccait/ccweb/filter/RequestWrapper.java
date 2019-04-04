@@ -11,11 +11,8 @@
 
 package ccait.ccweb.filter;
 
-import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.utils.FastJsonUtils;
-import entity.query.core.ApplicationConfig;
 import entity.tool.util.StringUtils;
-import net.sf.jmimemagic.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpHeaders;
@@ -24,8 +21,6 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
-import sun.misc.BASE64Encoder;
 import javax.servlet.ReadListener;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -46,7 +41,6 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
     private static Charset charSet;
     private String postString;
     private HttpServletRequest req;
-    private CommonsMultipartResolver multipartResolver;
 
     private static final Logger log = LogManager.getLogger(RequestWrapper.class);
 
@@ -79,28 +73,9 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
                     Object value = m.group(6);
                     if(m.group(5) != null && Pattern.matches("[^/]+/.+", m.group(5))) {
 
-                        byte[] fileBytes = m.group(6).getBytes(FILE_CHARSET);
-                        MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
-                        String mimeType = mimeMatcher.getMimeType();
-                        
-                        if(StringUtils.isEmpty(mimeType)) {
-                            throw new Exception("无效的上传文件格式!!!");
-                        }
-
-                        Map<String, Object> configMap = ApplicationConfig.getInstance()
-                                .getMap("entity.upload.mimeType." + BaseController.getTablename());
-
-                        if(configMap != null && configMap.containsKey(key) && configMap.get(key) != null) {
-                            if(!StringUtils.splitString2IntList(configMap.get(key).toString(), ",")
-                                    .stream().filter(a-> mimeMatcher.getExtension().equalsIgnoreCase(a.toString().trim()))
-                                    .isParallel()) {
-                                throw new Exception("不支持的上传文件格式!!!");
-                            }
-                        }
-
-                        //返回Base64编码过的字节数组字符串
-                        value = String.format("%s&&%s&&%s|-|", mimeType, mimeMatcher.getExtension(), m.group(3)) +
-                                new BASE64Encoder().encode(fileBytes);
+                        //返回字节数组，fastjson序列化时会进行Base64编码
+                        value = m.group(6).getBytes(FILE_CHARSET);
+                        map.put(String.format("%s_upload_filename", key), m.group(3));
                     }
 
                     map.put(key, value);
