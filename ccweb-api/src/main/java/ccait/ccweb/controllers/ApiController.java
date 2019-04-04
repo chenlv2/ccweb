@@ -286,7 +286,7 @@ public class ApiController extends BaseController {
     }
 
     /***
-     * login
+     * logout
      * @return
      */
     @ResponseBody
@@ -296,5 +296,29 @@ public class ApiController extends BaseController {
         super.logout();
 
         return success();
+    }
+
+    /***
+     * download
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "download/{table}/{field}/{id}", method = RequestMethod.GET )
+    public void downloaded(@PathVariable String table, @PathVariable String field, @PathVariable String id) throws Exception {
+
+        super.download(table, field, id);
+    }
+
+    /***
+     * preview
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "preview/{table}/{field}/{id}", method = RequestMethod.GET )
+    public void previewed(@PathVariable String table, @PathVariable String field, @PathVariable String id) throws Exception {
+
+        super.preview(table, field, id);
     }
 }
