@@ -37,20 +37,20 @@ entity:
 
   table:
     reservedField: #系统保留字段(必填)
-      userPath: userPath
-      createOn: createTime
-      createBy: createBy
-      modifyOn: modifyTime
-      groupId: groupId
-      roleId: roleId
+      userPath: userPath #创建者所属路径，体现父子关系，用于like查询
+      createOn: createTime #数据创建时间
+      createBy: createBy #数据创建者
+      modifyOn: modifyTime #数据修改时间
+      groupId: groupId  #群组ID
+      roleId: roleId #角色ID
 
     #系统保留表(必填)
-    user: user
-    group: group
-    role: role
-    acl: acl
-    privilege: privilege
-    userGroupRole: userGroupRole
+    user: user #用户表
+    group: group #分组表
+    role: role #角色表
+    acl: acl #访问控制表
+    privilege: privilege #操作权限表
+    userGroupRole: userGroupRole #用户/组/角色关联关系
 
     display: #需要隐藏的字段，设为hidden的字段不会在查询结果中显示
       user:
@@ -59,8 +59,8 @@ entity:
   upload:
     max: 10 #上传文件最大尺寸，单位: MB
     mimeType: #允许上传的文件格式
-      user: #对应表名
-        photo: gif, jpeg, png #对应字段，没有设置的字段为不限制，值为文件后辍名(逗号分隔)
+      testtt: #对应表名
+        file: gif, jpg, png #对应字段，没有设置的字段为不限制，值为文件后辍名(逗号分隔)
 
   enableRxJdbc: true #是否开启异步数据库连接池
   enableFlux: false   #是否开启web异步响应流
