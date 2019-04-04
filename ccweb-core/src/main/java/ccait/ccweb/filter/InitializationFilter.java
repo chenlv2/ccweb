@@ -41,9 +41,9 @@ import static ccait.ccweb.utils.NetworkUtils.getClientIp;
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 @javax.servlet.annotation.WebFilter(urlPatterns = "/*")
-public class ResultFilter implements WebFilter, Filter {
+public class InitializationFilter implements WebFilter, Filter {
 
-    private static final Logger log = LogManager.getLogger( ResultFilter.class );
+    private static final Logger log = LogManager.getLogger( InitializationFilter.class );
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
