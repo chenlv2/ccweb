@@ -20,7 +20,9 @@ import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.FastJsonUtils;
 import entity.query.ColumnInfo;
+import entity.query.core.ApplicationConfig;
 import entity.tool.util.StringUtils;
+import net.sf.jmimemagic.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,9 +31,11 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
+import sun.misc.BASE64Encoder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -68,29 +72,14 @@ public class SecurityInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
         Map<String, String > attrs = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-        String datasource = null;
-        String currentTable = null;
+        InitLocalMap initLocalMap = new InitLocalMap(response, attrs).invoke();
+        if (initLocalMap.is()) return false;
 
-        if(attrs != null) {
-            datasource = attrs.get("datasource");
-            currentTable = attrs.get("table");
-        }
+        String currentTable = initLocalMap.getCurrentTable();
 
-        if(StringUtils.isNotEmpty(datasource)){
-            final String ds = datasource;
-            List<String> datasourceList = StringUtils.splitString2List(datasourceString, ",");
-            Optional<String> opt = datasourceList.stream()
-                    .filter(a -> a.toLowerCase().equals(ds.toLowerCase())).findAny();
-            if(opt == null || !opt.isPresent()) {
-                response.sendError(HttpStatus.NOT_FOUND.value(), "没有找到匹配的url");
-                return false;
-            }
-        }
-
-        ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
-        if(StringUtils.isNotEmpty(currentTable)) {
-            ApplicationContext.getThreadLocalMap().put(CURRENT_TABLE, currentTable);
-            ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + currentTable, PrivilegeScope.DENIED);
+        if(!vaildForUploadFiles((RequestWrapper) request, currentTable)) {
+            response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "无效的上传文件格式!!!");
+            return false;
         }
 
         // 验证权限
@@ -103,6 +92,53 @@ public class SecurityInterceptor implements HandlerInterceptor {
         // 如果没有权限 则抛403异常 springboot会处理，跳转到 /error/403 页面
         response.sendError(HttpStatus.FORBIDDEN.value(), "没有足够的权限访问请求的内容");
         return false;
+    }
+
+    private boolean vaildForUploadFiles(RequestWrapper request, String table) throws MagicParseException, MagicException, MagicMatchNotFoundException {
+
+        if(request.getParameters() == null) {
+            return true;
+        }
+
+        HashMap<String, Object> data = (HashMap) request.getParameters();
+        List<Map.Entry<String, Object>> files = data.entrySet().stream()
+                .filter(a -> a.getValue() instanceof byte[]).collect(Collectors.toList());
+        if(files == null || files.size() < 1) {
+            return true;
+        }
+
+        for(Map.Entry<String, Object> fileEntry : files) {
+            byte[] fileBytes = (byte[]) fileEntry.getValue();
+            MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
+            String mimeType = mimeMatcher.getMimeType();
+
+            if(StringUtils.isEmpty(mimeType)) {
+                return false;
+            }
+
+            Map<String, Object> configMap = ApplicationConfig.getInstance()
+                    .getMap("entity.upload.mimeType." + table);
+
+            if(configMap != null && configMap.containsKey(fileEntry.getKey()) && configMap.get(fileEntry.getKey()) != null) {
+                if(!StringUtils.splitString2List(configMap.get(fileEntry.getKey()).toString(), ",").stream()
+                        .filter(a-> mimeMatcher.getExtension().equalsIgnoreCase(a.toString().trim()))
+                        .findAny().isPresent()) {
+                    return false;
+                }
+            }
+
+            String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
+            String filename = data.get(tempKey).toString();
+
+            //返回Base64编码过的字节数组字符串
+            String value = String.format("%s::%s::%s|::|%s", mimeType, mimeMatcher.getExtension(), filename, new BASE64Encoder().encode(fileBytes));
+            data.put(fileEntry.getKey(), value);
+            data.remove(tempKey);
+        }
+
+        request.setPostParameter(data);
+
+        return true;
     }
 
     private boolean allowIp(HttpServletRequest request) {
@@ -388,5 +424,55 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         // TODO
+    }
+
+    private class InitLocalMap {
+        private boolean myResult;
+        private HttpServletResponse response;
+        private Map<String, String> attrs;
+        private String currentTable;
+
+        public InitLocalMap(HttpServletResponse response, Map<String, String> attrs) {
+            this.response = response;
+            this.attrs = attrs;
+        }
+
+        boolean is() {
+            return myResult;
+        }
+
+        public String getCurrentTable() {
+            return currentTable;
+        }
+
+        public InitLocalMap invoke() throws IOException {
+            String datasource = null;
+            currentTable = null;
+
+            if(attrs != null) {
+                datasource = attrs.get("datasource");
+                currentTable = attrs.get("table");
+            }
+
+            if(StringUtils.isNotEmpty(datasource)){
+                final String ds = datasource;
+                List<String> datasourceList = StringUtils.splitString2List(datasourceString, ",");
+                Optional<String> opt = datasourceList.stream()
+                        .filter(a -> a.toLowerCase().equals(ds.toLowerCase())).findAny();
+                if(opt == null || !opt.isPresent()) {
+                    response.sendError(HttpStatus.NOT_FOUND.value(), "没有找到匹配的url");
+                    myResult = true;
+                    return this;
+                }
+            }
+
+            ApplicationContext.getThreadLocalMap().put(CURRENT_DATASOURCE, datasource);
+            if(StringUtils.isNotEmpty(currentTable)) {
+                ApplicationContext.getThreadLocalMap().put(CURRENT_TABLE, currentTable);
+                ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + currentTable, PrivilegeScope.DENIED);
+            }
+            myResult = false;
+            return this;
+        }
     }
 }
