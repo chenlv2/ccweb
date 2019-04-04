@@ -287,7 +287,7 @@ public class AsyncApiController extends BaseController {
     }
 
     /***
-     * login
+     * logout
      * @return
      */
     @ResponseBody
@@ -297,5 +297,29 @@ public class AsyncApiController extends BaseController {
         super.logout();
 
         return successAs();
+    }
+
+    /***
+     * download
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "download/{table}/{field}/{id}", method = RequestMethod.GET )
+    public void downloaded(@PathVariable String table, @PathVariable String field, @PathVariable String id) throws Exception {
+
+        super.download(table, field, id);
+    }
+
+    /***
+     * preview
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "preview/{table}/{field}/{id}", method = RequestMethod.GET )
+    public void previewed(@PathVariable String table, @PathVariable String field, @PathVariable String id) throws Exception {
+
+        super.preview(table, field, id);
     }
 }
