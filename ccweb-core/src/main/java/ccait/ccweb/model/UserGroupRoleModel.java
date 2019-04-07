@@ -53,7 +53,7 @@ public class UserGroupRoleModel extends Queryable<UserGroupRoleModel> {
         group.setGroupId(this.groupId);
 
         try {
-            group = group.where("[userId]=#{userId}").firstOrDefault();
+            group = group.where("[userId]=#{userId}").first();
         } catch (SQLException e) {
             log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
         }
@@ -76,7 +76,7 @@ public class UserGroupRoleModel extends Queryable<UserGroupRoleModel> {
         role.setRoleId(this.roleId);
 
         try {
-            role = role.where("[userId]=#{userId}").firstOrDefault();
+            role = role.where("[userId]=#{userId}").first();
         } catch (SQLException e) {
             log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
         }

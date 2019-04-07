@@ -83,9 +83,6 @@ public abstract class BaseController {
     @Autowired
     private QueryInfo queryInfo;
 
-    @Value("${entity.enableRxJdbc:false}")
-    private boolean enableRxJdbc;
-
     @Value("${entity.queryable.ignoreTotalCount:true}")
     protected boolean ignoreTotalCount;
 
@@ -150,11 +147,6 @@ public abstract class BaseController {
 
     public BaseController() {
         RMessage = new ResponseData<Object>();
-    }
-    
-    protected boolean isEnableRxJdbc() {
-        return enableRxJdbc && (ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) == null ||
-                StringUtils.isEmpty(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString()));
     }
 
     protected Logger getLogger()
@@ -696,14 +688,7 @@ public abstract class BaseController {
 
         entity.query.Where<UserModel> where = user.where("[username]=#{username}").and("[password]=#{password}");
 
-        if(isEnableRxJdbc()) {
-            Maybe<UserModel> flow = where.asyncFirst();
-            user = flow.blockingGet();
-        }
-
-        else {
-            user = where.first();
-        }
+        user = where.first();
 
         if(user == null) {
             throw new Exception("Username or password is invalid!!!");
@@ -747,50 +732,19 @@ public abstract class BaseController {
         }
 
         Where where = null;
-        if(isEnableRxJdbc()) {
-            for (String id : idList) {
-                where = queryInfo.getWhereQueryableById(entity, id);
-                Maybe<Map> flow = where.asyncFirst(Map.class);
-                Map data = flow.blockingGet();
-                if(data == null) {
-                    throw new Exception("Can not find data for delete!!!");
-                }
-
-                if(!checkDataPrivilege(table, data)) {
-                    throw new Exception(NO_PRIVILEGE_MESSAGE);
-                }
-
-                result.add(where.asyncDelete().toList().blockingGet());
+        for (String id : idList) {
+            where = queryInfo.getWhereQueryableById(entity, id);
+            Maybe<Map> flow = where.asyncFirst(Map.class);
+            Map data = flow.blockingGet();
+            if(data == null) {
+                throw new Exception("Can not find data for delete!!!");
             }
 
-            return result;
-        }
-
-        Connection conn = queryInfo.getConnection(entity);
-
-        try {
-            conn.setAutoCommit(false);
-            for (String id : idList) {
-                where = queryInfo.getWhereQueryableById(entity, id);
-                Map data = (Map) where.first(Map.class);
-                if(data == null) {
-                    throw new Exception("Can not find data for delete!!!");
-                }
-
-                if(!checkDataPrivilege(table, data)) {
-                    throw new Exception(NO_PRIVILEGE_MESSAGE);
-                }
-
-                result.add(where.delete());
+            if(!checkDataPrivilege(table, data)) {
+                throw new Exception(NO_PRIVILEGE_MESSAGE);
             }
-            conn.commit();
 
-        }
-        catch (Exception e) {
-            String message = String.format("fail  to delete in [%s]", StringUtils.join(", ", idList));
-            getLogger().error(LOG_PRE_SUFFIX + e, e);
-
-            throw new Exception(message);
+            result.add(where.asyncDelete().toList().blockingGet());
         }
 
         return result;
@@ -821,13 +775,7 @@ public abstract class BaseController {
 
         Integer result = null;
 
-        if(isEnableRxJdbc()) {
-
-            Flowable<Integer> flowable = where.asyncDelete();
-            result = flowable.blockingFirst();
-        }
-
-        else if(where.delete()){
+        if(where.delete()){
             result = 1;
         }
 
@@ -972,15 +920,7 @@ public abstract class BaseController {
 
         List list = null;
 
-        if(isEnableRxJdbc()) {
-            Flowable<List> flowable = ac.asyncQuery(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
-
-            list = flowable.toList().blockingGet();
-        }
-
-        else {
-            list = ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
-        }
+        list = ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
 
         return list;
     }
@@ -1006,14 +946,7 @@ public abstract class BaseController {
         Where where = queryInfo.getWhereQueryableById(entity, id);
 
         Map data = null;
-        if(isEnableRxJdbc()) {
-            Maybe<Map> maybe =  where.asyncFirst(Map.class);
-            data = maybe.blockingGet();
-        }
-
-        else {
-            data = (Map) where.first(Map.class);
-        }
+        data = (Map) where.first(Map.class);
 
         if(data == null) {
             return data;
@@ -1182,13 +1115,7 @@ public abstract class BaseController {
         }
 
         Integer result = 0;
-        if(isEnableRxJdbc()) {
-            Flowable<Integer> flowable = where.asyncUpdate(postData);
-
-            result = flowable.blockingFirst();
-        }
-
-        else if(where.update(postData)) {
+        if(where.update(postData)) {
             result = 1;
         }
 
@@ -1213,15 +1140,7 @@ public abstract class BaseController {
         fillData(postData, entity);
 
         Object result = null;
-        if(isEnableRxJdbc()) {
-            Flowable<Integer> flowable = ((Queryable) entity).asyncInsert();
-
-            result = flowable.toList().blockingGet();
-        }
-
-        else {
-            result = ((Queryable) entity).insert();
-        }
+        result = ((Queryable) entity).insert();
 
         return result;
     }
@@ -1240,15 +1159,7 @@ public abstract class BaseController {
 
         Long result = Long.valueOf(0);
 
-        if(isEnableRxJdbc()) {
-            Single<Long> single = ac.asyncCount();
-
-            result = single.blockingGet();
-        }
-
-        else {
-            result = ac.count();
-        }
+        result = ac.count();
 
         return result;
     }
@@ -1266,14 +1177,7 @@ public abstract class BaseController {
         QueryableAction ac = where;
 
         Boolean result = false;
-        if(isEnableRxJdbc()) {
-            Single<Integer> single = (Single<Integer>) ac.asyncExist().blockingGet();
-            result = single.blockingGet() > 0;
-        }
-
-        else {
-            result = ac.exist();
-        }
+        result = ac.exist();
 
         return result;
     }

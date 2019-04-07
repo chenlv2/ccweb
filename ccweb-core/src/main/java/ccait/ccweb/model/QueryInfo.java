@@ -16,10 +16,9 @@ import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.generator.EntitesGenerator;
 import entity.query.*;
-import entity.query.core.ConnectionFactory;
 import entity.query.core.DataSource;
+import entity.query.core.DataSourceFactory;
 import entity.query.enums.Function;
-import entity.tool.util.CollectionUtils;
 import entity.tool.util.DBUtils;
 import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
@@ -345,7 +344,7 @@ public class QueryInfo implements Serializable {
         }
 
         //控制查询权限
-        DataSource dataSource = ConnectionFactory.getDataSource(entity.getClass());
+        DataSource dataSource = DataSourceFactory.getInstance().getDataSource(entity.getClass());
 
         UserModel user = (UserModel)context.request.getSession().getAttribute(context.request.getSession().getId() + LOGIN_KEY);
 
