@@ -12,7 +12,6 @@
 package ccait.ccweb.controllers;
 
 
-import ccait.ccweb.annotation.OnResult;
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.context.TriggerContext;
@@ -22,6 +21,7 @@ import ccait.ccweb.enums.EventType;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
+import ccait.ccweb.utils.FastJsonUtils;
 import ccait.ccweb.utils.ImageUtils;
 import entity.query.*;
 import entity.query.annotation.PrimaryKey;
@@ -29,7 +29,6 @@ import entity.query.core.ApplicationConfig;
 import entity.tool.util.DBUtils;
 import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
-import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import org.apache.logging.log4j.LogManager;
@@ -53,11 +52,11 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Blob;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -208,14 +207,48 @@ public abstract class BaseController {
         return this.result(code, message, "", null);
     }
 
-    @OnResult
-    protected <T> ResponseData<T> result(int code, String message, T data, PageInfo pageInfo) {
+    public <T> ResponseData<T> result(int code, String message, T data, PageInfo pageInfo) {
         ResponseData<T> result = new ResponseData<T>();
 
         result.setStatus(code);
         result.setMessage(message);
         result.setData(data);
         result.setPageInfo(pageInfo);
+
+        result = handleResultEvent(result);
+
+        return result;
+    }
+
+    private <T> ResponseData<T> handleResultEvent(ResponseData<T> result) {
+
+        result.setStatus(0);
+
+        String tablename = getTablename();
+
+        try {
+            result.setUuid(UUID.randomUUID());
+
+            if(result.getStatus() != 0 || response.getStatus() != 200) {
+                errorTrigger(result.getMessage(), tablename);
+            }
+
+            else {
+                successTrigger(result, tablename);
+            }
+
+            if(result.getData() == null || isPrimitive(result.getData())) {
+                return result;
+            }
+
+            //格式化输出数据
+            result.setData(getFormatedData(tablename, result.getData())); //set format data
+
+        } catch (Throwable throwable) {
+            log.error(LOG_PRE_SUFFIX + throwable.getMessage(), throwable);
+            result.setMessage(throwable.getMessage());
+            errorTrigger(throwable.getMessage(), tablename);
+        }
 
         return result;
     }
@@ -1352,6 +1385,104 @@ public abstract class BaseController {
 
         public MediaType getMediaType() {
             return mediaType;
+        }
+    }
+
+    protected <T> T getFormatedData(String tablename, T data) throws IOException {
+
+        List<Map<String, Object>> dataList = new ArrayList<Map<String, Object>>();
+        boolean needReset = false;
+        boolean returnList = false;
+        Map<String, Object> map = ApplicationConfig.getInstance().getMap("entity.formatter");
+        if(map != null) {
+
+            if(data == null) {
+                return null;
+            }
+
+            else if(data instanceof String && StringUtils.isEmpty(data.toString())) {
+                return null;
+            }
+
+            else if(data instanceof Map) {
+                dataList.add((Map<String, Object>) data);
+            }
+
+            else if(data instanceof List) {
+                dataList = (List<Map<String, Object>>) data;
+                returnList = true;
+            }
+
+            else {
+                dataList.add(FastJsonUtils.convert(data, Map.class));
+            }
+
+            try {
+                for (Map<String, Object> item : dataList) {
+                    for (String key : item.keySet()) {
+                        Optional opt = map.keySet().stream()
+                                .filter(a -> a.equals(key) ||
+                                        String.format("%s.%s", tablename, key).equals(a))
+                                .findAny();
+
+                        if (opt.isPresent()) {
+                            if (item.get(key) instanceof Date) {
+                                item.put(key, Datetime.format((Date) item.get(key), opt.get().toString()));
+                                needReset = true;
+                            } else if (item.get(key) instanceof Long || item.get(key).getClass().equals(long.class)) {
+                                item.put(key, Datetime.format((Date) StringUtils.cast(Date.class, item.get(key).toString()),
+                                        map.get(opt.get()).toString()));
+
+                                needReset = true;
+                            } else if (item.get(key) instanceof Map && ((Map) item.get(key)).containsKey("time") &&
+                                    (((Map) item.get(key)).get("time") instanceof Long || ((Map) item.get(key)).get("time").getClass().equals(long.class))) {
+                                item.put(key, Datetime.format(new Date((Long) ((Map) item.get(key)).get("time")),
+                                        map.get(opt.get()).toString()));
+
+                                needReset = true;
+                            } else if (isPrimitive(item.get(key))) {
+                                item.put(key, String.format(opt.get().toString(), item.get(key)));
+                                needReset = true;
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+
+        if(needReset) {
+
+            if(returnList) {
+                return (T) dataList;
+            }
+
+            if(dataList.size() != 1) {
+                return (T) dataList;
+            }
+
+            return (T) dataList.get(0);
+        }
+
+        return data;
+    }
+
+    private void successTrigger(ResponseData result, String tablename) throws InvocationTargetException, IllegalAccessException {
+        TriggerContext.exec(tablename, EventType.Success, result, request);
+    }
+
+    private void errorTrigger(String message, String tablename) {
+        if(StringUtils.isEmpty(message)) {
+            message = "request error!!!";
+        }
+
+        try {
+            TriggerContext.exec(tablename, EventType.Error, new Exception(message), request);
+        } catch (InvocationTargetException e) {
+            log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
+        } catch (IllegalAccessException e) {
+            log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
         }
     }
 }
