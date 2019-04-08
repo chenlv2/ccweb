@@ -56,11 +56,13 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
+
 ### 2. 删除
 * URL：/api/{table}/{id} 
 * 请求方式：DELETE
 * URL参数：{table}为数据库表名称，{id}为主键
 * POST参数：无
+
 
 ### 3. 修改
 * URL：/api/{table}/{id} 
@@ -73,6 +75,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
   ...
 }
 ```
+
 
 ### 4. 查询
 * URL：/api/{table} 
@@ -113,6 +116,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     }, ... ]
 }
 ```
+
 
 ### 5. 联表查询
 * URL：/api/join 
@@ -167,12 +171,14 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
+
 ### 6. ID查询
 查询与联合查询加密的字段不会解密显示，多用于列表，而ID查询的结果可以显示解密后内容，可用于保密详情。
 * URL：/api/{table}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{id}为主键
 * POST参数：无
+
 
 ### 7. 登录
 * URL：/api/login 
@@ -185,9 +191,26 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
+
 ### 8. 登出
 * URL：/api/logout 
 * 请求方式：GET
+
+
+### 9. 下载文件
+* URL：/api/download/{table}/{field}/{id} 
+* 请求方式：GET
+* URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
+* POST参数：无
+
+
+### 10. 图片预览
+* URL：/api/preview/{table}/{field}/{id} 
+* 请求方式：GET
+* URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
+* POST参数：无
+
+
 
 ## 系统用户/权限表结构说明
 用户权限相关表在服务启动时会自动创建，目的在于使用系统服务控制数据库表的访问权限，用户组是扁平结构的，需要更复杂的权限控制功能建议通过二次开发实现。
@@ -406,6 +429,27 @@ public final class DefaultTrigger {
         //TODO
     }
 
+    /***
+     * 下载文件时触发
+     * @param response （响应对象）
+     * @param request （当前请求）
+     * @throws Exception
+     */
+    @OnDownload
+    void onDownload(BaseController.DownloadData data, HttpServletRequest request) throws Exception {
+        //TODO
+    }
+
+    /***
+     * 预览文档时触发
+     * @param data （文件对象）
+     * @param request （当前请求）
+     * @throws Exception
+     */
+    @OnPreviewDoc
+    void onPreviewDoc(BaseController.DownloadData data, HttpServletRequest request) throws Exception {
+        //TODO
+    }
 }
 ```
 
