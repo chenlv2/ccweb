@@ -67,8 +67,7 @@ entity:
       fixedWidth: 200 #固定宽度
       scalRatio: 50 #缩放比率(百分比)
       watermark: watermark.png #水印
-
-  executor: RxJava2JdbcExecutor #设置数据库连接池，值可选择 RxJava2JdbcExecutor 或 DruidJdbcExecutor，默认为RxJava2JdbcExecutor
+      
   enableFlux: true   #是否开启web异步响应流
 
   #设置开放的数据源，对应db-config.xml的environment id
