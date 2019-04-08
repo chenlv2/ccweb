@@ -204,7 +204,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * POST参数：无
 
 
-### 10. 图片预览
+### 10. 文件预览
 * URL：/api/preview/{table}/{field}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
