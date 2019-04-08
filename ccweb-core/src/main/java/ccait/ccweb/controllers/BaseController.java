@@ -1256,9 +1256,6 @@ public abstract class BaseController {
 
     protected void preview(String table, String field, String id) throws Exception {
         DownloadData downloadData = new DownloadData(table, field, id).invoke();
-        if(downloadData.getMimeType().indexOf("image") != 0) {
-            throw new  Exception("不支持预览的文件格式");
-        }
 
         TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
 
