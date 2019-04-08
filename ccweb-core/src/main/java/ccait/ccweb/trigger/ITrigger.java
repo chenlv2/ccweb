@@ -19,8 +19,6 @@ import org.springframework.core.annotation.Order;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
 public interface ITrigger {
@@ -113,7 +111,7 @@ public interface ITrigger {
      */
     @OnError
     @Order(-55555)
-    void onError(Exception ex, HttpServletRequest request);
+    void onError(Exception ex, HttpServletRequest request) throws Exception;
 
     /***
      * 上传文件时触发
@@ -123,7 +121,7 @@ public interface ITrigger {
      */
     @OnUpload
     @Order(-55555)
-    void onUpload(byte[] data, HttpServletRequest request);
+    void onUpload(byte[] data, HttpServletRequest request) throws Exception;
 
     /***
      * 下载文件时触发
@@ -133,7 +131,7 @@ public interface ITrigger {
      */
     @OnDownload
     @Order(-55555)
-    void onDownload(BaseController.DownloadData data, HttpServletRequest request);
+    void onDownload(BaseController.DownloadData data, HttpServletRequest request) throws Exception;
 
     /***
      * 预览文档时触发
@@ -143,5 +141,5 @@ public interface ITrigger {
      */
     @OnPreviewDoc
     @Order(-55555)
-    void onPreviewDoc(BaseController.DownloadData data, HttpServletRequest request);
+    void onPreviewDoc(BaseController.DownloadData data, HttpServletRequest request) throws Exception;
 }
