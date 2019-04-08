@@ -12,6 +12,7 @@
 package ccait.ccweb.model;
 
 
+import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.generator.EntitesGenerator;
@@ -32,12 +33,12 @@ import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static ccait.ccweb.utils.StaticVars.CURRENT_DATASOURCE;
 import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
 import static entity.tool.util.StringUtils.cast;
 import static entity.tool.util.StringUtils.join;
@@ -343,8 +344,10 @@ public class QueryInfo implements Serializable {
             return where;
         }
 
+        String datasourceId = (String) ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE);
+
         //控制查询权限
-        DataSource dataSource = DataSourceFactory.getInstance().getDataSource(entity.getClass());
+        DataSource dataSource = DataSourceFactory.getInstance().getDataSource(datasourceId);
 
         UserModel user = (UserModel)context.request.getSession().getAttribute(context.request.getSession().getId() + LOGIN_KEY);
 
