@@ -251,6 +251,12 @@ public final class DefaultTrigger {
                     else if(list.get(i).get(key) instanceof Blob) {
                         list.get(i).remove(key);
                     }
+
+                    else if(list.get(i).get(key) instanceof String) {
+                        if(Pattern.matches("^[^/]+/[^/:]+::[^/:]+::[^/:\\|]+\\|::\\|", list.get(i).get(key).toString())) {
+                            list.get(i).remove(key);
+                        }
+                    }
                 }
             }
 
