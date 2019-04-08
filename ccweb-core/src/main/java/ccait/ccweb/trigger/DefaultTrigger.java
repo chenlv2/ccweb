@@ -222,11 +222,11 @@ public final class DefaultTrigger {
     @OnSuccess
     public void onSuccess(ResponseData responseData, HttpServletRequest request) throws Exception {
 
-        if(request.getMethod().equalsIgnoreCase("POST")){
+        if(responseData.getData() == null || isPrimitive(responseData.getData())) {
+            return;
+        }
 
-            if(responseData.getData() == null || isPrimitive(responseData.getData())) {
-                return;
-            }
+        if(request.getMethod().equalsIgnoreCase("POST")){
 
             List<Map> list = new ArrayList<Map>();
 
@@ -253,7 +253,8 @@ public final class DefaultTrigger {
                     }
 
                     else if(list.get(i).get(key) instanceof String) {
-                        if(Pattern.matches("^[^/]+/[^/:]+::[^/:]+::[^/:\\|]+\\|::\\|", list.get(i).get(key).toString())) {
+                        int index = list.get(i).get(key).toString().indexOf("|::|");
+                        if(index > 0 && Pattern.matches("[^/]+/[^/:]+::[^/:]+::[^/:\\|]+", list.get(i).get(key).toString().substring(0, index))) {
                             list.get(i).remove(key);
                         }
                     }
@@ -266,6 +267,25 @@ public final class DefaultTrigger {
 
             else {
                 responseData.setData(list);
+            }
+        }
+
+        else if(request.getMethod().equalsIgnoreCase("GET")) {
+            if(responseData.getData() instanceof Map) {
+                Map<String, Object> dataMap = ((Map<String, Object>) responseData.getData());
+                Set<String> keys = dataMap.keySet();
+                for(String key : keys) {
+                    if(dataMap.get(key) instanceof Blob) {
+                        dataMap.remove(key);
+                    }
+
+                    else if(dataMap.get(key) instanceof String) {
+                        int index = dataMap.get(key).toString().indexOf("|::|");
+                        if(index > 0 && Pattern.matches("[^/]+/[^/:]+::[^/:]+::[^/:\\|]+", dataMap.get(key).toString().substring(0, index))) {
+                            dataMap.remove(key);
+                        }
+                    }
+                }
             }
         }
     }
