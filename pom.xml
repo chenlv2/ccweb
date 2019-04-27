@@ -284,7 +284,11 @@
             <version>2.6.1</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>transport</artifactId>
+            <version>6.1.1</version>
+        </dependency>
         <!--注释掉couchbase.jdbc才能正常启动webflux,否则只能用spring-boot-web-->
         <!--<dependency>-->
             <!--<groupId>com.couchbase.jdbc</groupId>-->
