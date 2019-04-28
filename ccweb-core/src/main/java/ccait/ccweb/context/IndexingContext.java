@@ -10,8 +10,7 @@
 
 package ccait.ccweb.context;
 
-import ccait.ccweb.model.PageInfo;
-import ccait.ccweb.model.SearchData;
+import ccait.ccweb.model.*;
 import com.google.gson.GsonBuilder;
 import entity.tool.util.StringUtils;
 import io.searchbox.client.JestClient;
@@ -23,22 +22,19 @@ import io.searchbox.cluster.NodesInfo;
 import io.searchbox.cluster.NodesStats;
 import io.searchbox.core.*;
 import io.searchbox.indices.*;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class ElasticSearchContext {
+public class IndexingContext {
 
     private JestClient client;
 
     @Value(value = "${entity.elasticSearch.enable:false}")
-    private String enableEasticSearch;
+    private boolean enableEasticSearch;
 
     @Value(value = "${entity.elasticSearch.url:}")
     private String url;
@@ -48,6 +44,10 @@ public class ElasticSearchContext {
 
     @PostConstruct
     private void postConstruct() {
+
+        if(!enableEasticSearch) {
+            return;
+        }
 
         List<String> urlList = StringUtils.splitString2List(url, ";", "http://%s");
         JestClientFactory factory = new JestClientFactory();
@@ -66,6 +66,9 @@ public class ElasticSearchContext {
      */
     public void deleteIndex(String indexname) throws Exception {
 
+        if(client == null) {
+            return;
+        }
         DeleteIndex deleteIndex = new DeleteIndex.Builder(indexname).build();
         JestResult result = client.execute(deleteIndex);
     }
@@ -77,6 +80,10 @@ public class ElasticSearchContext {
      * @throws Exception
      */
     public void clearCache() throws Exception {
+
+        if(client == null) {
+            return;
+        }
 
         ClearCache closeIndex = new ClearCache.Builder().build();
         JestResult result = client.execute(closeIndex);
@@ -90,6 +97,10 @@ public class ElasticSearchContext {
      */
     public void closeIndex(String indexname) throws Exception {
 
+        if(client == null) {
+            return;
+        }
+
         CloseIndex closeIndex = new CloseIndex.Builder(indexname).build();
         JestResult result = client.execute(closeIndex);
     }
@@ -100,6 +111,10 @@ public class ElasticSearchContext {
      */
     public void optimize() throws Exception {
 
+        if(client == null) {
+            return;
+        }
+
         Optimize optimize = new Optimize.Builder().build();
         JestResult result = client.execute(optimize);
     }
@@ -108,30 +123,36 @@ public class ElasticSearchContext {
      * 刷新索引
      * @throws Exception
      */
-    public void flush() throws Exception {
+    public JestResult flush() throws Exception {
 
         Flush flush = new Flush.Builder().build();
         JestResult result = client.execute(flush);
+
+        return result;
     }
 
     /**
      * 判断索引是否存在
      * @throws Exception
      */
-    public void indicesExists(String indexname) throws Exception {
+    public boolean indicesExists(String indexname) throws Exception {
 
         IndicesExists indicesExists = new IndicesExists.Builder(indexname).build();
         JestResult result = client.execute(indicesExists);
+
+        return result.isSucceeded();
     }
 
     /**
      * 查看节点信息
      * @throws Exception
      */
-    public void nodesInfo() throws Exception {
+    public JestResult nodesInfo() throws Exception {
 
         NodesInfo nodesInfo = new NodesInfo.Builder().build();
         JestResult result = client.execute(nodesInfo);
+
+        return result;
     }
 
 
@@ -139,30 +160,36 @@ public class ElasticSearchContext {
      * 查看集群健康信息
      * @throws Exception
      */
-    public void health() throws Exception {
+    public JestResult health() throws Exception {
 
         Health health = new Health.Builder().build();
         JestResult result = client.execute(health);
+
+        return result;
     }
 
     /**
      * 节点状态
      * @throws Exception
      */
-    public void nodesStats() throws Exception {
+    public JestResult nodesStats() throws Exception {
         NodesStats nodesStats = new NodesStats.Builder().build();
         JestResult result = client.execute(nodesStats);
+
+        return result;
     }
 
     /**
      * 更新Document
      * @throws Exception
      */
-    private void updateDocument(String indexname, String id, String content) throws Exception {
+    public boolean updateDocument(String indexname, String id, String content) throws Exception {
 
         Update update = new Update.Builder(content).index(indexname).id(id).build();
 
         JestResult result = client.execute(update);
+
+        return result.isSucceeded();
     }
 
 
@@ -171,11 +198,13 @@ public class ElasticSearchContext {
      * @param id
      * @throws Exception
      */
-    private void deleteDocument(String indexname, String id) throws Exception {
+    public boolean deleteDocument(String indexname, String id) throws Exception {
 
         Delete delete = new Delete.Builder(id).index(indexname).build();
 
         JestResult result = client.execute(delete);
+
+        return result.isSucceeded();
     }
 
     /**
@@ -183,7 +212,7 @@ public class ElasticSearchContext {
      * @param id
      * @throws Exception
      */
-    private <T> T getDocument(String indexname, String id, Class<T> clazz) throws Exception {
+    public <T> T getDocument(String indexname, String id, Class<T> clazz) throws Exception {
 
         Get get = new Get.Builder(indexname, id).build();
         JestResult jestResult = client.execute(get);
@@ -196,7 +225,7 @@ public class ElasticSearchContext {
      * Suggestion
      * @throws Exception
      */
-    private void suggest() throws Exception{
+    public void suggest() throws Exception{
         String suggestionName = "my-suggestion";
 
         Suggest suggest = new Suggest.Builder("{" +
@@ -217,29 +246,20 @@ public class ElasticSearchContext {
     }
 
     /**
-     * 查询全部
+     * 查询
      * @throws Exception
      */
-    private <T> SearchData<List<T>> search(String indexname, String queryString, boolean heightlight, Class<T> clazz) throws Exception {
+    public <T> SearchData<List<T>> search(String indexname, QueryInfo queryInfo, Class<T> clazz) throws Exception {
+        return search(indexname, queryInfo, false, clazz);
+    }
+    public <T> SearchData<List<T>> search(String indexname, QueryInfo queryInfo, boolean heightlight, Class<T> clazz) throws Exception {
 
         SearchData<List<T>> result = new SearchData<List<T>>();
         List<T> list = new ArrayList<T>();
-        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-        if(StringUtils.isEmpty(queryString)) {
-            searchSourceBuilder.query(QueryBuilders.matchAllQuery());
-        }
-        else {
-            searchSourceBuilder.query(QueryBuilders.queryStringQuery(queryString));
-        }
 
-        if(heightlight) {
-            searchSourceBuilder.highlight().field("title");//高亮title
-            searchSourceBuilder.highlight().field("content");//高亮content
-            searchSourceBuilder.highlight().preTags("<em>").postTags("</em>");//高亮标签
-            searchSourceBuilder.highlight().fragmentSize(200);//高亮内容长度
-        }
+        String queryString = getQueryString(queryInfo);
 
-        Search search = new Search.Builder(searchSourceBuilder.toString())
+        Search search = new Search.Builder(queryString)
                 .addIndex(indexname)
                 .build();
         SearchResult searchResult = client.execute(search);
@@ -260,6 +280,10 @@ public class ElasticSearchContext {
         result.setData(list);
 
         return result;
+    }
+
+    private String getQueryString(QueryInfo queryInfo) {
+        return "match_all";
     }
 
     public <T> void batchIndex(String indexname, List<T> datas) throws Exception {
