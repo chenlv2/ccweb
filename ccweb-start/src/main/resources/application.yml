@@ -77,6 +77,11 @@ entity:
     whiteList: 127.0.0.1 #IP白名单
     blackList: 127.0.0.2 #IP黑名单
 
+  elasticSearch:
+    enable: false
+    timeout: 10000
+    url: 127.0.0.1:9200;127.0.0.1:9500
+
 
 # 2.SpringCloud配置
 eureka:
@@ -134,4 +139,3 @@ log4j:
 websocket:
   url: ws://127.0.0.1:8777/websocket
   enable: false
-
