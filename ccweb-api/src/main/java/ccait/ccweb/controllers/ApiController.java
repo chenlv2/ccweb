@@ -15,6 +15,7 @@ package ccait.ccweb.controllers;
 import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.model.QueryInfo;
 import ccait.ccweb.model.ResponseData;
+import ccait.ccweb.model.SearchData;
 import ccait.ccweb.model.UserModel;
 import entity.query.ColumnInfo;
 import org.springframework.web.bind.annotation.*;
@@ -106,6 +107,30 @@ public class ApiController extends BaseController {
             queryInfo.getPageInfo().setPageCount();
 
             return success( result, queryInfo.getPageInfo() );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return error(110, e);
+        }
+    }
+
+    /***
+     * search
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/search/{table}", method = RequestMethod.POST )
+    public ResponseData doSearch(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
+
+        try {
+
+            SearchData result = super.search(table, queryInfo);
+
+            queryInfo.getPageInfo().setTotalRecords(result.getPageInfo().getTotalRecords());
+            queryInfo.getPageInfo().setPageCount();
+
+            return success( result.getData(), queryInfo.getPageInfo() );
         } catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 

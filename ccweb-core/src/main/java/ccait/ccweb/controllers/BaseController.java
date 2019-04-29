@@ -14,6 +14,7 @@ package ccait.ccweb.controllers;
 
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.context.IndexingContext;
 import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.enums.DefaultValueMode;
 import ccait.ccweb.enums.EncryptMode;
@@ -81,6 +82,9 @@ public abstract class BaseController {
 
     @Autowired
     private QueryInfo queryInfo;
+
+    @Autowired
+    private IndexingContext indexingContext;
 
     @Value("${entity.queryable.ignoreTotalCount:true}")
     protected boolean ignoreTotalCount;
@@ -1128,6 +1132,7 @@ public abstract class BaseController {
      */
     public Integer update(String table, String id, Map<String, Object> postData) throws Exception {
         Object entity = EntityContext.getEntity(table, postData);
+
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
         }
@@ -1150,6 +1155,8 @@ public abstract class BaseController {
         Integer result = 0;
         if(where.update(postData)) {
             result = 1;
+
+            indexingContext.createIndex(((Queryable)entity).tablename(), postData);
         }
 
         return result;
@@ -1174,6 +1181,8 @@ public abstract class BaseController {
 
         Object result = null;
         result = ((Queryable) entity).insert();
+
+        indexingContext.createIndex(((Queryable)entity).tablename(), postData);
 
         return result;
     }
@@ -1481,5 +1490,24 @@ public abstract class BaseController {
         } catch (IllegalAccessException e) {
             log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
         }
+    }
+
+
+    /***
+     * search data by elasticSearch
+     * @param table
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    public SearchData search(String table, QueryInfo queryInfo) throws Exception {
+        Object entity = EntityContext.getEntity(table, queryInfo);
+        if(entity == null) {
+            throw new Exception("Can not find entity!!!");
+        }
+
+        encrypt(queryInfo.getConditionList());
+
+        return indexingContext.search(table, queryInfo, Map.class);
     }
 }

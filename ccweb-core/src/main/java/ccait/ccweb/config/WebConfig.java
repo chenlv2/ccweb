@@ -12,6 +12,7 @@
 package ccait.ccweb.config;
 
 import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.context.IndexingContext;
 import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.filter.InitializationFilter;
 import ccait.ccweb.interceptor.SecurityInterceptor;
@@ -67,6 +68,9 @@ public class WebConfig implements WebMvcConfigurer {
     {
         return new EntityContext();
     }
+
+    @Bean
+    public IndexingContext indexingContext() { return new IndexingContext(); }
 
     @Bean
     DataSourceFactory dataSourceFactory() { return new DataSourceFactory(); }

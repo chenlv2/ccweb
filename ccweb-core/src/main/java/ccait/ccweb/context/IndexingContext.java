@@ -10,10 +10,12 @@
 
 package ccait.ccweb.context;
 
+import ccait.ccweb.interceptor.SecurityInterceptor;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.FastJsonUtils;
 import com.google.gson.GsonBuilder;
 import entity.tool.util.StringUtils;
+import entity.tool.util.ThreadUtils;
 import io.searchbox.client.JestClient;
 import io.searchbox.client.JestClientFactory;
 import io.searchbox.client.JestResult;
@@ -23,10 +25,13 @@ import io.searchbox.cluster.NodesInfo;
 import io.searchbox.cluster.NodesStats;
 import io.searchbox.core.*;
 import io.searchbox.indices.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +54,8 @@ public class IndexingContext {
 
     @Value(value = "${entity.elasticSearch.defaultMatch:match_node}")
     private String defaultMatch;
+
+    private static final Logger log = LogManager.getLogger( IndexingContext.class );
 
     @PostConstruct
     private void postConstruct() {
@@ -77,9 +84,22 @@ public class IndexingContext {
         if(client == null) {
             return;
         }
-        indexname = indexname.toLowerCase();
-        DeleteIndex deleteIndex = new DeleteIndex.Builder(indexname).build();
-        JestResult result = client.execute(deleteIndex);
+
+        final String index = indexname.toLowerCase().replaceAll("\\[([^\\[\\]]+)\\]", "$1");
+
+        if(enableEasticSearch) {
+            ThreadUtils.async(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        DeleteIndex deleteIndex = new DeleteIndex.Builder(index).build();
+                        JestResult result = client.execute(deleteIndex);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            });
+        }
     }
 
 
@@ -109,9 +129,21 @@ public class IndexingContext {
         if(client == null) {
             return;
         }
-        indexname = indexname.toLowerCase();
-        CloseIndex closeIndex = new CloseIndex.Builder(indexname).build();
-        JestResult result = client.execute(closeIndex);
+        final String index = ensureIndexName(indexname);
+
+        if(enableEasticSearch) {
+            ThreadUtils.async(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        CloseIndex closeIndex = new CloseIndex.Builder(index).build();
+                        JestResult result = client.execute(closeIndex);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -145,7 +177,7 @@ public class IndexingContext {
      * @throws Exception
      */
     public boolean indicesExists(String indexname) throws Exception {
-        indexname = indexname.toLowerCase();
+        indexname = ensureIndexName(indexname);
         IndicesExists indicesExists = new IndicesExists.Builder(indexname).build();
         JestResult result = client.execute(indicesExists);
 
@@ -192,14 +224,23 @@ public class IndexingContext {
      * 更新Document
      * @throws Exception
      */
-    public boolean updateDocument(String indexname, String id, String content) throws Exception {
+    public void updateDocument(String indexname, String id, String content) throws Exception {
 
-        indexname = indexname.toLowerCase();
-        Update update = new Update.Builder(content).index(indexname).id(id).build();
+        final String index = ensureIndexName(indexname);
 
-        JestResult result = client.execute(update);
-
-        return result.isSucceeded();
+        if(enableEasticSearch) {
+            ThreadUtils.async(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Update update = new Update.Builder(content).index(index).id(id).build();
+                        client.execute(update);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            });
+        }
     }
 
 
@@ -208,14 +249,23 @@ public class IndexingContext {
      * @param id
      * @throws Exception
      */
-    public boolean deleteDocument(String indexname, String id) throws Exception {
+    public void deleteDocument(String indexname, String id) throws Exception {
 
-        indexname = indexname.toLowerCase();
-        Delete delete = new Delete.Builder(id).index(indexname).build();
+        final String index = ensureIndexName(indexname);
 
-        JestResult result = client.execute(delete);
-
-        return result.isSucceeded();
+        if(enableEasticSearch) {
+            ThreadUtils.async(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Delete delete = new Delete.Builder(id).index(index).build();
+                        client.execute(delete);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -272,7 +322,7 @@ public class IndexingContext {
     }
     public <T> SearchData<List<T>> search(String indexname, String queryString, boolean heightlight, Class<T> clazz) throws Exception {
 
-        indexname = indexname.toLowerCase();
+        indexname = ensureIndexName(indexname);
         SearchData<List<T>> result = new SearchData<List<T>>();
         List<T> list = new ArrayList<T>();
 
@@ -376,31 +426,57 @@ public class IndexingContext {
             return;
         }
 
-        indexname = indexname.toLowerCase();
-        List<Index> builderList = new ArrayList<>();
+        final String index = ensureIndexName(indexname);
 
-        for(T data : datas) {
-            builderList.add(new Index.Builder(data).build());
+        if(enableEasticSearch) {
+            ThreadUtils.async(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        List<Index> builderList = new ArrayList<>();
+
+                        for(T data : datas) {
+                            builderList.add(new Index.Builder(data).build());
+                        }
+
+                        Bulk bulk = new Bulk.Builder()
+                                .defaultIndex(index)
+                                .addAction(builderList).build();
+
+                        client.execute(bulk);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            });
         }
+    }
 
-        Bulk bulk = new Bulk.Builder()
-                .defaultIndex(indexname)
-                .addAction(builderList).build();
-
-        client.execute(bulk);
+    private String ensureIndexName(String indexname) {
+        return indexname.toLowerCase().replaceAll("\\[([^\\[\\]]+)\\]", "$1");
     }
 
 
-    public <T> JestResult createIndex(String indexname, T data) throws Exception {
+    public <T> void createIndex(String indexname, T data) throws Exception {
 
         if(data == null)  {
-            return null;
+            return;
         }
 
-        indexname = indexname.toLowerCase();
-        Index index = new Index.Builder(data).index(indexname).build();
-        JestResult jestResult = client.execute(index);
+        final String index = indexname.toLowerCase().replaceAll("\\[([^\\[\\]]+)\\]", "$1");
 
-        return jestResult;
+        if(enableEasticSearch) {
+            ThreadUtils.async(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Index jestIndex = new Index.Builder(data).index(index).build();
+                        JestResult jestResult = client.execute(jestIndex);
+                    } catch (IOException e) {
+                        log.error(e.getMessage(), e);
+                    }
+                }
+            });
+        }
     }
 }
