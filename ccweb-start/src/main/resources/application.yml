@@ -5,7 +5,7 @@ entity:
   queryable:
     configFile: db-config.xml #数据库配置路径
   ignoreTotalCount: true #忽略查询总数
-  package: ccait.ccait.ccweb.entites #实体类生成包路径
+  package: ccait.ccweb.entites #实体类生成包路径
   suffix: Entity #实体类生成类名后辍
   page: #分页配置选项
     maxSize: 50 #分页最大记录数默认值
