@@ -11,6 +11,7 @@
 package ccait.ccweb.context;
 
 import ccait.ccweb.model.*;
+import ccait.ccweb.utils.FastJsonUtils;
 import com.google.gson.GsonBuilder;
 import entity.tool.util.StringUtils;
 import io.searchbox.client.JestClient;
@@ -24,9 +25,13 @@ import io.searchbox.core.*;
 import io.searchbox.indices.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Component
 public class IndexingContext {
@@ -41,6 +46,9 @@ public class IndexingContext {
 
     @Value(value = "${entity.elasticSearch.timeout:10000}")
     private int timeout;
+
+    @Value(value = "${entity.elasticSearch.defaultMatch:match_node}")
+    private String defaultMatch;
 
     @PostConstruct
     private void postConstruct() {
@@ -69,6 +77,7 @@ public class IndexingContext {
         if(client == null) {
             return;
         }
+        indexname = indexname.toLowerCase();
         DeleteIndex deleteIndex = new DeleteIndex.Builder(indexname).build();
         JestResult result = client.execute(deleteIndex);
     }
@@ -100,7 +109,7 @@ public class IndexingContext {
         if(client == null) {
             return;
         }
-
+        indexname = indexname.toLowerCase();
         CloseIndex closeIndex = new CloseIndex.Builder(indexname).build();
         JestResult result = client.execute(closeIndex);
     }
@@ -136,7 +145,7 @@ public class IndexingContext {
      * @throws Exception
      */
     public boolean indicesExists(String indexname) throws Exception {
-
+        indexname = indexname.toLowerCase();
         IndicesExists indicesExists = new IndicesExists.Builder(indexname).build();
         JestResult result = client.execute(indicesExists);
 
@@ -185,6 +194,7 @@ public class IndexingContext {
      */
     public boolean updateDocument(String indexname, String id, String content) throws Exception {
 
+        indexname = indexname.toLowerCase();
         Update update = new Update.Builder(content).index(indexname).id(id).build();
 
         JestResult result = client.execute(update);
@@ -200,6 +210,7 @@ public class IndexingContext {
      */
     public boolean deleteDocument(String indexname, String id) throws Exception {
 
+        indexname = indexname.toLowerCase();
         Delete delete = new Delete.Builder(id).index(indexname).build();
 
         JestResult result = client.execute(delete);
@@ -214,6 +225,7 @@ public class IndexingContext {
      */
     public <T> T getDocument(String indexname, String id, Class<T> clazz) throws Exception {
 
+        indexname = indexname.toLowerCase();
         Get get = new Get.Builder(indexname, id).build();
         JestResult jestResult = client.execute(get);
         T result = jestResult.getSourceAsObject(clazz);
@@ -250,14 +262,19 @@ public class IndexingContext {
      * @throws Exception
      */
     public <T> SearchData<List<T>> search(String indexname, QueryInfo queryInfo, Class<T> clazz) throws Exception {
-        return search(indexname, queryInfo, false, clazz);
+        String queryString = FastJsonUtils.convertObjectToJSON(getQueryMap(queryInfo));
+        return search(indexname, queryString, false, clazz);
     }
     public <T> SearchData<List<T>> search(String indexname, QueryInfo queryInfo, boolean heightlight, Class<T> clazz) throws Exception {
+        String queryString = FastJsonUtils.convertObjectToJSON(getQueryMap(queryInfo));
+        return search(indexname, queryString, false, clazz);
 
+    }
+    public <T> SearchData<List<T>> search(String indexname, String queryString, boolean heightlight, Class<T> clazz) throws Exception {
+
+        indexname = indexname.toLowerCase();
         SearchData<List<T>> result = new SearchData<List<T>>();
         List<T> list = new ArrayList<T>();
-
-        String queryString = getQueryString(queryInfo);
 
         Search search = new Search.Builder(queryString)
                 .addIndex(indexname)
@@ -282,8 +299,75 @@ public class IndexingContext {
         return result;
     }
 
-    private String getQueryString(QueryInfo queryInfo) {
-        return "match_all";
+    public String getQueryMap(QueryInfo queryInfo) {
+
+        if(queryInfo == null) {
+            return defaultMatch;
+        }
+
+        Map<String, Object> queryMap = new HashMap<String, Object>();
+
+        if(queryInfo.getSortList() != null && queryInfo.getSortList().size() > 0) {
+
+            Map<String, Object> map = new HashMap<String, Object>();
+            for(SortInfo item : queryInfo.getSortList()) {
+                map.put(item.getName(), new HashMap<String, String>() { { put("order", item.isDesc() ? "desc" : "asc"); } });
+            }
+
+            queryMap.put("sort", map);
+        }
+
+        if(queryInfo.getSelectList() != null && queryInfo.getSelectList().size() > 0) {
+
+            Map<String, Object> map = new HashMap<String, Object>();
+            queryMap.put("stored_fields", queryInfo.getSelectList().stream().map(a->a.getField()).collect(Collectors.toList()));
+        }
+
+        if(queryInfo.getGroupList() != null && queryInfo.getGroupList().size() > 0) {
+
+            Map<String, Object> map = new HashMap<String, Object>();
+            for(SortInfo item : queryInfo.getSortList()) {
+                map.put("field", item.getName());
+            }
+
+            queryMap.put("collapse", map);
+        }
+
+        if(queryInfo.getPageInfo().getPageSize() > 0) {
+            queryMap.put("size", queryInfo.getPageInfo().getPageSize());
+        }
+
+        if(queryInfo.getSkip() > 0) {
+            queryMap.put("search_after", queryInfo.getSkip());
+        }
+
+        Map<String, Object> matchMap = new HashMap<String, Object>();
+        if(queryInfo.getConditionList() != null && queryInfo.getConditionList().size() > 0) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            for(ConditionInfo item : queryInfo.getConditionList()) {
+                map.put(item.getName(), new HashMap<String, String>() { {
+                    put("query", item.getValue().toString());
+                    put("operator", item.getAlgorithm().getValue().toLowerCase().trim());
+                } });
+            }
+
+            matchMap.put("match", map);
+        }
+
+        if(queryInfo.getKeywords() != null && queryInfo.getKeywords().size() > 0) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("must", queryInfo.getKeywords().stream().map(a->new HashMap<String, String>() { {
+                put(a.getName(), a.getValue().toString());
+            } }).collect(Collectors.toList()));
+
+            matchMap.put("bool", map);
+        }
+
+        if(matchMap.size() > 0) {
+            queryMap.put("query", matchMap);
+        }
+
+        return FastJsonUtils.convertObjectToJSON(queryMap);
     }
 
     public <T> void batchIndex(String indexname, List<T> datas) throws Exception {
@@ -292,6 +376,7 @@ public class IndexingContext {
             return;
         }
 
+        indexname = indexname.toLowerCase();
         List<Index> builderList = new ArrayList<>();
 
         for(T data : datas) {
@@ -312,6 +397,7 @@ public class IndexingContext {
             return null;
         }
 
+        indexname = indexname.toLowerCase();
         Index index = new Index.Builder(data).index(indexname).build();
         JestResult jestResult = client.execute(index);
 
