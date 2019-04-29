@@ -79,6 +79,7 @@ entity:
 
   elasticSearch:
     enable: false
+    defaultMatch: match_all
     timeout: 10000
     url: 127.0.0.1:9200;127.0.0.1:9500 #分号分隔
     indexs: #索引设置
