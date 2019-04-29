@@ -89,6 +89,9 @@ entity:
         fragmentSize: 200
         preTags: <em>
         postTags: </em>
+        script: painless
+        painless:
+          password: "doc['password']=\"*****\"; return doc['password'];"
 
 
 
