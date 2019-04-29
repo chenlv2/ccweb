@@ -14,8 +14,7 @@
     =========================================================================
     :: CCWEB :: (v1.0.0-SNAPSHOT)  Author: 草耑(linlurui) 2019@copyright
 
-
-CCWEB是基于springboot设计的CQRS敏捷web api开发框架，CCWEB提倡动态向前端提供基础数据，由前端根据基础数据组装业务来提高开发效率;内置用户管理、权限设置 等安全模块，启动服务后无需添加任何后端代码前端便可以通过默认接口直接访问到自己在数据库建的表和查询视图；底层orm采用entityQueryable访问数据，支持多种数据库，支持SpringCloud微服务扩展；项目包含ccweb-core，ccweb-api，ccweb-admin，ccweb-start
+CCWEB是基于springboot设计的CQRS敏捷web api开发框架，CCWEB提倡动态向前端提供基础数据，由前端根据基础数据组装业务来提高开发效率;内置用户管理、权限设置 等安全模块，启动服务后无需添加任何后端代码前端便可以通过默认接口直接访问到自己在数据库建的表和查询视图；底层orm采用entityQueryable访问数据，支持SpringCloud微服务扩展；支持elasticSerach搜索引擎；在横向扩展方面ccweb兼容了多种数据库系统，包括主流的mysql、sqlserver和大数据存储的hadoop等，有易于数据集成及高度扩展的能力，可以让数据自由地穿梭于各种数据存储系统之间：项目包含ccweb-core，ccweb-api，ccweb-admin，ccweb-start
 </p>
     <img align="right" src="https://github.com/linlurui/entityQueryable/blob/master/pay5.jpg" alt="捐赠给作者"  width="200">
     <p align="right">
@@ -211,6 +210,46 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
 * POST参数：无
 
+
+### 11. 搜索（通过es搜索引擎）
+* URL：/api/search/{table} 
+* 请求方式：POST
+* URL参数：{table}为数据库表名称
+* POST参数：
+```javascript
+{
+    "pageInfo" : {
+        "pageIndex": 1, //页码
+        "pageSize": 50  //每页条数
+    },
+
+    "conditionList": [{ //查询条件
+        "name": "id",   //字段名
+        "value": "1",   //值
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!=")
+    }, ... ],
+
+    "sortList": [{ //排序条件
+        "name": "id", //字段名 
+        "desc": true  //true为降序，false为升序
+    }, ... ],
+
+    "groupList" : [ //分组条件
+        "id", //字段名 
+        ...
+    ],
+
+    "keywords" : [{ //关键词模糊查询条件
+        "name": "id",   //字段名
+        "value": "1"   //值
+    }, ...],
+
+    "selectList": [{ //显示字段
+        "field": "id",  //字段名 
+        "function": "MAX",  //数据库相关函数：MAX, MIN, UPPER, LOWER, LENGTH, AVG, COUNT, SUM, GROUP_CONCAT等; 
+    }, ... ]
+}
+```
 
 
 ## 系统用户/权限表结构说明
