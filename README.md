@@ -268,7 +268,7 @@ ccweb-admin是为超级管理员在设计阶段准备的数据管理界面，包
 ## 访问地址
 
 # 二次开发
-ccweb的二次开发实际就是自定义ccweb-start包的过程
+ccweb的二次开发实际就是自定义ccweb-start包的过程，springboot的启动类注解需要加上@SpringBootApplication(scanBasePackages = "ccait.ccweb")才会去扫描ccweb-core的bean。
 ## jar包介绍
 * ccweb-core: ccweb的核心公共库
 * ccweb-api: 提供RESTful接口服务和websocket服务，内置ccweb-core，不能直接起动，需要在ccweb-start中提供入口启动jar包。
