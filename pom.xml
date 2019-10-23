@@ -52,6 +52,11 @@
         </dependency>
 
         <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>jmimemagic</groupId>
             <artifactId>jmimemagic</artifactId>
             <version>0.1.2</version>
