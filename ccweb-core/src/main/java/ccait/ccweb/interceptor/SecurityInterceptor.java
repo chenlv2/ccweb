@@ -393,8 +393,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 TriggerContext.exec(table, EventType.View, attrs.get("id"), request);
                 break;
             case "POST":
-                Pattern tablePattern = Pattern.compile("^/(api|asyncapi)/[^/]+/build/table$", Pattern.CASE_INSENSITIVE);
-                Pattern viewPattern = Pattern.compile("^/(api|asyncapi)/[^/]+/build/view$", Pattern.CASE_INSENSITIVE);
+                Pattern tablePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/table$", Pattern.CASE_INSENSITIVE);
+                Pattern viewPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/view$", Pattern.CASE_INSENSITIVE);
                 if(tablePattern.matcher(request.getRequestURI()).find()) {
                     List<ColumnInfo> columns = FastJsonUtils.toList(postString, ColumnInfo.class);
                     TriggerContext.exec(table, EventType.BuildTable, columns, request);
