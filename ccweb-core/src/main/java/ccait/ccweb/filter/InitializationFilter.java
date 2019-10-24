@@ -58,6 +58,12 @@ public class InitializationFilter implements WebFilter, Filter {
         final HttpServletRequest req = (HttpServletRequest)request;
         final HttpServletResponse res = (HttpServletResponse)response;
 
+        res.setHeader("Access-Control-Allow-Origin","*");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+        res.setHeader("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, PUT");
+        res.setHeader("Access-Control-Max-Age", "3600");
+        res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+
         RequestWrapper requestWrapper = new RequestWrapper(req);
 //        ResponseWrapper responseWrapper = new ResponseWrapper(res);
 
