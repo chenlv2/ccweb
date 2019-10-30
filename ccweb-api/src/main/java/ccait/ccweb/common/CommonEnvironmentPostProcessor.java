@@ -38,22 +38,6 @@ public class CommonEnvironmentPostProcessor implements EnvironmentPostProcessor 
             return;
         }
         else {
-            file = new File(System.getProperty("user.dir") + "/config/application.properties");
-        }
-
-        if(file.exists()) {
-            setPropertys(configurableEnvironment, file);
-            return;
-        }
-        else {
-            file = new File(System.getProperty("user.dir") + "/config/application.properties");
-        }
-
-        if(file.exists()) {
-            setPropertys(configurableEnvironment, file);
-            return;
-        }
-        else {
             file = new File(System.getProperty("user.dir") + "/resources/application.properties");
         }
 

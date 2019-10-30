@@ -13,12 +13,14 @@ package ccait.ccweb;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
 import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 
 @SpringBootApplication
-public class Application {
+public class Application extends SpringBootServletInitializer {
 
     private static final Logger log = LogManager.getLogger( Application.class );
     private static boolean uat = false;
@@ -44,5 +46,10 @@ public class Application {
     private static void setUat( boolean isUat )
     {
         Application.uat = isUat;
+    }
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(Application.class);
     }
 }

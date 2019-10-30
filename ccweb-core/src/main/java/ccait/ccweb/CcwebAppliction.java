@@ -44,7 +44,7 @@ import java.net.URISyntaxException;
 //@EnableHystrix
 //@EnableZuulProxy
 @EnableWebFlux
-@SpringBootApplication( exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class,} )
+@SpringBootApplication( exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class} )
 public class CcwebAppliction {
 
     private static final Logger log = LogManager.getLogger( CcwebAppliction.class );
