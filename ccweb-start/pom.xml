@@ -16,7 +16,7 @@
 
     <version>1.0.0-SNAPSHOT</version>
 
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <description>ccait framework</description>
 
