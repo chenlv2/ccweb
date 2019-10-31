@@ -21,6 +21,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.web.reactive.config.EnableWebFlux;
 
 import java.io.File;
@@ -29,20 +30,13 @@ import java.io.FileNotFoundException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
-//import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-//import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
-//import org.springframework.cloud.netflix.hystrix.EnableHystrix;
-//import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboard;
-//import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
-//import org.springframework.cloud.openfeign.EnableFeignClients;
-
 
 //@EnableHystrixDashboard
 //@EnableDiscoveryClient
 //@EnableFeignClients
-//@EnableEurekaClient
 //@EnableHystrix
 //@EnableZuulProxy
+@EnableEurekaClient
 @EnableWebFlux
 @SpringBootApplication( exclude = {DataSourceAutoConfiguration.class, DataSourceTransactionManagerAutoConfiguration.class} )
 public class CcwebAppliction {
