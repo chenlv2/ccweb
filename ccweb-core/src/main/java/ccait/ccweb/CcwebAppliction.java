@@ -73,7 +73,7 @@ public class CcwebAppliction {
                         logConfigPath = null;
                     }
                 } catch (URISyntaxException e) {
-                    log.error(e);
+                    System.out.println("URISyntaxException message=======>" + e.getMessage());
                     logConfigPath = null;
                 }
             }
@@ -84,9 +84,10 @@ public class CcwebAppliction {
 
                 ConfigurationSource source = new ConfigurationSource(new FileInputStream(logConfigPath), file);
 
-                Configurator.initialize(null, source);
-
-                log.info("Current log4j path: " + logConfigPath);
+                if(source != null) {
+                    Configurator.initialize(null, source);
+                }
+                System.out.println("Current log4j path: " + logConfigPath);
             }
         }
 
