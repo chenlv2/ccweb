@@ -30,7 +30,6 @@
                 <property name="password" value="123456"/>
             </dataSource>
         </environment>
-
         <environment id="oracle">
             <transactionManager type="JDBC" classScope="public" />
             <dataSource type="POOLED">
@@ -40,7 +39,6 @@
                 <property name="password" value="123456"></property>
             </dataSource>
         </environment>
-
         <environment id="sqlite" classScope="public">
             <transactionManager type="JDBC" />
             <dataSource type="POOLED">
@@ -50,7 +48,22 @@
                 <property name="password" value="" />
             </dataSource>
         </environment>
-
+        <environment id="derby" classScope="public">
+            <dataSource type="POOLED">
+                <property name="driver" value="org.apache.derby.jdbc.ClientDriver" />
+                <property name="url" value="jdbc:derby://localhost:8093/ccait" />
+                <property name="username" value="root" />
+                <property name="password" value="123456" />
+            </dataSource>
+        </environment>
+        <environment id="hadoop" classScope="public">
+            <dataSource type="POOLED">
+                <property name="driver" value="org.apache.hive.jdbc.HiveDriver" />
+                <property name="url" value="jdbc:hive2://localhost:8093/ccait" />
+                <property name="username" value="username" />
+                <property name="password" value="123456" />
+            </dataSource>
+        </environment>
         <environment id="couchebase" classScope="public">
             <dataSource type="POOLED">
                 <property name="driver" value="n1ql_jdbc" />
