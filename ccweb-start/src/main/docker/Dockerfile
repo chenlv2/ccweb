@@ -1,6 +1,6 @@
 FROM java:8
 VOLUME /tmp
-ADD ccweb-start-0.0.1-SNAPSHOT.jar ccweb-start.jar
+ADD ccweb-start-1.0.0-SNAPSHOT.jar ccweb-start.jar
 RUN sh -c 'touch /ccweb-start.jar'
 ENV JAVA_OPTS=""
 ENV isuat=""
