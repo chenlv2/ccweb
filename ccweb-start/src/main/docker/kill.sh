@@ -1,6 +1,6 @@
 #!/bin/sh
 
-APP_NAME=bservice-task-0.0.1-SNAPSHOT.jar
+APP_NAME=ccweb-start-0.0.1-SNAPSHOT.jar
 tpid=`ps -ef|grep $APP_NAME|grep -v grep|grep -v kill|awk '{print $2}'`
 
 if [ ${tpid} ]; then

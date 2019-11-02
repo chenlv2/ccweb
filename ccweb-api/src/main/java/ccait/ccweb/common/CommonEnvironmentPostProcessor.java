@@ -22,7 +22,7 @@ public class CommonEnvironmentPostProcessor implements EnvironmentPostProcessor 
     public void postProcessEnvironment(ConfigurableEnvironment configurableEnvironment, SpringApplication springApplication) {
         //tomcat路径
         String property = System.getProperty("catalina.home");
-        System.out.println("catalinahome: " + property);
+        System.out.println("catalina home: " + property);
         String path =property+ File.separator + "conf" + File.separator+"application.properties";
         File file = new File(path);
         if (file.exists()) {

@@ -57,38 +57,51 @@ public class CcwebAppliction {
             app.run(clazz, args);
         }
 
-        if(StringUtils.isNotEmpty(ApplicationConfig.getInstance().get("${log4j.config.path}"))) {
-            String logConfigPath = System.getProperty("user.dir") + "/" +
-                    ApplicationConfig.getInstance().get("${log4j.config.path}");
+        String path = null;
+        File file = null;
 
-            File file = new File(logConfigPath);
-            if(!file.exists()) {
-                try {
-                    logConfigPath = Thread.currentThread().getContextClassLoader()
-                            .getResource(ApplicationConfig.getInstance()
-                                    .get("${log4j.config.path}")).toURI().getPath();
+        if(file==null || !file.exists()) {
+            if(StringUtils.isNotEmpty(ApplicationConfig.getInstance().get("${log4j.config.path}"))) {
+                String logConfigPath = System.getProperty("user.dir") + "/" +
+                        ApplicationConfig.getInstance().get("${log4j.config.path}");
 
-                    file = new File(logConfigPath);
-                    if(!file.exists()) {
-                        logConfigPath = null;
-                    }
-                } catch (URISyntaxException e) {
-                    System.out.println("URISyntaxException message=======>" + e.getMessage());
-                    logConfigPath = null;
-                }
+                file = new File(logConfigPath);
             }
+        }
 
-            if(StringUtils.isNotEmpty(logConfigPath)) {
+        if(!file.exists()) {
+            try {
+                path = Thread.currentThread().getContextClassLoader()
+                        .getResource(ApplicationConfig.getInstance()
+                                .get("${log4j.config.path}")).toURI().getPath();
 
-                PropertyConfigurator.configure(logConfigPath);
+                file = new File(path);
+            } catch (URISyntaxException e) {
+                System.out.println("URISyntaxException message=======>" + e.getMessage());
+            }
+        }
 
-                ConfigurationSource source = new ConfigurationSource(new FileInputStream(logConfigPath), file);
+        if(!file.exists()) {
+            String property = System.getProperty("catalina.home");
+            System.out.println("catalina home: " + property);
+            path =property+ File.separator + "conf" + File.separator + "log4j2.xml";
+            file = new File(path);
+        }
 
-                if(source != null) {
+        if(file.exists() && StringUtils.isNotEmpty(path)) {
+
+            PropertyConfigurator.configure(path);
+
+            if(file.exists()) {
+
+                ConfigurationSource source = new ConfigurationSource(new FileInputStream(path), file);
+
+                if (source != null) {
                     Configurator.initialize(null, source);
                 }
-                System.out.println("Current log4j path: " + logConfigPath);
             }
+
+            System.out.println("Current log4j path: " + path);
         }
 
         log.info( "---------------------------------------------------------------------------------------" );

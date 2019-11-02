@@ -36,6 +36,14 @@ public class EntitesGenerator {
                     + ApplicationConfig.getInstance().get("entity.queryable.configFile", "db-config.xml");
 
             Collection<DataSource> dsList = DataSourceFactory.getInstance().getAllDataSource(configPath);
+            if(dsList == null || dsList.size() < 1) {
+                //tomcat路径
+                String property = System.getProperty("catalina.home");
+                System.out.println("catalina home: " + property);
+                String path =property+ File.separator + "conf" + File.separator + "db-config.xml";
+                dsList = DataSourceFactory.getInstance().getAllDataSource(path);
+            }
+
             for(DataSource ds : dsList) {
                 List<String> tablenames = Queryable.getTables(ds.getId());
                 for(String tb : tablenames) {
