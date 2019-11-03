@@ -73,9 +73,9 @@ entity:
   #设置开放的数据源，对应db-config.xml的environment id
   datasource: mysql, mssql, sqlite #可通过url的{datasource}参数访问到该数据库，没有在此设置的environment不能通过url访问到
 
-  ip:
-    whiteList: 127.0.0.1 #IP白名单
-    blackList: 127.0.0.2 #IP黑名单
+#  ip:
+#    whiteList: 127.0.0.1 #IP白名单
+#    blackList: 127.0.0.2 #IP黑名单
 
   elasticSearch:
     enable: false

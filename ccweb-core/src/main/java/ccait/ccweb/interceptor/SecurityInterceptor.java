@@ -151,15 +151,23 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
     private boolean allowIp(HttpServletRequest request) {
 
+        whiteListText = ApplicationConfig.getInstance().get("${entity.ip.whiteList}", whiteListText);
+        blackListText = ApplicationConfig.getInstance().get("${entity.ip.blackList}", blackListText);
+
+        log.info("whiteList: " + whiteListText);
+        log.info("blackList: " + blackListText);
+        
         List<String> whiteList = StringUtils.splitString2List(whiteListText, ",");
         List<String> blackList = StringUtils.splitString2List(blackListText, ",");
 
-        if(StringUtils.isEmpty(getClientIp(request))) {
+        String accessIP = getClientIp(request);
+        log.info("access ip =====>>> " + accessIP);
+        if(StringUtils.isEmpty(accessIP)) {
             return false;
         }
 
         if(whiteList.size() > 0) {
-            if (whiteList.contains(getClientIp(request))) {
+            if (whiteList.contains(accessIP)) {
                 return true;
             }
 
@@ -169,7 +177,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         }
 
         if(blackList.size() > 0) {
-            if (blackList.contains(getClientIp(request))) {
+            if (blackList.contains(accessIP)) {
                 return false;
             }
         }
