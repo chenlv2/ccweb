@@ -33,6 +33,7 @@ import org.springframework.web.servlet.HandlerMapping;
 import org.springframework.web.servlet.ModelAndView;
 import sun.misc.BASE64Encoder;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
     private String blackListText;
 
     @Value("${entity.table.maxJoin:5}")
-    private int maxJoin;
+    private Integer maxJoin;
 
     @Value("${entity.datasource:}")
     private String datasourceString;
@@ -69,6 +70,14 @@ public class SecurityInterceptor implements HandlerInterceptor {
     private static final Logger log = LogManager.getLogger( SecurityInterceptor.class );
 
     private boolean hasUploadFile;
+
+    @PostConstruct
+    private void construct() {
+        admin = ApplicationConfig.getInstance().get("${entity.security.admin.username}", admin);
+        password = ApplicationConfig.getInstance().get("${entity.security.admin.password}", password);
+        maxJoin = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.table.maxJoin}", maxJoin.toString()));
+        datasourceString = ApplicationConfig.getInstance().get("${entity.datasource}", datasourceString);
+    }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {

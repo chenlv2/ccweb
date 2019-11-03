@@ -20,12 +20,14 @@ import ccait.ccweb.model.QueryInfo;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.model.UserModel;
 import ccait.ccweb.utils.FastJsonUtils;
+import entity.query.core.ApplicationConfig;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -53,6 +55,13 @@ public final class UserTableTrigger implements ITrigger {
 
     @Value("${entity.security.admin.username:admin}")
     private String admin;
+
+    @PostConstruct
+    private void construct() {
+        admin = ApplicationConfig.getInstance().get("${entity.encoding}", admin);
+        encoding = ApplicationConfig.getInstance().get("${entity.security.admin.password}", encoding);
+        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
+    }
 
     @Override
     public void onInsert(Map<String, Object> data, HttpServletRequest request) throws Exception {

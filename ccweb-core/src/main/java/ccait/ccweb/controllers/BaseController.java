@@ -45,6 +45,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 import sun.misc.BASE64Decoder;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -150,6 +151,11 @@ public abstract class BaseController {
 
     public BaseController() {
         RMessage = new ResponseData<Object>();
+    }
+
+    @PostConstruct
+    private void construct() {
+        admin = ApplicationConfig.getInstance().get("${entity.security.admin.username}", admin);
     }
 
     protected Logger getLogger()

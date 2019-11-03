@@ -17,6 +17,7 @@ import ccait.ccweb.utils.EncryptionUtil;
 import entity.query.ColumnInfo;
 import entity.query.Datetime;
 import entity.query.Queryable;
+import entity.query.core.ApplicationConfig;
 import entity.query.core.DataSource;
 import entity.query.core.DataSourceFactory;
 import entity.tool.util.StringUtils;
@@ -27,6 +28,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.PostConstruct;
 import java.util.*;
 
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
@@ -156,6 +159,30 @@ public class ApplicationContext implements ApplicationContextAware {
      */
     public static boolean hasBean(String name) {
         return instance.containsBean(name);
+    }
+
+    @PostConstruct
+    private void construct() {
+        admin = ApplicationConfig.getInstance().get("${entity.security.admin.username}", admin);
+        password = ApplicationConfig.getInstance().get("${entity.security.admin.password}", password);
+        configFile = ApplicationConfig.getInstance().get("${entity.queryable.configFile}", configFile);
+        md5Fields = ApplicationConfig.getInstance().get("${entity.security.encrypt.MD5.fields}", md5Fields);
+
+        md5PublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.MD5.publicKey}", md5PublicKey);
+        base64Fields = ApplicationConfig.getInstance().get("${entity.security.encrypt.BASE64.fields}", base64Fields);
+
+        macFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.MAC.fields}", macFields);
+        shaFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.SHA.fields}", shaFields);
+        macPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.MAC.publicKey}", macPublicKey);
+        aesFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.fields}", aesFields);
+        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
+        encoding = ApplicationConfig.getInstance().get("${entity.encoding}", encoding);
+        createOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createOn}", createOnField);
+        modifyOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.modifyOn}", modifyOnField);
+        userPathField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userPath}", userPathField);
+        groupIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.groupId}", groupIdField);
+        roleIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.roleId}", roleIdField);
+        createByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createBy}", createByField);
     }
 
     /**
