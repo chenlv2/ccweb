@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Blob;
 import java.util.*;
@@ -68,6 +69,15 @@ public final class DefaultTrigger {
 
     @Autowired
     private QueryInfo queryInfo;
+
+    @PostConstruct
+    private void construct() {
+        encoding = ApplicationConfig.getInstance().get("${entity.encoding}", encoding);
+        createOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createOn}", createOnField);
+        modifyOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.modifyOn}", modifyOnField);
+        userPathField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userPath}", userPathField);
+        createByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createBy}", createByField);
+    }
 
     @OnInsert
     public void onInsert(Map<String, Object> data, HttpServletRequest request) throws Exception {

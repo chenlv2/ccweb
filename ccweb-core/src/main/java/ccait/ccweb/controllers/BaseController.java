@@ -141,21 +141,38 @@ public abstract class BaseController {
     private String admin;
 
     @Value("${entity.upload.max:10}")
-    private int uploadMax;
+    private Integer uploadMax;
 
     @Value("${entity.download.thumb.fixedWidth:0}")
-    private int fixedWidth;
+    private Integer fixedWidth;
 
     @Value("${entity.download.thumb.scalRatio:0}")
-    private int scalRatio;
+    private Integer scalRatio;
 
     public BaseController() {
         RMessage = new ResponseData<Object>();
     }
 
+
     @PostConstruct
     private void construct() {
         admin = ApplicationConfig.getInstance().get("${entity.security.admin.username}", admin);
+        uploadMax = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.upload.max}", uploadMax.toString()));
+        fixedWidth = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.download.thumb.fixedWidth}", fixedWidth.toString()));
+        scalRatio = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.download.thumb.scalRatio}", scalRatio.toString()));
+        md5Fields = ApplicationConfig.getInstance().get("${entity.security.encrypt.MD5.fields}", md5Fields);
+        md5PublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.MD5.publicKey}", md5PublicKey);
+        base64Fields = ApplicationConfig.getInstance().get("${entity.security.encrypt.BASE64.fields}", base64Fields);
+        macFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.MAC.fields}", macFields);
+        shaFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.SHA.fields}", shaFields);
+        macPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.MAC.publicKey}", macPublicKey);
+        aesFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.fields}", aesFields);
+        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
+        encoding = ApplicationConfig.getInstance().get("${entity.encoding}", encoding);
+        userPathField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userPath}", userPathField);
+        groupIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.groupId}", groupIdField);
+        createByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createBy}", createByField);
+
     }
 
     protected Logger getLogger()
@@ -693,7 +710,7 @@ public abstract class BaseController {
                     return true;
                 }
 
-                if(data.get(groupIdField) != null) { 
+                if(data.get(groupIdField) != null) {
 
                     Optional<UserGroupRoleModel> opt = getLoginUser().getUserGroupRoleModels().stream()
                             .filter(a -> a.getGroupId().equals(data.get(groupIdField))).findAny();
@@ -900,7 +917,7 @@ public abstract class BaseController {
                         .join(tableList.get(j).getJoinMode(), q, tableList.get(j).getAlias());
             }
         }
-        
+
         Where where = queryInfo
                 .getWhereQuerableByJoin(tableList,
                         join.on(tableOnMap.get(tableList.get(tableList.size() - 1))) );
