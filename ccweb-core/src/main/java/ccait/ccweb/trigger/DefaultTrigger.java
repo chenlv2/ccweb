@@ -252,7 +252,10 @@ public final class DefaultTrigger {
             }
 
             for(int i=0; i<list.size(); i++) {
-                List<String> keyList = (List<String>) list.get(i).keySet().stream().map(a->a.toString()).collect(Collectors.toList());
+                if(list.get(i)==null) {
+                    continue;
+                }
+                List<String> keyList = (List<String>) list.get(i).keySet().stream().map(a->a!=null ? a.toString() : "").collect(Collectors.toList());
                 for(Object key : keyList) {
                     if(ApplicationConfig.getInstance().get(String.format("${entity.table.display.%s.%s}", BaseController.getTablename(), key.toString())).equals("hidden")) {
                         list.get(i).remove(key);

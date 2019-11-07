@@ -42,17 +42,23 @@ public class DynamicClassBuilder {
 
     public static Object create(String tablename, List<ColumnInfo> columns) {
 
+        log.info("public static Object create(String tablename, List<ColumnInfo> columns)");
         String suffix = UUID.randomUUID().toString().replace("-", "");
         JavaFile javaFile = getJavaFile(columns, tablename, "id", "public", suffix);
 
         try {
             String className = String.format("%s%s", tablename.substring(0, 1).toUpperCase() + tablename.substring(1), suffix);
 
+            log.info(String.format("ApplicationConfig.getInstance()=======>?", ApplicationConfig.getInstance()) );
             String packagePath = ApplicationConfig.getInstance().get("entity.package", DEFAULT_PACKAGE);
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
+            if(compiler == null) {
+                log.error("compiler has been null!!!");
+            }
             StandardJavaFileManager stdManager = compiler.getStandardFileManager(null, null, null);
             try (MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)) {
+                log.info("MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)");
                 JavaFileObject javaFileObject = manager.makeStringSource(String.format("%s.java", className), javaFile.toString());
 
                 List<String> options = null;
@@ -86,6 +92,9 @@ public class DynamicClassBuilder {
                         return bean;
                     }
                 }
+            }
+            catch (Exception e) {
+                log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
             }
         }
         catch (Exception e){
