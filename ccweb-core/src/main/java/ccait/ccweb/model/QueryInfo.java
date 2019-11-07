@@ -124,7 +124,7 @@ public class QueryInfo implements Serializable {
     public Where getWhereQuerable(String tablename, Object entity, PrivilegeScope privilegeScope) throws Exception {
         return getWhereQuerable(tablename, null, entity, privilegeScope);
     }
-    
+
     /***
      * 获取查询条件
      * @param entity
@@ -282,7 +282,13 @@ public class QueryInfo implements Serializable {
             }
 
             else {
-                list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                if(null == info.getFunction()) {
+                    list.add(field);
+                }
+
+                else {
+                    list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                }
             }
         }
 

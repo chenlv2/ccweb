@@ -165,7 +165,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         log.info("whiteList: " + whiteListText);
         log.info("blackList: " + blackListText);
-        
+
         List<String> whiteList = StringUtils.splitString2List(whiteListText, ",");
         List<String> blackList = StringUtils.splitString2List(blackListText, ",");
 
@@ -241,79 +241,76 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
     private Boolean canAccessTable(String method, RequestWrapper request, AccessCtrl requiredPermission, Map<String, String> attrs, String table) throws Exception {
 
-        if(requiredPermission == null) {
+        if(requiredPermission == null || requiredPermission.groupName().isEmpty()) {
+            ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
             return true;
         }
 
         //先执行触发器
         runTrigger(table, method, attrs, request.getRequestPostString(), request);
 
-        // 如果标记了注解，则判断权限
-        if (requiredPermission != null) {
+        // redis或数据库或session 中获取该用户的权限信息 并判断是否有权限
+        UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
 
-            // redis或数据库或session 中获取该用户的权限信息 并判断是否有权限
-            UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
+        if( user != null && user.getUsername().equals(admin) ) { //超级管理员
+            log.info(String.format(LOG_PRE_SUFFIX + "超级管理员访问表[%s]，操作：%s！", table, method));
+            ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
+            return true;
+        }
 
-            if( user != null && user.getUsername().equals(admin) ) { //超级管理员
-                log.info(String.format(LOG_PRE_SUFFIX + "超级管理员访问表[%s]，操作：%s！", table, method));
-                ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
+        if(Pattern.matches("^/(?i)(as)?(?i)api/[^/]+(/[^/]+)?/(?i)build$", request.getRequestURI())) {
+            return false;
+        }
+
+        AclModel acl = new AclModel();
+        acl.setTableName(table);
+        List<AclModel> aclList = acl.where("[tableName]=#{tableName}").query();
+        if(aclList == null || aclList.size() < 1) {
+
+            if(method.equals("GET") || method.equals("POST") || (user != null && user.getUsername().equals(admin)) ) {
+                log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，允许查询！", table));
                 return true;
             }
 
-            if(Pattern.matches("^/(?i)(as)?(?i)api/[^/]+(/[^/]+)?/(?i)build$", request.getRequestURI())) {
-                return false;
-            }
-
-            AclModel acl = new AclModel();
-            acl.setTableName(table);
-            List<AclModel> aclList = acl.where("[tableName]=#{tableName}").query();
-            if(aclList == null || aclList.size() < 1) {
-
-                if(method.equals("GET") || method.equals("POST") || (user != null && user.getUsername().equals(admin)) ) {
-                    log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，允许查询！", table));
-                    return true;
-                }
-
-                log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，不允许增删改！", table));
-                return false;
-            }
-
-            List<UUID> groupIds = aclList.stream().map(a->a.getGroupId()).collect(Collectors.toList());
-
-            if(StringUtils.isNotEmpty(requiredPermission.groupName()) &&
-                    !groupIds.contains(requiredPermission.groupName()) ) { //不属于指定组
-                log.warn(String.format(LOG_PRE_SUFFIX + "表[%s]的群组不属于%s！", table, requiredPermission.groupName()));
-                return false;
-            }
-
-            if(user == null) {
-                log.warn(LOG_PRE_SUFFIX + "用户未登录！！！");
-                return false;
-            }
-
-            boolean hasGroup = false;
-            for (UUID groupId : groupIds) {
-                Optional<UserGroupRoleModel> opt = user.getUserGroupRoleModels().stream()
-                        .filter(a -> a.getGroup().getGroupId().equals(groupId)).findAny();
-
-                if(opt != null && opt.isPresent()) {
-                    hasGroup = true;
-                    break;
-                }
-            }
-
-            if( !hasGroup ) {
-                log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]的群组于表%s中不存在！", user.getUsername(), table));
-                return false;
-            }
-
-            List<UUID> aclIds = aclList.stream().map(a->a.getAclId()).collect(Collectors.toList());
-            if(!checkPrivilege(table, user, aclIds, method, attrs, request.getRequestPostString(), request)){
-                log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]对表%s没有%s的操作权限！", user.getUsername(), table, method));
-                return false;
-            }
-
+            log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，不允许增删改！", table));
+            return false;
         }
+
+        List<UUID> groupIds = aclList.stream().map(a->a.getGroupId()).collect(Collectors.toList());
+
+        if(StringUtils.isNotEmpty(requiredPermission.groupName()) &&
+                !groupIds.contains(requiredPermission.groupName()) ) { //不属于指定组
+            log.warn(String.format(LOG_PRE_SUFFIX + "表[%s]的群组不属于%s！", table, requiredPermission.groupName()));
+            return false;
+        }
+
+        if(user == null) {
+            log.warn(LOG_PRE_SUFFIX + "用户未登录！！！");
+            return false;
+        }
+
+        boolean hasGroup = false;
+        for (UUID groupId : groupIds) {
+            Optional<UserGroupRoleModel> opt = user.getUserGroupRoleModels().stream()
+                    .filter(a -> a.getGroup().getGroupId().equals(groupId)).findAny();
+
+            if(opt != null && opt.isPresent()) {
+                hasGroup = true;
+                break;
+            }
+        }
+
+        if( !hasGroup ) {
+            log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]的群组于表%s中不存在！", user.getUsername(), table));
+            return false;
+        }
+
+        List<UUID> aclIds = aclList.stream().map(a->a.getAclId()).collect(Collectors.toList());
+        if(!checkPrivilege(table, user, aclIds, method, attrs, request.getRequestPostString(), request)){
+            log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]对表%s没有%s的操作权限！", user.getUsername(), table, method));
+            return false;
+        }
+
         return null;
     }
 
