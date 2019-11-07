@@ -19,7 +19,6 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 @Configuration
-@ConditionalOnProperty(prefix = "ws", name = "enable", havingValue = "true")
 @EnableWebSocket
 public class WebSocketConfig {
 
