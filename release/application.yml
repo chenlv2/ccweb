@@ -67,7 +67,7 @@ entity:
       fixedWidth: 200 #固定宽度
       scalRatio: 50 #缩放比率(百分比)
       watermark: watermark.png #水印
-      
+
   enableFlux: true   #是否开启web异步响应流
 
   #设置开放的数据源，对应db-config.xml的environment id
@@ -111,6 +111,10 @@ feign:
 spring:
   application:
     name: ccait.ccweb #服务名
+  datasource:
+    druid:
+      test-on-borrow: true
+      test-while-idle: true
   zipkin: #分布式链路配置
     base-url: http://localhost:9411
   thymeleaf:

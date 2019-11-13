@@ -62,16 +62,17 @@ entity:
       testtt: #对应表名
         file: gif, jpg, png #对应字段，没有设置的字段为不限制，值为文件后辍名(逗号分隔)
 
+
   download: #下载设置
     thumb:  #预览的缩略图
       fixedWidth: 200 #固定宽度
       scalRatio: 50 #缩放比率(百分比)
       watermark: watermark.png #水印
-      
+
   enableFlux: true   #是否开启web异步响应流
 
   #设置开放的数据源，对应db-config.xml的environment id
-  datasource: mysql, mssql, sqlite #可通过url的{datasource}参数访问到该数据库，没有在此设置的environment不能通过url访问到
+  datasource: workerlib #可通过url的{datasource}参数访问到该数据库，没有在此设置的environment不能通过url访问到
 
 #  ip:
 #    whiteList:  #IP白名单
@@ -111,6 +112,10 @@ feign:
 spring:
   application:
     name: ccait.ccweb #服务名
+  datasource:
+    druid:
+      test-on-borrow: true
+      test-while-idle: true
   zipkin: #分布式链路配置
     base-url: http://localhost:9411
   thymeleaf:
