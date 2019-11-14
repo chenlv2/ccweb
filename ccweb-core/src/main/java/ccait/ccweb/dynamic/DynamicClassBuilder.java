@@ -68,7 +68,10 @@ public class DynamicClassBuilder {
                  */
 
                 options = null;
-                String targetDir = Thread.currentThread().getContextClassLoader().getResource("").getPath().replaceAll("/[^/]+\\.jar!/BOOT-INF/classes!/", "").replace("file:", "");
+                String resourcePath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
+                log.info("-----resourcePath-----: " + resourcePath);
+                String targetDir = resourcePath.replaceAll("/[^/]+\\.jar!/BOOT-INF/classes!/", "").replace("file:", "");
+                //String targetDir = resourcePath.replaceAll("/([^/]+)\\.jar!/BOOT-INF/classes!/", "/$1.jar!/BOOT-INF/lib!/");
                 log.info("-----user.dir-----: " + targetDir);
                 String jarPath = getJarFiles(targetDir);
                 log.info("-----jarPath-----: " + jarPath);
@@ -102,6 +105,10 @@ public class DynamicClassBuilder {
         }
 
         return null;
+    }
+
+    public static boolean isWindows() {
+        return System.getProperties().getProperty("os.name").toUpperCase().indexOf("WINDOWS") != -1;
     }
 
     public static Object create(String tablename, Map<String, Object> data) {
@@ -206,15 +213,19 @@ public class DynamicClassBuilder {
     public static String getJarFiles(String jarPath) throws Exception {
         File sourceFile = new File(jarPath);
         final String[] jars = {""};
+        //log.info("sourceFile.exists(): " + sourceFile.exists());
+        //log.info("sourceFile.isDirectory(): " + sourceFile.isDirectory());
         if (sourceFile.exists()) {// 文件或者目录必须存在
             if (sourceFile.isDirectory()) {// 若file对象为目录
                 // 得到该目录下以.jar 结尾的文件或者目录
                 File[] childrenFiles = sourceFile.listFiles(new FileFilter() {
                     public boolean accept(File file) {
                         if (file.isDirectory()) {
+                            //log.info("file.isDirectory(): true");
                             return true;
                         } else {
                             String name = file.getName();
+                            //log.info("file.getName(): " + name);
                             if (name.endsWith(".jar")) {
                                 file.setReadable(true);
                                 log.info("-----jar: " + file.getPath());
