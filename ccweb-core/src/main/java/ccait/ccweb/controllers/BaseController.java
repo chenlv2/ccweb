@@ -897,6 +897,9 @@ public abstract class BaseController {
             tableList.add(table);
 
             StringBuilder sbOn = new StringBuilder();
+            if(table.getOnList() == null) {
+                throw new Exception("onList can not be empty!!!");
+            }
             for(ConditionInfo on : table.getOnList()) {
                 if(StringUtils.isEmpty(on.getName()) || on.getValue() == null) {
                     continue;
