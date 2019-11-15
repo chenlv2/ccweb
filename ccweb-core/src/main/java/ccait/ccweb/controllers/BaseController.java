@@ -863,7 +863,7 @@ public abstract class BaseController {
 
         encrypt(queryInfo.getConditionList());
 
-        Queryable q = null;
+        Queryable firstQuery = null;
         String[] aliases =  { "a", "b", "c", "d", "e", "f", "g", "h", "i",
                 "j", "k", "l", "m", "n", "o", "p", "q", "e", "r", "s", "t",
                 "u", "v", "w", "x", "y", "z" };
@@ -884,8 +884,8 @@ public abstract class BaseController {
                 continue;
             }
 
-            else if (q == null){
-                q = query;
+            else if (firstQuery == null){
+                firstQuery = query;
             }
 
             table.setEntity(entity);
@@ -909,20 +909,20 @@ public abstract class BaseController {
                         on.setAlgorithm(Algorithm.EQ);
                     }
 
-                    sbOn.append(String.format("[%s]%s%s", on.getName(), on.getAlgorithm().getValue(), DBUtils.getSqlInjValue(on.getValue())));
+                    sbOn.append(String.format("%s%s%s", DBUtils.getSqlInjValue(on.getName()), on.getAlgorithm().getValue(), DBUtils.getSqlInjValue(on.getValue())));
                 }
 
                 tableOnMap.put(table.getTablename(), sbOn.toString());
             }
         }
 
-        Join join = q.as(tableList.get(0).getAlias())
-                .join(tableList.get(1).getJoinMode(), q, tableList.get(1).getAlias());
+        Join join = firstQuery.as(tableList.get(0).getAlias())
+                .join(tableList.get(1).getJoinMode(), (Queryable)tableList.get(1).getEntity(), tableList.get(1).getAlias());
 
         if(tableList.size() > 2) {
             for (int j=2; j<tableList.size();j++) {
-                join = join.on(tableOnMap.get(tableList.get(j))).select("*")
-                        .join(tableList.get(j).getJoinMode(), q, tableList.get(j).getAlias());
+                join = join.on(tableOnMap.get(tableList.get(j-1))).select("*")
+                        .join(tableList.get(j).getJoinMode(), (Queryable) tableList.get(j).getEntity(), tableList.get(j).getAlias());
             }
         }
 
