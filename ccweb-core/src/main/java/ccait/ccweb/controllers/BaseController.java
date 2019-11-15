@@ -16,10 +16,7 @@ import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.context.IndexingContext;
 import ccait.ccweb.context.TriggerContext;
-import ccait.ccweb.enums.DefaultValueMode;
-import ccait.ccweb.enums.EncryptMode;
-import ccait.ccweb.enums.EventType;
-import ccait.ccweb.enums.PrivilegeScope;
+import ccait.ccweb.enums.*;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
 import ccait.ccweb.utils.FastJsonUtils;
@@ -859,6 +856,11 @@ public abstract class BaseController {
             throw new Exception("join tables can not be less tow!!!");
         }
 
+        if(queryInfo.getJoinTables().stream().filter(a->a.getOnList() == null ||
+                a.getOnList().size() < 1).count() == queryInfo.getJoinTables().size()) {
+            throw new Exception("onList can not be empty!!!");
+        }
+
         encrypt(queryInfo.getConditionList());
 
         Queryable q = null;
@@ -896,19 +898,22 @@ public abstract class BaseController {
 
             tableList.add(table);
 
-            StringBuilder sbOn = new StringBuilder();
-            if(table.getOnList() == null) {
-                throw new Exception("onList can not be empty!!!");
-            }
-            for(ConditionInfo on : table.getOnList()) {
-                if(StringUtils.isEmpty(on.getName()) || on.getValue() == null) {
-                    continue;
+            if(table.getOnList() != null) {
+                StringBuilder sbOn = new StringBuilder();
+                for (ConditionInfo on : table.getOnList()) {
+                    if (StringUtils.isEmpty(on.getName()) || on.getValue() == null) {
+                        continue;
+                    }
+
+                    if(on.getAlgorithm() == null) {
+                        on.setAlgorithm(Algorithm.EQ);
+                    }
+
+                    sbOn.append(String.format("[%s]%s%s", on.getName(), on.getAlgorithm().getValue(), DBUtils.getSqlInjValue(on.getValue())));
                 }
 
-                sbOn.append(String.format("[%s]%s%s", on.getName(), on.getAlgorithm().getValue(), on.getValue()));
+                tableOnMap.put(table.getTablename(), sbOn.toString());
             }
-
-            tableOnMap.put(table.getTablename(), sbOn.toString());
         }
 
         Join join = q.as(tableList.get(0).getAlias())
@@ -923,7 +928,7 @@ public abstract class BaseController {
 
         Where where = queryInfo
                 .getWhereQuerableByJoin(tableList,
-                        join.on(tableOnMap.get(tableList.get(tableList.size() - 1))) );
+                        join.on(tableOnMap.get(tableList.get(tableList.size() - 1).getTablename())) );
 
         return getQueryDataByWhere(queryInfo, where);
     }
