@@ -42,14 +42,11 @@ public class DynamicClassBuilder {
 
     public static Object create(String tablename, List<ColumnInfo> columns) {
 
-        log.info("public static Object create(String tablename, List<ColumnInfo> columns)");
         String suffix = UUID.randomUUID().toString().replace("-", "");
         JavaFile javaFile = getJavaFile(columns, tablename, "id", "public", suffix);
 
         try {
             String className = String.format("%s%s", tablename.substring(0, 1).toUpperCase() + tablename.substring(1), suffix);
-
-            log.info(String.format("ApplicationConfig.getInstance()=======>?", ApplicationConfig.getInstance()) );
             String packagePath = ApplicationConfig.getInstance().get("entity.package", DEFAULT_PACKAGE);
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
@@ -58,27 +55,20 @@ public class DynamicClassBuilder {
             }
             StandardJavaFileManager stdManager = compiler.getStandardFileManager(null, null, null);
             try (MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)) {
-                log.info("MemoryJavaFileManager manager = new MemoryJavaFileManager(stdManager)");
                 JavaFileObject javaFileObject = manager.makeStringSource(String.format("%s.java", className), javaFile.toString());
 
                 List<String> options = null;
-
-                /**
-                 * 编译选项，在编译java文件时，编译程序会自动的去寻找java文件引用的其他的java源文件或者class。 -sourcepath选项就是定义java源文件的查找目录， -classpath选项就是定义class文件的查找目录。
-                 */
-
                 options = null;
-                String resourcePath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
-                log.info("-----resourcePath-----: " + resourcePath);
-                String targetDir = resourcePath.replaceAll("/[^/]+\\.jar!/BOOT-INF/classes!/", "").replace("file:", "");
-                //String targetDir = resourcePath.replaceAll("/([^/]+)\\.jar!/BOOT-INF/classes!/", "/$1.jar!/BOOT-INF/lib!/");
-                log.info("-----user.dir-----: " + targetDir);
-                String jarPath = getJarFiles(targetDir);
-                log.info("-----jarPath-----: " + jarPath);
+                String targetDir = Thread.currentThread().getContextClassLoader().getResource("").getPath()
+                        .replaceAll("/[^/]+\\.jar!/BOOT-INF/classes!/", "")
+                        .replace("file:", "");
 
-                if(StringUtils.isNotEmpty(jarPath)) {
-                    options = Arrays.asList("-encoding", "UTF-8", "-classpath", jarPath, "-d", targetDir, "-sourcepath", targetDir);
-                    log.info("-classpath --> " + jarPath);
+                log.info("-----user.dir-----: " + targetDir);
+                String classpath = getJarFiles(targetDir + "/libs");
+                log.info("-----classpath-----: " + classpath);
+
+                if(StringUtils.isNotEmpty(classpath)) {
+                    options = Arrays.asList("-encoding", "UTF-8", "-classpath", classpath, "-d", targetDir, "-sourcepath", targetDir);
                 }
 
                 JavaCompiler.CompilationTask task = compiler.getTask(null, manager, null, options, null, Arrays.asList(javaFileObject));
@@ -213,23 +203,23 @@ public class DynamicClassBuilder {
     public static String getJarFiles(String jarPath) throws Exception {
         File sourceFile = new File(jarPath);
         final String[] jars = {""};
-        //log.info("sourceFile.exists(): " + sourceFile.exists());
-        //log.info("sourceFile.isDirectory(): " + sourceFile.isDirectory());
         if (sourceFile.exists()) {// 文件或者目录必须存在
             if (sourceFile.isDirectory()) {// 若file对象为目录
                 // 得到该目录下以.jar 结尾的文件或者目录
                 File[] childrenFiles = sourceFile.listFiles(new FileFilter() {
                     public boolean accept(File file) {
                         if (file.isDirectory()) {
-                            //log.info("file.isDirectory(): true");
                             return true;
                         } else {
                             String name = file.getName();
-                            //log.info("file.getName(): " + name);
                             if (name.endsWith(".jar")) {
                                 file.setReadable(true);
                                 log.info("-----jar: " + file.getPath());
-                                jars[0] = jars[0] + file.getPath() + ";";
+                                String spliter = ":";
+                                if(isWindows()) {
+                                    spliter = ";";
+                                }
+                                jars[0] = jars[0] + file.getPath() + spliter;
                                 return true;
                             }
                             return false;

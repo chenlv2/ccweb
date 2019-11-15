@@ -2,14 +2,14 @@
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-    <environments default="workerlib">
-        <environment id="workerlib" classScope="public" >
+    <environments default="sqlite">
+        <environment id="mysql" classScope="public" >
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
                 <property name="driver" value="com.mysql.jdbc.Driver" />
-                <property name="url" value="jdbc:mysql://47.106.69.253:3306/workerlib?useUnicode=true&amp;characterEncoding=UTF-8&amp;useSSL=false&amp;autoReconnect=true&amp;failOverReadOnly=false&amp;serverTimezone=CTT&amp;noAccessToProcedureBodies=true" />
+                <property name="url" value="jdbc:mysql://127.0.0.1:3306/ccait?serverTimezone=Asia/Shanghai&amp;useSSL=false&amp;connectTimeout=60000&amp;socketTimeout=60000&amp;autoReconnect=true" />
                 <property name="username" value="root" />
-                <property name="password" value="Hujiang666" />
+                <property name="password" value="123456" />
             </dataSource>
         </environment>
         <environment id="mssql" classScope="public">

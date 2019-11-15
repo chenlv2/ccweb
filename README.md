@@ -32,9 +32,9 @@ ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组�
 * ccweb-start-1.0.0-SNAPSHOT.jar 【ccweb默认服务启动包 [下载](https://github.com/linlurui/ccweb/raw/master/release/ccweb-start-1.0.0-SNAPSHOT.jar)】
 * application.yml 【应用程序主配置文件 [详情](https://github.com/linlurui/ccweb/blob/master/release/application.yml)】
 * db-config.xml 【数据库连接配置文件 [详情](https://github.com/linlurui/ccweb/blob/master/release/db-config.xml)】
-* entity.queryable-2.0-SNAPSHOT.jar【动态查询依赖包 [下载](https://github.com/linlurui/ccweb/raw/master/release/entity.queryable-2.0-SNAPSHOT.jar)】
-* rxjava-2.1.10.jar【查询结果异步IO依赖包 [下载](https://github.com/linlurui/ccweb/raw/master/release/rxjava-2.1.10.jar)】
-* spring-context-5.0.4.RELEASE.jar【动态实体注入依赖包 [下载](https://github.com/linlurui/ccweb/raw/master/release/spring-context-5.0.4.RELEASE.jar)】
+* entity.queryable-2.0-SNAPSHOT.jar【动态查询依赖包 [下载](https://github.com/linlurui/ccweb/raw/master/release/libs/entity.queryable-2.0-SNAPSHOT.jar)】
+* rxjava-2.1.10.jar【查询结果异步IO依赖包 [下载](https://github.com/linlurui/ccweb/raw/master/release/libs/rxjava-2.1.10.jar)】
+* spring-context-5.0.4.RELEASE.jar【动态实体注入依赖包 [下载](https://github.com/linlurui/ccweb/raw/master/release/libs/spring-context-5.0.4.RELEASE.jar)】
 * install.sh【linux系统依赖包安装脚本，需要先安装JDK1.8并且使用JDK自带的JRE，windows下需要安装cygwin来运行该脚本 [详情](https://github.com/linlurui/ccweb/blob/master/release/install.sh)】
 * log4j2.xml 【可选，log4j2日志配置文件，记录ccweb服务异常信息 [详情](https://github.com/linlurui/ccweb/blob/master/release/log4j2.xml)】
 
@@ -512,4 +512,4 @@ public final class DefaultTrigger {
 ```
 
 ## 打包说明
-目前只支持打成jar包，且jar包只有在windows下支持使用动态查询功能，在linul环境下建议使用EntitesGenerator生成实体类。
+目前只支持jar包启动，要使用动态查询功能需要将rxjava-2.1.10.jar、spring-context-5.0.4.RELEASE.jar、entity.queryable-2.0-SNAPSHOT.jar复制到jar包同级路径的libs下，建议使用EntitesGenerator生成实体类。
