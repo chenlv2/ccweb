@@ -126,18 +126,19 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```javascript
 {
     "joinTables": [{
-        "tablename": "user", //表名
-        "alias": "a", //别名, 可选
-        "fields": [{ //查询字段
-            "name": "id"
-        }, ... ], 
-        "JoinMode": "Inner", //联表方式：Inner, Left, Right, Outer, Cross
-        "onList": [{ //联表条件
-            "name": "id",   //字段名
-            "value": "1",   //值
-            "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!=")
-        }, ... ],
-    }, ... ]
+        "tablename": "salary",
+        "alias": "a",
+        "joinMode": "inner"
+    }, {
+        "tablename": "archives",
+        "alias": "b",
+        "joinMode": "Inner",
+        "onList": [{ 
+            "name": "b.id",   
+            "value": "a.archives_id",   
+            "algorithm": "EQ"
+        }]
+    }, ...],
     "pageInfo" : {
         "pageIndex": 1, //页码
         "pageSize": 50  //每页条数
