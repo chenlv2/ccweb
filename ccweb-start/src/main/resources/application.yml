@@ -57,11 +57,11 @@ entity:
         password: hidden
 
   upload: #上传设置
-    max: 10 #上传文件最大尺寸，单位: MB
-    mimeType: #允许上传的文件格式
-      testtt: #对应表名
-        file: gif, jpg, png #对应字段，没有设置的字段为不限制，值为文件后辍名(逗号分隔)
-
+    testtt: #表名
+      file: #字段名
+        maxSize: 10 #上传文件最大尺寸，单位: MB
+        mimeType: gif, jpg, png #允许上传的文件格式
+        path: /uploadFiles #上传路径的绝对路径
 
   download: #下载设置
     thumb:  #预览的缩略图

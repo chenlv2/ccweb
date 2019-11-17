@@ -19,6 +19,7 @@ import ccait.ccweb.enums.PrivilegeScope;
 import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.FastJsonUtils;
+import ccait.ccweb.utils.UploadUtils;
 import entity.query.ColumnInfo;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.StringUtils;
@@ -105,7 +106,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         return false;
     }
 
-    private boolean vaildForUploadFiles(RequestWrapper request, String table) throws MagicParseException, MagicException, MagicMatchNotFoundException {
+    private boolean vaildForUploadFiles(RequestWrapper request, String table) throws Exception {
 
         if(request.getParameters() == null) {
             return true;
@@ -124,33 +125,66 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         hasUploadFile = true;
 
+        String currentDatasource = "default";
+        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+        }
+
+        Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(String.format("entity.upload.%s.%s", currentDatasource, table));
+        if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
+            return false;
+        }
+
         for(Map.Entry<String, Object> fileEntry : files) {
+
             byte[] fileBytes = (byte[]) fileEntry.getValue();
             MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
             String mimeType = mimeMatcher.getMimeType();
 
             if(StringUtils.isEmpty(mimeType)) {
-                return false;
+                continue;
             }
 
-            Map<String, Object> configMap = ApplicationConfig.getInstance()
-                    .getMap("entity.upload.mimeType." + table);
-
-            if(configMap != null && configMap.containsKey(fileEntry.getKey()) && configMap.get(fileEntry.getKey()) != null) {
-                if(!StringUtils.splitString2List(configMap.get(fileEntry.getKey()).toString(), ",").stream()
-                        .filter(a-> mimeMatcher.getExtension().equalsIgnoreCase(a.toString().trim()))
-                        .findAny().isPresent()) {
-                    return false;
+            if(uploadConfigMap.containsKey(fileEntry.getKey()) && uploadConfigMap.get(fileEntry.getKey()) != null) {
+                Map<String, Object> configMap = (Map<String, Object>) uploadConfigMap.get(fileEntry.getKey());
+                if (configMap.get("mimeType") != null) {
+                    if (!StringUtils.splitString2List(configMap.get("mimeType").toString(), ",").stream()
+                            .filter(a -> mimeMatcher.getExtension().equalsIgnoreCase(a.toString().trim()))
+                            .findAny().isPresent()) {
+                        throw new Exception("Can not supported file type!!!");
+                    }
                 }
+
+                if (configMap.get("maxSize") != null) {
+                    if (fileBytes.length > 1024 * 1024 * Integer.parseInt(configMap.get("maxSize").toString())) {
+                        throw new Exception("Upload field to be long!!!");
+                    }
+                }
+
+                String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
+                String filename = data.get(tempKey).toString();
+
+                String value = null;
+                if(configMap.get("path") != null) {
+                    String root = configMap.get("path").toString();
+                    if(root.lastIndexOf("/") == root.length() - 1 ||
+                            root.lastIndexOf("\\") == root.length() - 1) {
+                        root = root.substring(0, root.length() - 2);
+                    }
+                    root = String.format("%s/%s/%s/%s", root, currentDatasource, table, fileEntry.getKey());
+
+                    value = UploadUtils.upload(root, filename, fileBytes);
+                }
+
+                else {
+
+                    //返回Base64编码过的字节数组字符串
+                    value = String.format("%s::%s::%s|::|%s", mimeType, mimeMatcher.getExtension(), filename, new BASE64Encoder().encode(fileBytes));
+                }
+
+                data.put(fileEntry.getKey(), value);
+                data.remove(tempKey);
             }
-
-            String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
-            String filename = data.get(tempKey).toString();
-
-            //返回Base64编码过的字节数组字符串
-            String value = String.format("%s::%s::%s|::|%s", mimeType, mimeMatcher.getExtension(), filename, new BASE64Encoder().encode(fileBytes));
-            data.put(fileEntry.getKey(), value);
-            data.remove(tempKey);
         }
 
         request.setPostParameter(data);

@@ -1,6 +1,7 @@
 package ccait.ccweb.utils;
 
 
+import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -85,6 +86,9 @@ public final class ImageUtils {
     public static BufferedImage watermark(BufferedImage srcImg, String waterMarkContent,Color markContentColor,Font font) {
         try {
 
+            if(StringUtils.isEmpty(waterMarkContent)) {
+                return srcImg;
+            }
             int srcImgWidth = srcImg.getWidth();//获取图片的宽
             int srcImgHeight = srcImg.getHeight();//获取图片的高
             // 加水印

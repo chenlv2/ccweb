@@ -21,6 +21,7 @@ import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
 import ccait.ccweb.utils.FastJsonUtils;
 import ccait.ccweb.utils.ImageUtils;
+import ccait.ccweb.utils.UploadUtils;
 import entity.query.*;
 import entity.query.annotation.PrimaryKey;
 import entity.query.core.ApplicationConfig;
@@ -48,6 +49,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
@@ -137,9 +139,6 @@ public abstract class BaseController {
     @Value("${entity.security.admin.username:admin}")
     private String admin;
 
-    @Value("${entity.upload.max:10}")
-    private Integer uploadMax;
-
     @Value("${entity.download.thumb.fixedWidth:0}")
     private Integer fixedWidth;
 
@@ -154,7 +153,6 @@ public abstract class BaseController {
     @PostConstruct
     private void construct() {
         admin = ApplicationConfig.getInstance().get("${entity.security.admin.username}", admin);
-        uploadMax = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.upload.max}", uploadMax.toString()));
         fixedWidth = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.download.thumb.fixedWidth}", fixedWidth.toString()));
         scalRatio = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.download.thumb.scalRatio}", scalRatio.toString()));
         md5Fields = ApplicationConfig.getInstance().get("${entity.security.encrypt.MD5.fields}", md5Fields);
@@ -341,11 +339,6 @@ public abstract class BaseController {
             String valString = DBUtils.getSqlInjValue(postData.get(argname).toString());
             String fieldName = opt.get().getName();
             Class<?> type = opt.get().getType();
-            if(Blob.class.equals(type) && StringUtils.isNotEmpty(valString)) {
-                if(valString.getBytes().length > 1024 * 1024 * uploadMax) {
-                    throw new Exception("Upload field to be long!!!");
-                }
-            }
 
             Object value = cast(type, valString);
 
@@ -802,6 +795,10 @@ public abstract class BaseController {
             }
 
             result.add(where.asyncDelete().toList().blockingGet());
+
+            String currentDatasource = getCurrentDatasourceId();
+
+            deleteFileByFieldname(table, data, currentDatasource);
         }
 
         return result;
@@ -821,7 +818,7 @@ public abstract class BaseController {
         }
 
         Where where = queryInfo.getWhereQueryableById(entity, id);
-        Map data = (Map) where.first(Map.class);
+        Map<String, Object> data = (Map<String, Object>) where.first(Map.class);
         if(data == null) {
             throw new Exception("Can not find data for delete!!!");
         }
@@ -833,10 +830,46 @@ public abstract class BaseController {
         Integer result = null;
 
         if(where.delete()){
+            String currentDatasource = getCurrentDatasourceId();
+
+            deleteFileByFieldname(table, data, currentDatasource);
             result = 1;
         }
 
         return result;
+    }
+
+    private String getCurrentDatasourceId() {
+        String currentDatasource = "default";
+        if (ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+        }
+        return currentDatasource;
+    }
+
+    private void deleteFileByFieldname(String table, Map<String, Object> data, String currentDatasource) {
+        for(String fieldname : data.keySet()) {
+
+            Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance()
+                    .getMap(String.format("entity.upload.%s.%s.%s", currentDatasource, table, fieldname));
+
+            if(uploadConfigMap == null ||
+                    uploadConfigMap.size() < 1 ||
+                    uploadConfigMap.get("path") == null) {
+                continue;
+            }
+
+            String root = uploadConfigMap.get("path").toString();
+            if(root.lastIndexOf("/") == root.length() - 1 ||
+                    root.lastIndexOf("\\") == root.length() - 1) {
+                root = root.substring(0, root.length() - 2);
+            }
+            root = String.format("%s/%s/%s/%s", root, currentDatasource, table, fieldname);
+            File file = new File(String.format("%s/%s", root, data.get(fieldname)));
+            if(file.exists()){
+                file.delete();
+            }
+        }
     }
 
 
@@ -1188,6 +1221,9 @@ public abstract class BaseController {
             result = 1;
 
             indexingContext.createIndex(((Queryable)entity).tablename(), postData);
+
+            String currentDatasource = getCurrentDatasourceId();
+            deleteFileByFieldname(table, data, currentDatasource);
         }
 
         return result;
@@ -1345,7 +1381,7 @@ public abstract class BaseController {
                 image = previewProcess(image);
             }
 
-            image = ImageUtils.watermark(image, "ccait.cn", new Color(41,35,255,33), new Font("微软雅黑", Font.PLAIN, 35));
+            image = ImageUtils.watermark(image, null, new Color(41,35,255,33), new Font("微软雅黑", Font.PLAIN, 35));
 
             return ImageUtils.toBytes(image, downloadData.getExtension());
         }
@@ -1408,15 +1444,47 @@ public abstract class BaseController {
             decrypt(data);
 
             String content = data.get(field).toString();
-            int splitPoint = content.indexOf("|::|");
-            String fileString = content.substring(splitPoint + 4);
-            String messageBody = content.substring(0, splitPoint);
-            arrMessage = messageBody.split("::");
-            String[] arr = getMimeType().split("/");
 
-            mediaType = new MediaType(arr[0], arr[1]);
 
-            buffer = new BASE64Decoder().decodeBuffer(fileString);
+            String currentDatasource = getCurrentDatasourceId();
+            Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(
+                    String.format("entity.upload.%s.%s", currentDatasource, table)
+            );
+            if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
+                throw new IOException("can not find the upload config!!!");
+            }
+
+            if(uploadConfigMap.get("path") != null) {
+                arrMessage = new String[3];
+                String[] tmp = content.split("/");
+                String[] fileArr = tmp[tmp.length -1].split("\\.");
+                arrMessage[0] = fileArr[1];
+                arrMessage[1] = fileArr[1];
+                arrMessage[2] = fileArr[0];
+                mediaType = new MediaType(UploadUtils.getMIMEType(fileArr[0]), fileArr[0]);
+
+                String root = uploadConfigMap.get("path").toString();
+                if(root.lastIndexOf("/") == root.length() - 1 ||
+                        root.lastIndexOf("\\") == root.length() - 1) {
+                    root = root.substring(0, root.length() - 2);
+                }
+                File file = new File(String.format("%s/%s", root, content));
+                buffer = UploadUtils.getFileByteArray(file);
+            }
+
+            else {
+                int splitPoint = content.indexOf("|::|");
+                String fileString = content.substring(splitPoint + 4);
+                String messageBody = content.substring(0, splitPoint);
+                arrMessage = messageBody.split("::");
+                String[] arr = getMimeType().split("/");
+
+                mediaType = new MediaType(arr[0], arr[1]);
+
+                buffer = new BASE64Decoder().decodeBuffer(fileString);
+            }
+
+
             return this;
         }
 
