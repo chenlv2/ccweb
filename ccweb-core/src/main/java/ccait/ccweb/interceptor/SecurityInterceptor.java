@@ -83,7 +83,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        Map<String, String > attrs = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+        Map<String, String> attrs = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
         InitLocalMap initLocalMap = new InitLocalMap(response, attrs).invoke();
         if (initLocalMap.is()) return false;
 
@@ -525,7 +525,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             if(attrs != null) {
                 datasource = attrs.get("datasource");
-                currentTable = attrs.get("table");
+                if(attrs.size() == 2 && !"join".equalsIgnoreCase(attrs.get("table"))) {
+                    currentTable = attrs.get("table");
+                }
             }
 
             if(StringUtils.isNotEmpty(datasource)){

@@ -29,8 +29,30 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 
 @RestController
-@RequestMapping( value = {"asyncapi/{datasource}", "asyncapi"} )
+@RequestMapping( value = {"asyncapi/{datasource}"} )
 public class AsyncApiController extends BaseController {
+
+    /***
+     * join query
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/join", method = RequestMethod.POST, produces= MediaType.APPLICATION_STREAM_JSON_VALUE )
+    public Mono doJoinQuery(@RequestBody QueryInfo queryInfo) {
+
+        try {
+            List result = super.joinQuery(queryInfo);
+
+            queryInfo.getPageInfo().setPageCount();
+
+            return successAs( result, queryInfo.getPageInfo() );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return errorAs(113, e);
+        }
+    }
 
     /***
      * create or alter table
@@ -178,28 +200,6 @@ public class AsyncApiController extends BaseController {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
             return errorAs(112, e);
-        }
-    }
-
-    /***
-     * join query
-     * @return
-     */
-    @ResponseBody
-    @AccessCtrl
-    @RequestMapping( value = "/join", method = RequestMethod.POST, produces= MediaType.APPLICATION_STREAM_JSON_VALUE )
-    public Mono doJoinQuery(@RequestBody QueryInfo queryInfo) {
-
-        try {
-            List result = super.joinQuery(queryInfo);
-
-            queryInfo.getPageInfo().setPageCount();
-
-            return successAs( result, queryInfo.getPageInfo() );
-        } catch (Exception e) {
-            getLogger().error(LOG_PRE_SUFFIX + e, e);
-
-            return errorAs(113, e);
         }
     }
 

@@ -72,6 +72,9 @@ public class InitializationFilter implements WebFilter, Filter {
 
         try
         {
+            log.info("entity.enableFlux============================================>>>" + ApplicationConfig.getInstance().get("${entity.enableFlux}"));
+            log.info("entity.enableFlux============================================>>>" + ApplicationConfig.getInstance().get("${entity.enableFlux}"));
+            log.info("entity.enableFlux============================================>>>" + ApplicationConfig.getInstance().get("${entity.enableFlux}"));
             if("true".equals(ApplicationConfig.getInstance().get("${entity.enableFlux}")) &&
                     req.getRequestURI().toLowerCase().startsWith("/api")) {
 
@@ -80,7 +83,7 @@ public class InitializationFilter implements WebFilter, Filter {
                 list.set(1, "asyncapi");
                 path = StringUtils.join("/", list);
 
-                request.getRequestDispatcher(path).forward(requestWrapper, response);
+                request.getRequestDispatcher(path).include(requestWrapper, response);
                 return;
             }
 

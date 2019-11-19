@@ -27,8 +27,30 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
 
 @RestController
-@RequestMapping( value = {"api/{datasource}", "api"} )
+@RequestMapping( value = {"api/{datasource}"} )
 public class ApiController extends BaseController {
+
+    /***
+     * join query
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/join", method = RequestMethod.POST )
+    public ResponseData doJoinQuery(@RequestBody QueryInfo queryInfo) {
+
+        try {
+            List result = super.joinQuery(queryInfo);
+
+            queryInfo.getPageInfo().setPageCount();
+
+            return success( result, queryInfo.getPageInfo() );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return error(113, e);
+        }
+    }
 
     /***
      * create or alter table
@@ -176,28 +198,6 @@ public class ApiController extends BaseController {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
             return error(112, e);
-        }
-    }
-
-    /***
-     * join query
-     * @return
-     */
-    @ResponseBody
-    @AccessCtrl
-    @RequestMapping( value = "/join", method = RequestMethod.POST )
-    public ResponseData doJoinQuery(@RequestBody QueryInfo queryInfo) {
-
-        try {
-            List result = super.joinQuery(queryInfo);
-
-            queryInfo.getPageInfo().setPageCount();
-
-            return success( result, queryInfo.getPageInfo() );
-        } catch (Exception e) {
-            getLogger().error(LOG_PRE_SUFFIX + e, e);
-
-            return error(113, e);
         }
     }
 
