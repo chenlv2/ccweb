@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 public class RequestWrapper extends HttpServletRequestWrapper implements MultipartHttpServletRequest {
 
-    private static final String FILE_CHARSET = "ISO-8859-1";
+    private static final String FILE_CHARSET = "UTF-8";
     private byte[] requestBody;
     private static Charset charSet;
     private String postString;
@@ -61,7 +61,13 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
             if(requestBody == null) {
                 requestBody = new byte[0];
             }
-            postString = new String(requestBody, FILE_CHARSET);
+
+            String charset = request.getCharacterEncoding();
+            if(StringUtils.isEmpty(charset)) {
+                charset = FILE_CHARSET;
+            }
+
+            postString = new String(requestBody, charset);
 
             Map<String, Object> map = new HashMap<String, Object>();
             List<String> list = StringUtils.splitString2List(postString, "(\\-\\-)+\\-*[\\d\\w]+");
@@ -74,7 +80,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
                     if(m.group(5) != null && Pattern.matches("[^/]+/.+", m.group(5))) {
 
                         //返回字节数组，fastjson序列化时会进行Base64编码
-                        value = m.group(6).getBytes(FILE_CHARSET);
+                        value = m.group(6).getBytes(charset);
                         map.put(String.format("%s_upload_filename", key), m.group(3));
                     }
 

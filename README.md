@@ -92,7 +92,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!=")
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -118,7 +118,90 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 5. 联表查询
+### 5. 查询总数
+* URL：/api/{table}/count 
+* 请求方式：POST
+* URL参数：{table}为数据库表名称
+* POST参数：
+```javascript
+{
+    "pageInfo" : {
+        "pageIndex": 1, //页码
+        "pageSize": 50  //每页条数
+    },
+
+    "conditionList": [{ //查询条件
+        "name": "id",   //字段名
+        "value": "1",   //值
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11)
+    }, ... ],
+
+    "sortList": [{ //排序条件
+        "name": "id", //字段名 
+        "desc": true  //true为降序，false为升序
+    }, ... ],
+
+    "groupList" : [ //分组条件
+        "id", //字段名 
+        ...
+    ],
+
+    "keywords" : [{ //关键词模糊查询条件
+        "name": "id",   //字段名
+        "value": "1"   //值
+    }, ...],
+
+    "selectList": [{ //显示字段
+        "field": "id",  //字段名 
+        "function": "MAX",  //数据库相关函数：MAX, MIN, UPPER, LOWER, LENGTH, AVG, COUNT, SUM, GROUP_CONCAT等; 
+    }, ... ]
+}
+```
+
+
+
+### 6. 查询是否存在数据
+* URL：/api/{table}/exist 
+* 请求方式：POST
+* URL参数：{table}为数据库表名称
+* POST参数：
+```javascript
+{
+    "pageInfo" : {
+        "pageIndex": 1, //页码
+        "pageSize": 50  //每页条数
+    },
+
+    "conditionList": [{ //查询条件
+        "name": "id",   //字段名
+        "value": "1",   //值
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11)
+    }, ... ],
+
+    "sortList": [{ //排序条件
+        "name": "id", //字段名 
+        "desc": true  //true为降序，false为升序
+    }, ... ],
+
+    "groupList" : [ //分组条件
+        "id", //字段名 
+        ...
+    ],
+
+    "keywords" : [{ //关键词模糊查询条件
+        "name": "id",   //字段名
+        "value": "1"   //值
+    }, ...],
+
+    "selectList": [{ //显示字段
+        "field": "id",  //字段名 
+        "function": "MAX",  //数据库相关函数：MAX, MIN, UPPER, LOWER, LENGTH, AVG, COUNT, SUM, GROUP_CONCAT等; 
+    }, ... ]
+}
+```
+
+
+### 7. 联表查询
 * URL：/api/join 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -147,7 +230,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!=")
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -173,7 +256,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 6. ID查询
+### 8. ID查询
 查询与联合查询加密的字段不会解密显示，多用于列表，而ID查询的结果可以显示解密后内容，可用于保密详情。
 * URL：/api/{table}/{id} 
 * 请求方式：GET
@@ -181,7 +264,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * POST参数：无
 
 
-### 7. 登录
+### 9. 登录
 * URL：/api/login 
 * 请求方式：POST
 * POST参数：
@@ -193,26 +276,26 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 8. 登出
+### 10. 登出
 * URL：/api/logout 
 * 请求方式：GET
 
 
-### 9. 下载文件
+### 11. 下载文件
 * URL：/api/download/{table}/{field}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
 * POST参数：无
 
 
-### 10. 文件预览
+### 12. 文件预览
 * URL：/api/preview/{table}/{field}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
 * POST参数：无
 
 
-### 11. 搜索（通过es搜索引擎）
+### 13. 搜索（通过es搜索引擎）
 * URL：/api/search/{table} 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -505,10 +588,10 @@ public final class DefaultTrigger {
 ```
 ### 2. PageInfo
 ```java
-    private int pageCount; //总页数
+    //private int pageCount; //总页数（已放弃，前端根据总记录数和每页显示记录数计算）
+    //private long totalRecords; //总记录数（已放弃，前端通过count接口获取）
     private int pageIndex; //当前页
     private int pageSize;  //每页显示记录数
-    private long totalRecords; //总记录数
 ```
 
 ## 打包说明

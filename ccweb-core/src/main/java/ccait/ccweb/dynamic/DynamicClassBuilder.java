@@ -108,8 +108,10 @@ public class DynamicClassBuilder {
 
                 ColumnInfo col = new ColumnInfo();
                 col.setColumnName(item.getKey());
-                col.setDefaultValue(item.getValue().toString());
-                col.setDataType(item.getValue().getClass().getTypeName());
+                if(item.getValue() != null) {
+                    col.setDefaultValue(item.getValue().toString());
+                    col.setDataType(item.getValue().getClass().getTypeName());
+                }
                 if("id".equals(item.getKey().toLowerCase())) {
                     col.setPrimaryKey(true);
                 }
@@ -136,9 +138,10 @@ public class DynamicClassBuilder {
                     }
                     ColumnInfo col = new ColumnInfo();
                     col.setColumnName(item.getName());
-                    col.setDefaultValue(item.getValue().toString());
-                    col.setDataType(item.getValue().getClass().getTypeName());
-
+                    if(item.getValue() != null) {
+                        col.setDefaultValue(item.getValue().toString());
+                        col.setDataType(item.getValue().getClass().getTypeName());
+                    }
                     columns.add(col);
                 }
             }
@@ -163,7 +166,9 @@ public class DynamicClassBuilder {
                     }
                     ColumnInfo col = new ColumnInfo();
                     col.setColumnName(item.getName());
-                    col.setDefaultValue(item.getValue().toString());
+                    if(item.getValue() != null) {
+                        col.setDefaultValue(item.getValue().toString());
+                    }
                     col.setDataType("string");
 
                     columns.add(col);

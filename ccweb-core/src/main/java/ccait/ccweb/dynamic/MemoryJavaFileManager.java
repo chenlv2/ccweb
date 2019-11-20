@@ -32,6 +32,7 @@ import java.net.URI;
 import java.nio.CharBuffer;
 import java.sql.Blob;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ccait.ccweb.utils.StaticVars.CURRENT_DATASOURCE;
 
@@ -202,6 +203,9 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
 
     private static MethodSpec.Builder getMethodName(String prefix, String columnName) {
 
+        List<String> names = StringUtils.splitString2List(columnName, "_").stream()
+                .map(a->a.substring(0, 1).toUpperCase() + a.substring(1)).collect(Collectors.toList());
+        columnName = StringUtils.join("", names);
         String methodName = prefix.toLowerCase() + columnName.substring(0, 1).toUpperCase() + columnName.substring(1);
 
         return MethodSpec.methodBuilder(methodName);
@@ -257,6 +261,11 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
     }
 
     private static ClassName getFieldType(String dataType) {
+
+        if(StringUtils.isEmpty(dataType)) {
+            return ClassName.get(String.class);
+        }
+
         switch (dataType.toLowerCase()) {
             case "tinyint":
             case "smallint":

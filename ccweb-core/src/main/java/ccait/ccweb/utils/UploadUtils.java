@@ -35,10 +35,7 @@ public class UploadUtils {
 
         String[] dataArray = Datetime.format(new Date(), "yyyy-MM-dd").split("\\-");
         String path = String.format("/%s/%s", dataArray[0], dataArray[1]);
-        File file = new File(root + path);
-        if(!file.exists()) {
-            file.mkdirs();
-        }
+        File file = mkdirs(root + path);
 
         int count = 0;
         File[] files = file.listFiles();
@@ -48,7 +45,7 @@ public class UploadUtils {
 
         if(count > 0) {
             files = new File(root + String.format("%s/%s", path, String.format("%02d", count - 1))).listFiles();
-            if(files!=null && files.length < 99) {
+            if(files!=null && files.length < 100) {
                 path = String.format("%s/%s", path, String.format("%02d", count - 1));
             }
 
@@ -63,7 +60,17 @@ public class UploadUtils {
 
         path = String.format("%s/%s/%s", path, UUID.randomUUID().toString().replace("-", ""), filename);
 
+        file = mkdirs(root + path);
+
         return path;
+    }
+
+    private static File mkdirs(String path) {
+        File file = new File(path);
+        if(!file.exists()) {
+            file.mkdirs();
+        }
+        return file;
     }
 
     public static byte[] getFileByteArray(File file) {

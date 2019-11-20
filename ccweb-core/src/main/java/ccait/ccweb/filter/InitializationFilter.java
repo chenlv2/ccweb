@@ -63,6 +63,8 @@ public class InitializationFilter implements WebFilter, Filter {
         res.setHeader("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, PUT");
         res.setHeader("Access-Control-Max-Age", "3600");
         res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.setContentType("application/json; charset=utf-8");
+        res.setCharacterEncoding("UTF-8");
 
         RequestWrapper requestWrapper = new RequestWrapper(req);
 //        ResponseWrapper responseWrapper = new ResponseWrapper(res);
@@ -72,8 +74,6 @@ public class InitializationFilter implements WebFilter, Filter {
 
         try
         {
-            log.info("entity.enableFlux============================================>>>" + ApplicationConfig.getInstance().get("${entity.enableFlux}"));
-            log.info("entity.enableFlux============================================>>>" + ApplicationConfig.getInstance().get("${entity.enableFlux}"));
             log.info("entity.enableFlux============================================>>>" + ApplicationConfig.getInstance().get("${entity.enableFlux}"));
             if("true".equals(ApplicationConfig.getInstance().get("${entity.enableFlux}")) &&
                     req.getRequestURI().toLowerCase().startsWith("/api")) {

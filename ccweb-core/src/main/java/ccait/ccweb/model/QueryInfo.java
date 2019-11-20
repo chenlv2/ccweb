@@ -308,9 +308,26 @@ public class QueryInfo implements Serializable {
                     continue;
                 }
 
+                if(info.getValue() == null ||
+                        info.getValue().toString().trim().equals("")) {
+                    continue;
+                }
+
                 Field fld = opt.get();
                 String column = DBUtils.getSqlInjValue(fld.getName()).replaceAll("\\s", "");
-                where.and(String.format("[%s]%s#{%s}", column, info.getAlgorithm().getValue(), fld.getName()));
+                switch (info.getAlgorithm()) {
+                    case LIKE:
+                        where.and(String.format("[%s]", column) + " LIKE '%#{"+fld.getName()+"}%'");
+                        break;
+                    case START:
+                        where.and(String.format("[%s]", column) + " LIKE '%#{"+fld.getName()+"}'");
+                        break;
+                    case END:
+                        where.and(String.format("[%s]", column) + " LIKE '#{"+fld.getName()+"}'");
+                        break;
+                    default:
+                        where.and(String.format("[%s]%s#{%s}", column, info.getAlgorithm().getValue(), fld.getName()));
+                }
                 ReflectionUtils.setFieldValue(entity, fld.getName(), cast(fld.getType(), info.getValue().toString()));
             }
         }
@@ -318,7 +335,7 @@ public class QueryInfo implements Serializable {
         if(this.getKeywords() != null && this.getKeywords().size() > 0) {
 
             StringBuffer sb = new StringBuffer();
-            int i = 0;
+            boolean isFirst = true;
             for(FieldInfo info : this.getKeywords()) {
                 Optional<Field> opt = fields.stream().filter(a->a.getName().equals(info.getName())).findFirst();
                 if(!opt.isPresent()) {
@@ -328,22 +345,28 @@ public class QueryInfo implements Serializable {
                 Field fld = opt.get();
                 String column =fld.getName();
 
-                if(i > 0) {
+                if(info.getValue() == null || info.getValue().toString().trim().equals("")) {
+                    continue;
+                }
+
+                if(!isFirst) {
                     sb.append(" OR ");
                 }
 
                 if(info.getValue().getClass().equals(String.class)) {
 
-                    sb.append(String.format("[%s] LIKE %s", fld.getName(), "%"+ DBUtils.getSqlInjValue(info.getValue()) +"%"));
+                    sb.append(String.format("[%s] LIKE '%s'", fld.getName(), "%"+ DBUtils.getSqlInjValue(info.getValue()) +"%"));
                 }
 
                 else {
                     sb.append(String.format("[%s]='%s'", fld.getName(), info.getValue()));
                 }
-                i++;
+                isFirst = false;
             }
 
-            where.and(String.format("(%s)", sb.toString()));
+            if(sb.length() > 0) {
+                where.and(String.format("(%s)", sb.toString()));
+            }
         }
 
         if(privilegeScope == null) {
