@@ -45,7 +45,7 @@ ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组�
 ccweb-start内置了默认的api接口可以让前端直接通过表名操作数据，需要限制访问的可以设置系统默认创建的用户权限表进行控制，接口的请求类型同时支持json和表单提交，表单中存在文件上传的会自动上传到表的字段中，字段类型必须为blob。
 
 ### 1. 新增
-* URL：/api/{table} 
+* URL：/api/{datasource}/{table} 
 * 请求方式：PUT
 * URL参数：{table}为数据库表名称
 * POST参数：
@@ -58,14 +58,14 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 ### 2. 删除
-* URL：/api/{table}/{id} 
+* URL：/api/{datasource}/{table}/{id} 
 * 请求方式：DELETE
 * URL参数：{table}为数据库表名称，{id}为主键
 * POST参数：无
 
 
 ### 3. 修改
-* URL：/api/{table}/{id} 
+* URL：/api/{datasource}/{table}/{id} 
 * 请求方式：PUT
 * URL参数：{table}为数据库表名称，{id}为主键
 * POST参数：
@@ -78,7 +78,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 ### 4. 查询
-* URL：/api/{table} 
+* URL：/api/{datasource}/{table} 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
 * POST参数：
@@ -119,7 +119,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 ### 5. 查询总数
-* URL：/api/{table}/count 
+* URL：/api/{datasource}/{table}/count 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
 * POST参数：
@@ -161,7 +161,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 ### 6. 查询是否存在数据
-* URL：/api/{table}/exist 
+* URL：/api/{datasource}/{table}/exist 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
 * POST参数：
@@ -202,7 +202,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 ### 7. 联表查询
-* URL：/api/join 
+* URL：/api/{datasource}/join 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
 * POST参数：
@@ -258,14 +258,14 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 ### 8. ID查询
 查询与联合查询加密的字段不会解密显示，多用于列表，而ID查询的结果可以显示解密后内容，可用于保密详情。
-* URL：/api/{table}/{id} 
+* URL：/api/{datasource}/{table}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{id}为主键
 * POST参数：无
 
 
 ### 9. 登录
-* URL：/api/login 
+* URL：/api/{datasource}/login 
 * 请求方式：POST
 * POST参数：
 ```javascript
@@ -277,26 +277,26 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 ### 10. 登出
-* URL：/api/logout 
+* URL：/api/{datasource}/logout 
 * 请求方式：GET
 
 
 ### 11. 下载文件
-* URL：/api/download/{table}/{field}/{id} 
+* URL：/api/{datasource}/download/{table}/{field}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
 * POST参数：无
 
 
 ### 12. 文件预览
-* URL：/api/preview/{table}/{field}/{id} 
+* URL：/api/{datasource}/preview/{table}/{field}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
 * POST参数：无
 
 
 ### 13. 搜索（通过es搜索引擎）
-* URL：/api/search/{table} 
+* URL：/api/{datasource}/search/{table} 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
 * POST参数：

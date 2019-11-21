@@ -57,11 +57,12 @@ entity:
         password: hidden
 
   upload: #上传设置
-    testtt: #表名
-      file: #字段名
-        maxSize: 10 #上传文件最大尺寸，单位: MB
-        mimeType: gif, jpg, png #允许上传的文件格式
-        path: /uploadFiles #上传路径的绝对路径
+    workerlib: #库名
+      archives: #表名
+        photo: #字段名
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png #允许上传的文件格式
+          path: D:/project/workerlib/uploadFiles #上传路径的绝对路径
 
   download: #下载设置
     thumb:  #预览的缩略图
