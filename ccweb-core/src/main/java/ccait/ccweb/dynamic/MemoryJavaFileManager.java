@@ -11,6 +11,7 @@
 package ccait.ccweb.dynamic;
 
 import ccait.ccweb.context.ApplicationContext;
+import com.alibaba.excel.annotation.ExcelProperty;
 import entity.query.ColumnInfo;
 import entity.query.Queryable;
 import entity.query.annotation.*;
@@ -141,8 +142,8 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
         JavaFile javaFile = null;
 
         try {
-            for(ColumnInfo col : columns) {
-
+            for(int i=0; i<columns.size(); i++) {
+                ColumnInfo col = columns.get(i);
                 if(col.getColumnName().indexOf(".") > 0) {
                     List<String> data = StringUtils.splitString2List(col.getColumnName(), ".");
                     if(data.get(0).toLowerCase()
@@ -177,8 +178,14 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
                 }
 
                 AnnotationSpec annFieldSpec = AnnotationSpec.builder(Fieldname.class).addMember("value", "$S", col.getColumnName()).build();
-
                 fldSpec.addAnnotation(annFieldSpec);
+
+                if(StringUtils.isNotEmpty(col.getAlias())) {
+                    AnnotationSpec annExcelProperty = AnnotationSpec.builder(ExcelProperty.class)
+                            .addMember("value", "$S", col.getAlias())
+                            .addMember("index", "$S", i).build();
+                    fldSpec.addAnnotation(annExcelProperty);
+                }
 
                 builder.addField(fldSpec.build());
 

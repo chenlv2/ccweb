@@ -125,6 +125,11 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         hasUploadFile = true;
 
+        List<String> urlList = StringUtils.splitString2List(request.getRequestURI(), "/");
+        if(urlList.get(urlList.size() - 1).toLowerCase() == "import") {
+            return true;
+        }
+
         String currentDatasource = "default";
         if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
             currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
@@ -525,7 +530,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             if(attrs != null) {
                 datasource = attrs.get("datasource");
-                if(attrs.size() == 2 && !"join".equalsIgnoreCase(attrs.get("table"))) {
+                if(!"join".equalsIgnoreCase(attrs.get("table"))) {
                     currentTable = attrs.get("table");
                 }
             }

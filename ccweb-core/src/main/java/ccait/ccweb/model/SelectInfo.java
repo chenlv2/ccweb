@@ -18,6 +18,7 @@ import java.io.Serializable;
 public class SelectInfo implements Serializable {
     private Function function;
     private String field;
+    private String alias;
 
     public SelectInfo() {
     }
@@ -36,5 +37,13 @@ public class SelectInfo implements Serializable {
 
     public void setField(String field) {
         this.field = field;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 }

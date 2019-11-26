@@ -24,6 +24,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
@@ -344,9 +345,9 @@ public class AsyncApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "preview/{table}/{field}/{id}", method = RequestMethod.GET  )
-    public void previewed(@PathVariable String table, @PathVariable String field, @PathVariable String id) throws Exception {
+    public Mono previewed(@PathVariable String table, @PathVariable String field, @PathVariable String id) throws Exception {
 
-        super.preview(table, field, id);
+        return super.previewAs(table, field, id);
     }
 
     /***
@@ -370,6 +371,35 @@ public class AsyncApiController extends BaseController {
 
             return errorAs(110, e);
         }
+    }
+
+    /***
+     * export select data
+     * @param table
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "{table}/export", method = RequestMethod.POST )
+    public Mono doExport(String table, QueryInfo queryInfo) throws Exception {
+        List list = query(table, queryInfo);
+        return exportAs(table, list, queryInfo);
+    }
+
+    /***
+     * export by join query
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "export/join", method = RequestMethod.POST )
+    public Mono doExport(QueryInfo queryInfo) throws Exception {
+        List list = joinQuery(queryInfo);
+        return exportAs(UUID.randomUUID().toString().replace("-", ""), list, queryInfo);
     }
 
 }

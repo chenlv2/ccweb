@@ -11,11 +11,9 @@
 
 package ccait.ccweb.dynamic;
 
-import ccait.ccweb.model.ConditionInfo;
-import ccait.ccweb.model.FieldInfo;
-import ccait.ccweb.model.QueryInfo;
-import ccait.ccweb.model.SortInfo;
+import ccait.ccweb.model.*;
 import entity.query.ColumnInfo;
+import entity.query.Select;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.StringUtils;
 import javapoet.JavaFile;
@@ -29,6 +27,8 @@ import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static ccait.ccweb.dynamic.MemoryJavaFileManager.getJavaFile;
@@ -97,6 +97,33 @@ public class DynamicClassBuilder {
         return null;
     }
 
+    public static List<ColumnInfo> getColumnInfosBySelectList(List<SelectInfo> selectInfos) {
+        List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
+
+        if(selectInfos != null) {
+            for (int i=0; i<selectInfos.size(); i++) {
+                SelectInfo item = selectInfos.get(i);
+                if ("id".equals(ensureColumnName(item.getField()).toLowerCase())) {
+                    continue;
+                }
+                ColumnInfo col = new ColumnInfo();
+                col.setColumnName(ensureColumnName(item.getField()));
+                col.setAlias(item.getAlias());
+                if(StringUtils.isEmpty(col.getAlias())) {
+                    col.setAlias(ensureColumnName(item.getAlias()));
+                }
+                columns.add(col);
+            }
+        }
+
+        //去重
+        columns = columns.stream().collect(
+                Collectors.collectingAndThen(Collectors.toCollection(() ->
+                        new TreeSet<>(Comparator.comparing(o -> o.getColumnName()))), ArrayList::new));
+
+        return columns;
+    }
+
     public static boolean isWindows() {
         return System.getProperties().getProperty("os.name").toUpperCase().indexOf("WINDOWS") != -1;
     }
@@ -128,16 +155,27 @@ public class DynamicClassBuilder {
         return create(tablename, columns);
     }
 
+    public static String ensureColumnName(String name) {
+
+        Matcher matcher = Pattern.compile("\\w[\\w\\d]*\\.(\\w[\\w\\d]*)").matcher(name);
+        if(matcher.matches()) {
+            name = matcher.group(1);
+            return name;
+        }
+
+        return name;
+    }
+
     public static Object create(String tablename, QueryInfo queryInfo) {
         List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
         if(queryInfo != null) {
             if(queryInfo.getConditionList() != null) {
                 for (ConditionInfo item : queryInfo.getConditionList()) {
-                    if ("id".equals(item.getName().toLowerCase())) {
+                    if ("id".equals(ensureColumnName(item.getName()).toLowerCase())) {
                         continue;
                     }
                     ColumnInfo col = new ColumnInfo();
-                    col.setColumnName(item.getName());
+                    col.setColumnName(ensureColumnName(item.getName()));
                     if(item.getValue() != null) {
                         col.setDefaultValue(item.getValue().toString());
                         col.setDataType(item.getValue().getClass().getTypeName());
@@ -148,11 +186,11 @@ public class DynamicClassBuilder {
 
             if(queryInfo.getSortList() != null) {
                 for (SortInfo item : queryInfo.getSortList()) {
-                    if ("id".equals(item.getName().toLowerCase())) {
+                    if ("id".equals(ensureColumnName(item.getName().toLowerCase()))) {
                         continue;
                     }
                     ColumnInfo col = new ColumnInfo();
-                    col.setColumnName(item.getName());
+                    col.setColumnName(ensureColumnName(item.getName()));
                     col.setDataType("object");
 
                     columns.add(col);
@@ -161,11 +199,11 @@ public class DynamicClassBuilder {
 
             if(queryInfo.getKeywords() != null) {
                 for (FieldInfo item : queryInfo.getKeywords()) {
-                    if ("id".equals(item.getName().toLowerCase())) {
+                    if ("id".equals(ensureColumnName(item.getName()).toLowerCase())) {
                         continue;
                     }
                     ColumnInfo col = new ColumnInfo();
-                    col.setColumnName(item.getName());
+                    col.setColumnName(ensureColumnName(item.getName()));
                     if(item.getValue() != null) {
                         col.setDefaultValue(item.getValue().toString());
                     }
@@ -177,11 +215,11 @@ public class DynamicClassBuilder {
 
             if(queryInfo.getGroupList() != null) {
                 for (String name : queryInfo.getGroupList()) {
-                    if ("id".equals(name.toLowerCase())) {
+                    if ("id".equals(ensureColumnName(name).toLowerCase())) {
                         continue;
                     }
                     ColumnInfo col = new ColumnInfo();
-                    col.setColumnName(name);
+                    col.setColumnName(ensureColumnName(name));
                     col.setDataType("object");
 
                     columns.add(col);

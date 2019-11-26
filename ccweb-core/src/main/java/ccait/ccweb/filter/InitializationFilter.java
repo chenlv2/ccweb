@@ -78,13 +78,17 @@ public class InitializationFilter implements WebFilter, Filter {
             if("true".equals(ApplicationConfig.getInstance().get("${entity.enableFlux}")) &&
                     req.getRequestURI().toLowerCase().startsWith("/api")) {
 
-                String path = req.getRequestURI();
-                List<String> list = StringUtils.splitString2List(path, "/");
-                list.set(1, "asyncapi");
-                path = StringUtils.join("/", list);
+                if(req.getRequestURI().indexOf("/preview/") == -1 &&
+                        req.getRequestURI().indexOf("/download/") == -1 &&
+                        req.getRequestURI().indexOf("/upload/") == -1) {
+                    String path = req.getRequestURI();
+                    List<String> list = StringUtils.splitString2List(path, "/");
+                    list.set(1, "asyncapi");
+                    path = StringUtils.join("/", list);
 
-                request.getRequestDispatcher(path).include(requestWrapper, response);
-                return;
+                    request.getRequestDispatcher(path).include(requestWrapper, response);
+                    return;
+                }
             }
 
             chain.doFilter(requestWrapper, res);

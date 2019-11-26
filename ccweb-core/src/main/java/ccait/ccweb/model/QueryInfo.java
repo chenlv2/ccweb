@@ -14,6 +14,7 @@ package ccait.ccweb.model;
 
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
+import ccait.ccweb.dynamic.DynamicClassBuilder;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.generator.EntitesGenerator;
 import entity.query.*;
@@ -162,8 +163,13 @@ public class QueryInfo implements Serializable {
             where = ensureWhereQuerable(where, table.getFields(), table.getPrivilegeScope(), table.getEntity(),
                     table.getTablename(), table.getAlias());
 
-            String strWhere = where.toString().replaceAll("[\\s]*1=1[\\s,]*", "");
+            String strWhere = where.toString().replaceAll("[\\s]*1=1[\\s,]*(OR|AND|or|and)", "");
+
             if(StringUtils.isEmpty(strWhere)) {
+                continue;
+            }
+
+            if(result.toString().indexOf(strWhere) > 0) {
                 continue;
             }
 
@@ -303,7 +309,7 @@ public class QueryInfo implements Serializable {
                                       String tablename, String alias) throws Exception {
         if(this.getConditionList() != null) {
             for(ConditionInfo info : this.getConditionList()) {
-                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(info.getName())).findFirst();
+                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(DynamicClassBuilder.ensureColumnName(info.getName()))).findFirst();
                 if(!opt.isPresent()) {
                     continue;
                 }
@@ -337,7 +343,7 @@ public class QueryInfo implements Serializable {
             StringBuffer sb = new StringBuffer();
             boolean isFirst = true;
             for(FieldInfo info : this.getKeywords()) {
-                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(info.getName())).findFirst();
+                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(DynamicClassBuilder.ensureColumnName(info.getName()))).findFirst();
                 if(!opt.isPresent()) {
                     continue;
                 }

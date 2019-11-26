@@ -16,12 +16,16 @@ import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.context.IndexingContext;
 import ccait.ccweb.context.TriggerContext;
+import ccait.ccweb.dynamic.DynamicClassBuilder;
 import ccait.ccweb.enums.*;
+import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
 import ccait.ccweb.utils.FastJsonUtils;
 import ccait.ccweb.utils.ImageUtils;
 import ccait.ccweb.utils.UploadUtils;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import entity.query.*;
 import entity.query.annotation.PrimaryKey;
 import entity.query.core.ApplicationConfig;
@@ -30,11 +34,14 @@ import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
+import net.sf.jmimemagic.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.StreamUtils;
@@ -42,6 +49,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletOutputStream;
@@ -49,6 +57,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -57,7 +66,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -872,7 +880,6 @@ public abstract class BaseController {
         }
     }
 
-
     /***
      * query select data
      * @param queryInfo
@@ -881,6 +888,14 @@ public abstract class BaseController {
      */
     public List joinQuery(QueryInfo queryInfo) throws Exception {
 
+        Where where = getWhereQueryableByJoin(queryInfo);
+
+        QueryableAction ac = getQueryableAction(queryInfo, where);
+
+        return ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
+    }
+
+    private Where getWhereQueryableByJoin(QueryInfo queryInfo) throws Exception {
         if(queryInfo.getJoinTables() == null || queryInfo.getJoinTables().size() < 1) {
             throw new Exception("join tables can not be empty!!!");
         }
@@ -959,11 +974,9 @@ public abstract class BaseController {
             }
         }
 
-        Where where = queryInfo
+        return queryInfo
                 .getWhereQuerableByJoin(tableList,
                         join.on(tableOnMap.get(tableList.get(tableList.size() - 1).getTablename())) );
-
-        return getQueryDataByWhere(queryInfo, where);
     }
 
     /***
@@ -983,10 +996,12 @@ public abstract class BaseController {
 
         Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
-        return getQueryDataByWhere(queryInfo, where);
+        QueryableAction ac = getQueryableAction(queryInfo, where);
+
+        return ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
     }
 
-    protected List getQueryDataByWhere(QueryInfo queryInfo, Where where) throws Exception {
+    protected QueryableAction getQueryableAction(QueryInfo queryInfo, Where where) throws Exception {
         QueryableAction ac = queryInfo.getSelectQuerable(where);
 
         long total = 0;
@@ -1019,11 +1034,7 @@ public abstract class BaseController {
             queryInfo.getPageInfo().setPageSize(maxPageSize);
         }
 
-        List list = null;
-
-        list = ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
-
-        return list;
+        return ac;
     }
 
     /***
@@ -1311,6 +1322,24 @@ public abstract class BaseController {
         output.write(data);
     }
 
+    protected void export(String filename, List data, QueryInfo queryInfo) throws IOException {
+
+        if(queryInfo.getSelectList() == null || queryInfo.getSelectList().size() < 1) {
+            throw new IOException("SelectList can not be empty!!!");
+        }
+
+        List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
+
+        Object entity = DynamicClassBuilder.create(getTablename(), columns);
+
+        filename = filename + ExcelTypeEnum.XLSX.getValue();
+        response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
+                URLEncoder.encode(filename, "UTF-8") );
+        response.setHeader(HttpHeaders.CONTENT_TYPE, UploadUtils.getMIMEType("xlsx"));
+
+        EasyExcel.write(response.getOutputStream()).sheet().head(entity.getClass()).doWrite(data);
+    }
+
     protected Mono downloadAs(String table, String field, String id) throws Exception {
         DownloadData downloadData = new DownloadData(table, field, id).invoke();
 
@@ -1318,15 +1347,40 @@ public abstract class BaseController {
 
         byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType(), false);
 
-        return downloadAs(downloadData.getFilename(), downloadData.getMimeType(), downloadData.getBuffer());
+        return downloadAs(downloadData.getFilename(), downloadData.getBuffer());
     }
 
-    protected Mono downloadAs(String filename, String mimeType, byte[] data) throws IOException {
+    protected Mono downloadAs(String filename, byte[] data) throws IOException {
 
         ByteArrayResource resource = new ByteArrayResource(data);
 
         return ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + URLEncoder.encode(filename, "UTF-8"))
                 .contentType(new MediaType("application", "force-download"))
+                .body(BodyInserters.fromResource(resource)).switchIfEmpty(Mono.empty());
+    }
+
+    protected Mono exportAs(String filename, List data, QueryInfo queryInfo) throws IOException {
+
+        if(queryInfo.getSelectList() == null || queryInfo.getSelectList().size() < 1) {
+            throw new IOException("SelectList can not be empty!!!");
+        }
+
+        List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
+
+        Object entity = DynamicClassBuilder.create(getTablename(), columns);
+
+        filename = filename + ExcelTypeEnum.XLSX.getValue();
+
+        response.setHeader(HttpHeaders.CONTENT_TYPE, UploadUtils.getMIMEType("xlsx"));
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+
+        EasyExcel.write(bos).sheet().head(entity.getClass()).doWrite(data);
+
+        ByteArrayResource resource = new ByteArrayResource(bos.toByteArray());
+
+        return ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + URLEncoder.encode(filename, "UTF-8"))
+                .contentType(new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(BodyInserters.fromResource(resource)).switchIfEmpty(Mono.empty());
     }
 
@@ -1367,9 +1421,12 @@ public abstract class BaseController {
         ByteArrayResource resource = new ByteArrayResource(data);
 
         return ok().header(HttpHeaders.CONTENT_DISPOSITION, "inline;")
-                .header(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML_VALUE)
-                .header(HttpHeaders.CONTENT_TYPE, mimeType)
-                .body(BodyInserters.fromResource(resource)).switchIfEmpty(Mono.empty());
+            .contentType(MediaType.valueOf(mimeType)).contentLength(data.length)
+            .body(BodyInserters.fromDataBuffers(Mono.create(r -> {
+                DataBuffer buf = new DefaultDataBufferFactory().wrap(data);
+                r.success(buf);
+                return;
+            })));
     }
 
     private byte[] preDownloadProcess(DownloadData downloadData, MediaType mediaType, boolean isPreview) throws IOException {
@@ -1380,9 +1437,10 @@ public abstract class BaseController {
             if(isPreview) {
                 image = previewProcess(image);
             }
-
-            image = ImageUtils.watermark(image, null, new Color(41,35,255,33), new Font("微软雅黑", Font.PLAIN, 35));
-
+            String watermark = ApplicationConfig.getInstance().get("${entity.upload.watermark}", "");
+            if(StringUtils.isNotEmpty(watermark)) {
+                image = ImageUtils.watermark(image, watermark, new Color(41, 35, 255, 33), new Font("微软雅黑", Font.PLAIN, 35));
+            }
             return ImageUtils.toBytes(image, downloadData.getExtension());
         }
 
@@ -1403,6 +1461,89 @@ public abstract class BaseController {
         }
 
         return image;
+    }
+
+    protected Map<String, String> upload(String table, String field) throws IOException,
+            MagicParseException, MagicException, MagicMatchNotFoundException {
+
+        Map<String, String> result = new HashMap<String, String>();
+        RequestWrapper requestWrapper = (RequestWrapper)request;
+        if(requestWrapper.getParameters() == null) {
+            throw new IOException("resquest error!!!");
+        }
+
+        if(!(requestWrapper.getParameters() instanceof HashMap)) {
+            throw new IOException("resquest error!!!");
+        }
+
+        HashMap<String, Object> data = (HashMap) requestWrapper.getParameters();
+        List<Map.Entry<String, Object>> files = data.entrySet().stream()
+                .filter(a -> a.getValue() instanceof byte[]).collect(Collectors.toList());
+        if(files == null || files.size() < 1) {
+            throw new IOException("files can not be empty!!!");
+        }
+
+
+        String currentDatasource = "default";
+        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+        }
+
+        Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(String.format("entity.upload.%s.%s", currentDatasource, table));
+        if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
+            throw new IOException("can not find upload config!!!");
+        }
+
+        for(Map.Entry<String, Object> fileEntry : files) {
+
+            if(!fileEntry.getKey().toLowerCase().equals(field.toLowerCase())) {
+                continue;
+            }
+
+            byte[] fileBytes = (byte[]) fileEntry.getValue();
+            MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
+            String mimeType = mimeMatcher.getMimeType();
+
+            if(StringUtils.isEmpty(mimeType)) {
+                continue;
+            }
+
+            if(uploadConfigMap.containsKey(fileEntry.getKey()) && uploadConfigMap.get(fileEntry.getKey()) != null) {
+                Map<String, Object> configMap = (Map<String, Object>) uploadConfigMap.get(fileEntry.getKey());
+                if (configMap.get("mimeType") != null) {
+                    if (!StringUtils.splitString2List(configMap.get("mimeType").toString(), ",").stream()
+                            .filter(a -> mimeMatcher.getExtension().equalsIgnoreCase(a.toString().trim()))
+                            .findAny().isPresent()) {
+                        throw new IOException("Can not supported file type!!!");
+                    }
+                }
+
+                if (configMap.get("maxSize") != null) {
+                    if (fileBytes.length > 1024 * 1024 * Integer.parseInt(configMap.get("maxSize").toString())) {
+                        throw new IOException("Upload field to be long!!!");
+                    }
+                }
+
+                String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
+                String filename = data.get(tempKey).toString();
+
+                String value = null;
+                if(configMap.get("path") != null) {
+                    String root = configMap.get("path").toString();
+                    if(root.lastIndexOf("/") == root.length() - 1 ||
+                            root.lastIndexOf("\\") == root.length() - 1) {
+                        root = root.substring(0, root.length() - 2);
+                    }
+                    root = String.format("%s/%s/%s/%s", root, currentDatasource, table, fileEntry.getKey());
+
+                    value = UploadUtils.upload(root, filename, fileBytes);
+                }
+
+                result.put(fileEntry.getKey(), value);
+            }
+        }
+
+        return result;
     }
 
     public class DownloadData {
@@ -1448,7 +1589,7 @@ public abstract class BaseController {
 
             String currentDatasource = getCurrentDatasourceId();
             Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(
-                    String.format("entity.upload.%s.%s", currentDatasource, table)
+                    String.format("entity.upload.%s.%s.%s", currentDatasource, table, field)
             );
             if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
                 throw new IOException("can not find the upload config!!!");
@@ -1458,15 +1599,19 @@ public abstract class BaseController {
                 arrMessage = new String[3];
                 String[] tmp = content.split("/");
                 String[] fileArr = tmp[tmp.length -1].split("\\.");
-                arrMessage[0] = fileArr[1];
+                arrMessage[0] = UploadUtils.getMIMEType(fileArr[1]);
                 arrMessage[1] = fileArr[1];
                 arrMessage[2] = fileArr[0];
-                mediaType = new MediaType(UploadUtils.getMIMEType(fileArr[0]), fileArr[0]);
+                String[] arr = arrMessage[0].split("/");
+                mediaType = new MediaType(arr[0], arr[1]);
 
                 String root = uploadConfigMap.get("path").toString();
                 if(root.lastIndexOf("/") == root.length() - 1 ||
                         root.lastIndexOf("\\") == root.length() - 1) {
                     root = root.substring(0, root.length() - 2);
+                }
+                if("/".equals(content.substring(0,1))) {
+                    content = content.substring(1);
                 }
                 File file = new File(String.format("%s/%s", root, content));
                 buffer = UploadUtils.getFileByteArray(file);

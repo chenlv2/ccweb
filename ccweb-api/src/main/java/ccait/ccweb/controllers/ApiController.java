@@ -13,15 +13,20 @@ package ccait.ccweb.controllers;
 
 
 import ccait.ccweb.annotation.AccessCtrl;
-import ccait.ccweb.model.QueryInfo;
-import ccait.ccweb.model.ResponseData;
-import ccait.ccweb.model.SearchData;
-import ccait.ccweb.model.UserModel;
+import ccait.ccweb.model.*;
+import ccait.ccweb.utils.UploadUtils;
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import entity.query.ColumnInfo;
+import entity.tool.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
@@ -336,6 +341,17 @@ public class ApiController extends BaseController {
     }
 
     /***
+     * upload
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "upload/{table}/{field}", method = RequestMethod.POST )
+    public void uploaded(@PathVariable String table, @PathVariable String field) throws Exception {
+        super.upload(table, field);
+    }
+
+    /***
      * preview
      * @return
      */
@@ -346,4 +362,58 @@ public class ApiController extends BaseController {
 
         super.preview(table, field, id);
     }
+
+    /***
+     * export select data
+     * @param table
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "{table}/export", method = RequestMethod.POST )
+    public void doExport(String table, QueryInfo queryInfo) throws Exception {
+
+        List list = query(table, queryInfo);
+
+        export(table, list, queryInfo);
+    }
+
+    /***
+     * export by join query
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "export/join", method = RequestMethod.POST )
+    public void doExport(QueryInfo queryInfo) throws Exception {
+        List list = joinQuery(queryInfo);
+        export(UUID.randomUUID().toString().replace("-", ""), list, queryInfo);
+    }
+
+//    /***
+//     * import
+//     * @return
+//     */
+//    @ResponseBody
+//    @AccessCtrl
+//    @RequestMapping( value = "/{table}/import", method = RequestMethod.PUT )
+//    public void doInsert(@PathVariable String table)
+//    {
+//        try {
+//
+//            Object result = super.insert(table, postData);
+//
+//            return success(result);
+//        }
+//
+//        catch (Exception e) {
+//            getLogger().error(LOG_PRE_SUFFIX + e, e);
+//
+//            return error(120, e);
+//        }
+//    }
 }
