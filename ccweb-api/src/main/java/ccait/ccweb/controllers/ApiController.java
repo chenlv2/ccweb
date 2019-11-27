@@ -399,22 +399,10 @@ public class ApiController extends BaseController {
      * import
      * @return
      */
-//    @ResponseBody
-//    @AccessCtrl
-//    @RequestMapping( value = "/{table}/import", method = RequestMethod.PUT )
-//    public void doImport(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles)
-//    {
-//        try {
-//
-//            Object result = super.importData(table, uploadFiles);
-//
-//            return success(result);
-//        }
-//
-//        catch (Exception e) {
-//            getLogger().error(LOG_PRE_SUFFIX + e, e);
-//
-//            return error(120, e);
-//        }
-//    }
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/{table}/import", method = {RequestMethod.POST, RequestMethod.PUT} )
+    public void doImport(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles) throws Exception {
+        super.importData(table, uploadFiles);
+    }
 }

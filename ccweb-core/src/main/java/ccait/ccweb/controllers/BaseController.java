@@ -19,12 +19,14 @@ import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.dynamic.DynamicClassBuilder;
 import ccait.ccweb.enums.*;
 import ccait.ccweb.filter.RequestWrapper;
+import ccait.ccweb.listener.ExcelListener;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
 import ccait.ccweb.utils.FastJsonUtils;
 import ccait.ccweb.utils.ImageUtils;
 import ccait.ccweb.utils.UploadUtils;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import entity.query.*;
 import entity.query.annotation.PrimaryKey;
@@ -973,7 +975,7 @@ public abstract class BaseController {
 
         if(tableList.size() > 2) {
             for (int j=2; j<tableList.size();j++) {
-                join = join.on(tableOnMap.get(tableList.get(j-1))).select("*")
+                join = join.on(tableOnMap.get(tableList.get(j-1).getTablename())).select("*")
                         .join(tableList.get(j).getJoinMode(), (Queryable) tableList.get(j).getEntity(), tableList.get(j).getAlias());
             }
         }
@@ -1544,50 +1546,47 @@ public abstract class BaseController {
         return result;
     }
 
-//    protected Map<String, String> importData(String table, String field, Map<String, Object> uploadFiles) throws Exception {
-//
-//        Map<String, String> result = new HashMap<String, String>();
-//        if(uploadFiles == null) {
-//            throw new IOException("request error!!!");
-//        }
-//
-//        List<Map.Entry<String, Object>> files = uploadFiles.entrySet().stream()
-//                .filter(a -> a.getKey().indexOf("_upload_filename") == -1).collect(Collectors.toList());
-//        if(files == null || files.size() < 1) {
-//            throw new IOException("files can not be empty!!!");
-//        }
-//
-//        String currentDatasource = "default";
-//        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
-//            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
-//        }
-//
-//        for(Map.Entry<String, Object> fileEntry : files) {
-//
-//            String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
-//            String filename = uploadFiles.get(tempKey).toString();
-//            String[] arr = filename.split("\\.");
-//            byte[] fileBytes = ImageUtils.getBytesForBase64(fileEntry.getValue().toString());
-//
-//            MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
-//            String mimeType = mimeMatcher.getMimeType();
-//
-//            if(StringUtils.isEmpty(mimeType)) {
-//                continue;
-//            }
-//
-//            if (!mimeMatcher.getExtension().equalsIgnoreCase("xls") &&
-//                    mimeMatcher.getExtension().equalsIgnoreCase("xlsx")) {
-//                throw new IOException("Can not supported file type!!!");
-//            }
-//
-//            InputStream is = new ByteArrayInputStream();
-//
-//            EasyExcel.read(fileEntry.getValue())
-//        }
-//
-//        return result;
-//    }
+    protected void importData(String table, Map<String, Object> uploadFiles) throws Exception {
+
+        if(uploadFiles == null) {
+            throw new IOException("request error!!!");
+        }
+
+        List<Map.Entry<String, Object>> files = uploadFiles.entrySet().stream()
+                .filter(a -> a.getKey().indexOf("_upload_filename") == -1).collect(Collectors.toList());
+        if(files == null || files.size() < 1) {
+            throw new IOException("files can not be empty!!!");
+        }
+
+        String currentDatasource = "default";
+        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+        }
+
+        for(Map.Entry<String, Object> fileEntry : files) {
+
+            String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
+            String filename = uploadFiles.get(tempKey).toString();
+            String[] arr = filename.split("\\.");
+            byte[] fileBytes = ImageUtils.getBytesForBase64(fileEntry.getValue().toString());
+
+            MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
+            String mimeType = mimeMatcher.getMimeType();
+
+            if(StringUtils.isEmpty(mimeType)) {
+                continue;
+            }
+
+            if (!mimeMatcher.getExtension().equalsIgnoreCase("xls") &&
+                    mimeMatcher.getExtension().equalsIgnoreCase("xlsx")) {
+                throw new IOException("Can not supported file type!!!");
+            }
+
+            InputStream is = new ByteArrayInputStream(fileBytes);
+
+            EasyExcel.read(is, Map.class, new ExcelListener()).sheet().doRead();
+        }
+    }
 
     public class DownloadData {
         private String table;
