@@ -169,7 +169,7 @@ public class QueryInfo implements Serializable {
                 continue;
             }
 
-            if(result.toString().indexOf(strWhere) > 0) {
+            if(result.toString().indexOf(strWhere) > -1) {
                 continue;
             }
 
