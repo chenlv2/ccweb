@@ -14,7 +14,7 @@ public class UploadUtils {
     public static String upload(String path, String filename, byte[] data) throws IOException {
         File root = new File(path);
         if(!root.exists()) {
-            throw new IOException("can not found upload path!!!");
+            root.mkdirs();
         }
 
         String filepath = genFilePath(filename, path);

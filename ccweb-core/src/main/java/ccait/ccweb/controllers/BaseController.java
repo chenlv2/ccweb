@@ -34,7 +34,8 @@ import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import net.sf.jmimemagic.*;
+import net.sf.jmimemagic.Magic;
+import net.sf.jmimemagic.MagicMatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +50,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.reactive.function.BodyInserters;
 import reactor.core.publisher.Mono;
 import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletOutputStream;
@@ -57,10 +57,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
@@ -675,6 +672,13 @@ public abstract class BaseController {
         }
     }
 
+    /***
+     * 检查数据权限
+     * @param table
+     * @param data
+     * @return
+     * @throws SQLException
+     */
     protected boolean checkDataPrivilege(String table, Map data) throws SQLException {
         switch(getCurrentMaxPrivilegeScope(table)) {
             case ALL:
@@ -1463,44 +1467,46 @@ public abstract class BaseController {
         return image;
     }
 
-    protected Map<String, String> upload(String table, String field) throws IOException,
-            MagicParseException, MagicException, MagicMatchNotFoundException {
+    protected Map<String, String> upload(String table, String field, Map<String, Object> uploadFiles) throws Exception {
 
         Map<String, String> result = new HashMap<String, String>();
-        RequestWrapper requestWrapper = (RequestWrapper)request;
-        if(requestWrapper.getParameters() == null) {
-            throw new IOException("resquest error!!!");
+        if(uploadFiles == null) {
+            throw new IOException("request error!!!");
         }
 
-        if(!(requestWrapper.getParameters() instanceof HashMap)) {
-            throw new IOException("resquest error!!!");
-        }
-
-        HashMap<String, Object> data = (HashMap) requestWrapper.getParameters();
-        List<Map.Entry<String, Object>> files = data.entrySet().stream()
-                .filter(a -> a.getValue() instanceof byte[]).collect(Collectors.toList());
+        List<Map.Entry<String, Object>> files = uploadFiles.entrySet().stream()
+                .filter(a -> a.getKey().indexOf("_upload_filename") == -1).collect(Collectors.toList());
         if(files == null || files.size() < 1) {
             throw new IOException("files can not be empty!!!");
         }
-
 
         String currentDatasource = "default";
         if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
             currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
         }
 
-        Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(String.format("entity.upload.%s.%s", currentDatasource, table));
-        if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
+        Map<String, Object> configMap = ApplicationConfig.getInstance().getMap(String.format("entity.upload.%s.%s.%s", currentDatasource, table, field));
+        if(configMap == null || configMap.size() < 1) {
             throw new IOException("can not find upload config!!!");
+        }
+
+        if(configMap.get("path") == null) {
+            throw new IOException("can not find path for upload config!!!");
         }
 
         for(Map.Entry<String, Object> fileEntry : files) {
 
-            if(!fileEntry.getKey().toLowerCase().equals(field.toLowerCase())) {
+            String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
+            if(!uploadFiles.containsKey(tempKey)) { //没有文件名的不是文件
                 continue;
             }
 
-            byte[] fileBytes = (byte[]) fileEntry.getValue();
+            String filename = uploadFiles.get(tempKey).toString();
+            String[] arr = filename.split("\\.");
+            String extName = arr[arr.length - 1];
+
+            byte[] fileBytes = ImageUtils.getBytesForBase64(fileEntry.getValue().toString());
+
             MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
             String mimeType = mimeMatcher.getMimeType();
 
@@ -1508,43 +1514,80 @@ public abstract class BaseController {
                 continue;
             }
 
-            if(uploadConfigMap.containsKey(fileEntry.getKey()) && uploadConfigMap.get(fileEntry.getKey()) != null) {
-                Map<String, Object> configMap = (Map<String, Object>) uploadConfigMap.get(fileEntry.getKey());
-                if (configMap.get("mimeType") != null) {
-                    if (!StringUtils.splitString2List(configMap.get("mimeType").toString(), ",").stream()
-                            .filter(a -> mimeMatcher.getExtension().equalsIgnoreCase(a.toString().trim()))
-                            .findAny().isPresent()) {
-                        throw new IOException("Can not supported file type!!!");
-                    }
+            if (configMap.get("mimeType") != null) {
+                if (!StringUtils.splitString2List(configMap.get("mimeType").toString(), ",").stream()
+                        .filter(a -> mimeMatcher.getExtension().equalsIgnoreCase(a.toString().trim()))
+                        .findAny().isPresent()) {
+                    throw new IOException("Can not supported file type!!!");
                 }
-
-                if (configMap.get("maxSize") != null) {
-                    if (fileBytes.length > 1024 * 1024 * Integer.parseInt(configMap.get("maxSize").toString())) {
-                        throw new IOException("Upload field to be long!!!");
-                    }
-                }
-
-                String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
-                String filename = data.get(tempKey).toString();
-
-                String value = null;
-                if(configMap.get("path") != null) {
-                    String root = configMap.get("path").toString();
-                    if(root.lastIndexOf("/") == root.length() - 1 ||
-                            root.lastIndexOf("\\") == root.length() - 1) {
-                        root = root.substring(0, root.length() - 2);
-                    }
-                    root = String.format("%s/%s/%s/%s", root, currentDatasource, table, fileEntry.getKey());
-
-                    value = UploadUtils.upload(root, filename, fileBytes);
-                }
-
-                result.put(fileEntry.getKey(), value);
             }
+
+            if (configMap.get("maxSize") != null) {
+                if (fileBytes.length > 1024 * 1024 * Integer.parseInt(configMap.get("maxSize").toString())) {
+                    throw new IOException("Upload field to be long!!!");
+                }
+            }
+
+            String value = null;
+            String root = configMap.get("path").toString();
+            if(root.lastIndexOf("/") == root.length() - 1 ||
+                    root.lastIndexOf("\\") == root.length() - 1) {
+                root = root.substring(0, root.length() - 2);
+            }
+            root = String.format("%s/%s/%s/%s", root, currentDatasource, table, fileEntry.getKey());
+
+            value = UploadUtils.upload(root, filename, fileBytes);
+
+            result.put(fileEntry.getKey(), value);
         }
 
         return result;
     }
+
+//    protected Map<String, String> importData(String table, String field, Map<String, Object> uploadFiles) throws Exception {
+//
+//        Map<String, String> result = new HashMap<String, String>();
+//        if(uploadFiles == null) {
+//            throw new IOException("request error!!!");
+//        }
+//
+//        List<Map.Entry<String, Object>> files = uploadFiles.entrySet().stream()
+//                .filter(a -> a.getKey().indexOf("_upload_filename") == -1).collect(Collectors.toList());
+//        if(files == null || files.size() < 1) {
+//            throw new IOException("files can not be empty!!!");
+//        }
+//
+//        String currentDatasource = "default";
+//        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+//            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+//        }
+//
+//        for(Map.Entry<String, Object> fileEntry : files) {
+//
+//            String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
+//            String filename = uploadFiles.get(tempKey).toString();
+//            String[] arr = filename.split("\\.");
+//            byte[] fileBytes = ImageUtils.getBytesForBase64(fileEntry.getValue().toString());
+//
+//            MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
+//            String mimeType = mimeMatcher.getMimeType();
+//
+//            if(StringUtils.isEmpty(mimeType)) {
+//                continue;
+//            }
+//
+//            if (!mimeMatcher.getExtension().equalsIgnoreCase("xls") &&
+//                    mimeMatcher.getExtension().equalsIgnoreCase("xlsx")) {
+//                throw new IOException("Can not supported file type!!!");
+//            }
+//
+//            InputStream is = new ByteArrayInputStream();
+//
+//            EasyExcel.read(fileEntry.getValue())
+//        }
+//
+//        return result;
+//    }
 
     public class DownloadData {
         private String table;

@@ -21,6 +21,7 @@ import entity.query.ColumnInfo;
 import entity.tool.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.xml.ws.RequestWrapper;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -347,8 +348,8 @@ public class ApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "upload/{table}/{field}", method = RequestMethod.POST )
-    public void uploaded(@PathVariable String table, @PathVariable String field) throws Exception {
-        super.upload(table, field);
+    public Map<String, String> uploaded(@PathVariable String table, @PathVariable String field, @RequestBody Map<String, Object> uploadFiles) throws Exception {
+        return super.upload(table, field, uploadFiles);
     }
 
     /***
@@ -394,18 +395,18 @@ public class ApiController extends BaseController {
         export(UUID.randomUUID().toString().replace("-", ""), list, queryInfo);
     }
 
-//    /***
-//     * import
-//     * @return
-//     */
+    /***
+     * import
+     * @return
+     */
 //    @ResponseBody
 //    @AccessCtrl
 //    @RequestMapping( value = "/{table}/import", method = RequestMethod.PUT )
-//    public void doInsert(@PathVariable String table)
+//    public void doImport(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles)
 //    {
 //        try {
 //
-//            Object result = super.insert(table, postData);
+//            Object result = super.importData(table, uploadFiles);
 //
 //            return success(result);
 //        }

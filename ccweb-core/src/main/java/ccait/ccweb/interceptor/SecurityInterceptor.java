@@ -23,7 +23,8 @@ import ccait.ccweb.utils.UploadUtils;
 import entity.query.ColumnInfo;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.StringUtils;
-import net.sf.jmimemagic.*;
+import net.sf.jmimemagic.Magic;
+import net.sf.jmimemagic.MagicMatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -142,6 +143,11 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         for(Map.Entry<String, Object> fileEntry : files) {
 
+            String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
+            String filename = data.get(tempKey).toString();
+            String[] arr = filename.split("\\.");
+            String extName = arr[arr.length - 1];
+
             byte[] fileBytes = (byte[]) fileEntry.getValue();
             MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
             String mimeType = mimeMatcher.getMimeType();
@@ -166,9 +172,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
                     }
                 }
 
-                String tempKey = String.format("%s_upload_filename", fileEntry.getKey());
-                String filename = data.get(tempKey).toString();
-
                 String value = null;
                 if(configMap.get("path") != null) {
                     String root = configMap.get("path").toString();
@@ -184,7 +187,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 else {
 
                     //返回Base64编码过的字节数组字符串
-                    value = String.format("%s::%s::%s|::|%s", mimeType, mimeMatcher.getExtension(), filename, new BASE64Encoder().encode(fileBytes));
+                    value = String.format("%s::%s::%s|::|%s", mimeType, "jpg", filename, new BASE64Encoder().encode(fileBytes));
                 }
 
                 data.put(fileEntry.getKey(), value);

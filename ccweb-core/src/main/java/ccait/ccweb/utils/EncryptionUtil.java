@@ -209,7 +209,11 @@ public final class EncryptionUtil {
 
         // 执行解码
         byte[] b = Base64.decodeBase64(data.getBytes(encoding));
-
+        for (int i = 0; i < b.length; ++i) {
+            if (b[i] < 0) {// 调整异常数据
+                b[i] += 256;
+            }
+        }
         return new String(b, encoding);
     }
     /*******BASE64 END******/

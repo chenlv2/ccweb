@@ -4,6 +4,7 @@ package ccait.ccweb.utils;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import sun.misc.BASE64Decoder;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -119,4 +120,17 @@ public final class ImageUtils {
     private static int getWatermarkLength(String waterMarkContent, Graphics g) {
         return g.getFontMetrics(g.getFont()).charsWidth(waterMarkContent.toCharArray(), 0, waterMarkContent.length());
     }
+
+    public static byte[] getBytesForBase64(String base64String) throws IOException {
+        BASE64Decoder decoder = new BASE64Decoder();
+        byte[] bytes = decoder.decodeBuffer(base64String);
+        for (int i = 0; i < bytes.length; ++i) {
+            if (bytes[i] < 0) {// 调整异常数据
+                bytes[i] += 256;
+            }
+        }
+
+        return bytes;
+    }
+
 }

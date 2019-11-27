@@ -36,7 +36,6 @@ import java.util.regex.Pattern;
 
 public class RequestWrapper extends HttpServletRequestWrapper implements MultipartHttpServletRequest {
 
-    private static final String FILE_CHARSET = "UTF-8";
     private byte[] requestBody;
     private static Charset charSet;
     private String postString;
@@ -62,13 +61,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
                 requestBody = new byte[0];
             }
 
-            String charset = request.getCharacterEncoding();
-            if(StringUtils.isEmpty(charset)) {
-                charset = FILE_CHARSET;
-            }
-
-            postString = new String(requestBody, charset);
-
+            postString = new String(requestBody, "ISO-8859-1"); //上传文件的编码要用ISO-8859-1格式才不会变
             Map<String, Object> map = new HashMap<String, Object>();
             List<String> list = StringUtils.splitString2List(postString, "(\\-\\-)+\\-*[\\d\\w]+");
             for(String content : list) {
@@ -80,8 +73,13 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
                     if(m.group(5) != null && Pattern.matches("[^/]+/.+", m.group(5))) {
 
                         //返回字节数组，fastjson序列化时会进行Base64编码
-                        value = m.group(6).getBytes(charset);
+                        value = m.group(6).getBytes("ISO-8859-1");
                         map.put(String.format("%s_upload_filename", key), m.group(3));
+                    }
+
+                    else {
+                        //不是文件要改回UTF-8编码中文才不会乱码
+                        value = new String(m.group(6).getBytes("ISO-8859-1"), "UTF-8");
                     }
 
                     map.put(key, value);
@@ -93,6 +91,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
                 this.params = map;
             }
             else {
+                postString = new String(requestBody, "UTF-8");
                 if(Pattern.matches("\\s*^\\[[^\\[\\]]+\\]$\\s*", postString)) {
                     this.params = FastJsonUtils.convertJsonToObject(postString, List.class);
                 }
