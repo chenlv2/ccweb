@@ -95,7 +95,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -136,7 +136,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -178,7 +178,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -233,7 +233,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -371,37 +371,27 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
         "字段名": "值",
         ...
     },
-    "pageInfo" : {
-        "pageIndex": 1, //页码
-        "pageSize": 50  //每页条数
-    },
-
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
     }, ... ],
-
-    "sortList": [{ //排序条件
-        "name": "id", //字段名 
-        "desc": true  //true为降序，false为升序
-    }, ... ],
-
-    "groupList" : [ //分组条件
-        "id", //字段名 
-        ...
-    ],
 
     "keywords" : [{ //关键词模糊查询条件
         "name": "id",   //字段名
         "value": "1"   //值
-    }, ...],
-
-    "selectList": [{ //显示字段
-        "field": "id",  //字段名 
-        "function": "MAX",  //数据库相关函数：MAX, MIN, UPPER, LOWER, LENGTH, AVG, COUNT, SUM, GROUP_CONCAT等; 
-    }, ... ]
+    }, ...]
 }
+```
+
+
+### 16. 批量删除
+* URL：/api/{datasource}/{table}/list 
+* 请求方式：DELETE
+* URL参数：{table}为数据库表名称
+* POST参数：
+```javascript
+[id1, id2, ...]
 ```
 
 ## 系统用户/权限表结构说明

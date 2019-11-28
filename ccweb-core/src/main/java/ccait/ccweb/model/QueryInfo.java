@@ -320,7 +320,7 @@ public class QueryInfo implements Serializable {
                                       String tablename, String alias) throws Exception {
         if(this.getConditionList() != null) {
             for(ConditionInfo info : this.getConditionList()) {
-                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(info.getName())).findFirst();
+                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(DynamicClassBuilder.ensureColumnName(info.getName()))).findFirst();
                 if(!opt.isPresent()) {
                     continue;
                 }
@@ -331,19 +331,22 @@ public class QueryInfo implements Serializable {
                 }
 
                 Field fld = opt.get();
-                String column = DBUtils.getSqlInjValue(fld.getName()).replaceAll("\\s", "");
+                String column = DBUtils.getSqlInjValue(info.getName()).replaceAll("\\s", "");
                 switch (info.getAlgorithm()) {
                     case LIKE:
-                        where.and(String.format("[%s]", column) + " LIKE '%#{"+fld.getName()+"}%'");
+                        where.and(column + " LIKE '%#{"+fld.getName()+"}%'");
                         break;
                     case START:
-                        where.and(String.format("[%s]", column) + " LIKE '%#{"+fld.getName()+"}'");
+                        where.and(column + " LIKE '%#{"+fld.getName()+"}'");
                         break;
                     case END:
-                        where.and(String.format("[%s]", column) + " LIKE '#{"+fld.getName()+"}'");
+                        where.and(column + " LIKE '#{"+fld.getName()+"}'");
+                        break;
+                    case IN:
+                        where.and(column + " IN (#{"+fld.getName()+"})");
                         break;
                     default:
-                        where.and(String.format("[%s]%s#{%s}", column, info.getAlgorithm().getValue(), fld.getName()));
+                        where.and(String.format("%s%s#{%s}", column, info.getAlgorithm().getValue(), fld.getName()));
                 }
                 ReflectionUtils.setFieldValue(entity, fld.getName(), cast(fld.getType(), info.getValue().toString()));
             }
@@ -354,7 +357,7 @@ public class QueryInfo implements Serializable {
             StringBuffer sb = new StringBuffer();
             boolean isFirst = true;
             for(FieldInfo info : this.getKeywords()) {
-                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(info.getName())).findFirst();
+                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(DynamicClassBuilder.ensureColumnName(info.getName()))).findFirst();
                 if(!opt.isPresent()) {
                     continue;
                 }
@@ -372,11 +375,11 @@ public class QueryInfo implements Serializable {
 
                 if(info.getValue().getClass().equals(String.class)) {
 
-                    sb.append(String.format("[%s] LIKE '%s'", fld.getName(), "%"+ DBUtils.getSqlInjValue(info.getValue()) +"%"));
+                    sb.append(String.format("[%s] LIKE '%s'", info.getName(), "%"+ DBUtils.getSqlInjValue(info.getValue()) +"%"));
                 }
 
                 else {
-                    sb.append(String.format("[%s]='%s'", fld.getName(), info.getValue()));
+                    sb.append(String.format("[%s]='%s'", info.getName(), info.getValue()));
                 }
                 isFirst = false;
             }

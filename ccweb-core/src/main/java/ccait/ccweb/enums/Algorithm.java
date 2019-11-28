@@ -26,6 +26,7 @@ public enum Algorithm {
     LIKE(9, " LIKE "),
     START(10, "[START]"),
     END(10, "[END]"),
+    IN(11, " IN ")
     ;
 
     private int code;
