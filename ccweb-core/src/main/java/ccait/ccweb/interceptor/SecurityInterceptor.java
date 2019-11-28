@@ -389,7 +389,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 }
                 break;
             case "PUT":
-                if(StringUtils.isEmpty(attrs.get("id"))) {
+                String[] arr = request.getRequestURI().split("/");
+                if(StringUtils.isEmpty(attrs.get("id")) && arr[arr.length - 1].toLowerCase() != "update") {
                     privilegeWhere = "canAdd=1";
                 }
 

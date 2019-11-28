@@ -259,6 +259,27 @@ public class AsyncApiController extends BaseController {
     }
 
     /***
+     * query and update
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/{table}/update", method = RequestMethod.PUT )
+    public Mono doQueryUpdate(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
+
+        try {
+
+            boolean result = super.updateByQuery(table, queryInfo);
+
+            return successAs( result );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return errorAs(110, e);
+        }
+    }
+
+    /***
      * delete
      * @return
      */

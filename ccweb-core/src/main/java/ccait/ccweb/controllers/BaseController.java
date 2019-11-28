@@ -18,7 +18,6 @@ import ccait.ccweb.context.IndexingContext;
 import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.dynamic.DynamicClassBuilder;
 import ccait.ccweb.enums.*;
-import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.listener.ExcelListener;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
@@ -26,7 +25,6 @@ import ccait.ccweb.utils.FastJsonUtils;
 import ccait.ccweb.utils.ImageUtils;
 import ccait.ccweb.utils.UploadUtils;
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelReader;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import entity.query.*;
 import entity.query.annotation.PrimaryKey;
@@ -1005,6 +1003,33 @@ public abstract class BaseController {
         QueryableAction ac = getQueryableAction(queryInfo, where);
 
         return ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
+    }
+
+    /***
+     * query select data and update
+     * @param table
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    public boolean updateByQuery(String table, QueryInfo queryInfo) throws Exception {
+        // TODO
+        Object entity = EntityContext.getEntity(table, queryInfo);
+        if(entity == null) {
+            throw new Exception("Can not find entity!!!");
+        }
+
+        Map<String, Object> postData = queryInfo.getData();
+
+        encrypt(postData);
+
+        fillData(postData, entity);
+
+        encrypt(queryInfo.getConditionList());
+
+        Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
+
+        return where.update(postData);
     }
 
     protected QueryableAction getQueryableAction(QueryInfo queryInfo, Where where) throws Exception {

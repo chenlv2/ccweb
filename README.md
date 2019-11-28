@@ -47,7 +47,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ### 1. 新增
 * URL：/api/{datasource}/{table} 
 * 请求方式：PUT
-* URL参数：{table}为数据库表名称
+* URL参数：{datasource},{table}为数据库表名称
 * POST参数：
 ```javascript
 [
@@ -362,7 +362,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 ### 15. 批量查询更新
 * URL：/api/{datasource}/{table}/update 
-* 请求方式：POST
+* 请求方式：PUT
 * URL参数：{table}为数据库表名称
 * POST参数：
 ```javascript
@@ -370,7 +370,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "data": {
         "字段名": "值",
         ...
-    }
+    },
     "pageInfo" : {
         "pageIndex": 1, //页码
         "pageSize": 50  //每页条数

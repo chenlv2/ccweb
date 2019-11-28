@@ -35,6 +35,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -116,6 +117,16 @@ public class QueryInfo implements Serializable {
     private List<FieldInfo> keywords;
     private List<TableInfo> joinTables;
     private List<SelectInfo> selectList;
+    private Map<String, Object> data;
+
+    public Map<String, Object> getData() {
+        return data;
+    }
+
+    public void setData(Map<String, Object> data) {
+        this.data = data;
+    }
+
 
     /***
      * 获取查询条件
@@ -309,7 +320,7 @@ public class QueryInfo implements Serializable {
                                       String tablename, String alias) throws Exception {
         if(this.getConditionList() != null) {
             for(ConditionInfo info : this.getConditionList()) {
-                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(DynamicClassBuilder.ensureColumnName(info.getName()))).findFirst();
+                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(info.getName())).findFirst();
                 if(!opt.isPresent()) {
                     continue;
                 }
@@ -343,7 +354,7 @@ public class QueryInfo implements Serializable {
             StringBuffer sb = new StringBuffer();
             boolean isFirst = true;
             for(FieldInfo info : this.getKeywords()) {
-                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(DynamicClassBuilder.ensureColumnName(info.getName()))).findFirst();
+                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(info.getName())).findFirst();
                 if(!opt.isPresent()) {
                     continue;
                 }

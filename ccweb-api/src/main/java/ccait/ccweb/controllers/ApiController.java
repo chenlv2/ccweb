@@ -143,6 +143,27 @@ public class ApiController extends BaseController {
     }
 
     /***
+     * query and update
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "/{table}/update", method = RequestMethod.PUT )
+    public ResponseData doQueryUpdate(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
+
+        try {
+
+            boolean result = super.updateByQuery(table, queryInfo);
+
+            return success( result );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return error(110, e);
+        }
+    }
+
+    /***
      * search
      * @return
      */
