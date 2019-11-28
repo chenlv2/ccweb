@@ -1253,7 +1253,7 @@ public abstract class BaseController {
      * @return
      * @throws Exception
      */
-    public Object insert(String table, Map<String, Object> postData) throws Exception {
+    public Integer insert(String table, Map<String, Object> postData) throws Exception {
         Object entity = EntityContext.getEntity(table, postData);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
@@ -1263,8 +1263,7 @@ public abstract class BaseController {
 
         fillData(postData, entity);
 
-        Object result = null;
-        result = ((Queryable) entity).insert();
+        Integer result = ((Queryable) entity).insert();
 
         indexingContext.createIndex(((Queryable)entity).tablename(), postData);
 

@@ -214,11 +214,19 @@ public class ApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}", method = RequestMethod.PUT )
-    public ResponseData doInsert(@PathVariable String table, @RequestBody Map<String, Object> postData)
+    public ResponseData doInsert(@PathVariable String table, @RequestBody Object postData)
     {
         try {
+            if(postData instanceof Map) {
+                return success(super.insert(table, (Map)postData));
+            }
 
-            Object result = super.insert(table, postData);
+            List<Integer> result = new ArrayList<>();
+            List list = (List)postData;
+            for(int i=0; i < list.size(); i++) {
+                Map data = (Map)list.get(i);
+                result.add(super.insert(table, data));
+            }
 
             return success(result);
         }

@@ -22,6 +22,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -211,11 +212,19 @@ public class AsyncApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "/{table}", method = RequestMethod.PUT  )
-    public Mono doInsert(@PathVariable String table, @RequestBody Map<String, Object> postData)
+    public Mono doInsert(@PathVariable String table, @RequestBody Object postData)
     {
         try {
+            if(postData instanceof Map) {
+                return successAs(super.insert(table, (Map)postData));
+            }
 
-            Object result = super.insert(table, postData);
+            List<Integer> result = new ArrayList<>();
+            List list = (List)postData;
+            for(int i=0; i < list.size(); i++) {
+                Map data = (Map)list.get(i);
+                result.add(super.insert(table, data));
+            }
 
             return successAs(result);
         }
