@@ -2,6 +2,8 @@ package ccait.ccweb.utils;
 
 import entity.query.Datetime;
 import entity.tool.util.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,6 +13,7 @@ import java.util.Date;
 import java.util.UUID;
 
 public class UploadUtils {
+    private static final Logger log = LogManager.getLogger(UploadUtils.class);
     public static String upload(String path, String filename, byte[] data) throws IOException {
         File root = new File(path);
         if(!root.exists()) {
@@ -94,7 +97,7 @@ public class UploadUtils {
                         + file.getName());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error(e);
         }
         return buffer;
     }

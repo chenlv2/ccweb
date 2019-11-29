@@ -1513,7 +1513,7 @@ public abstract class BaseController {
 
         Map<String, Object> configMap = ApplicationConfig.getInstance().getMap(String.format("entity.upload.%s.%s.%s", currentDatasource, table, field));
         if(configMap == null || configMap.size() < 1) {
-            throw new IOException("can not find upload config!!!");
+            throw new IOException(String.format("can not find upload config for %s.%s!!!", table, field));
         }
 
         if(configMap.get("path") == null) {
@@ -1679,7 +1679,12 @@ public abstract class BaseController {
                 if("/".equals(content.substring(0,1))) {
                     content = content.substring(1);
                 }
-                File file = new File(String.format("%s/%s", root, content));
+
+                String fullpath = String.format("%s/%s", root, content);
+                File file = new File(fullpath);
+                if("/".equals(fullpath.substring(0,1)) && !file.exists()) {
+                    file = new File(String.format("%s/%s", System.getProperty("user.dir"), fullpath));
+                }
                 buffer = UploadUtils.getFileByteArray(file);
             }
 
