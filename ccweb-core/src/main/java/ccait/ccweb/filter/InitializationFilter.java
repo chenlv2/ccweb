@@ -88,7 +88,7 @@ public class InitializationFilter implements WebFilter, Filter {
                     list.set(1, "asyncapi");
                     path = StringUtils.join("/", list);
 
-                    request.getRequestDispatcher(path).include(requestWrapper, response);
+                    request.getRequestDispatcher(path).forward(requestWrapper, response);
                     return;
                 }
             }

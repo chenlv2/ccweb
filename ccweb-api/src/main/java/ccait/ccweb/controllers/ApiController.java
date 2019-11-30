@@ -42,7 +42,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/join", method = RequestMethod.POST )
+    @RequestMapping( value = "join", method = RequestMethod.POST )
     public ResponseData doJoinQuery(@RequestBody QueryInfo queryInfo) {
 
         try {
@@ -64,7 +64,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build/table", method = {RequestMethod.POST, RequestMethod.PUT} )
+    @RequestMapping( value = "{table}/build/table", method = {RequestMethod.POST, RequestMethod.PUT} )
     public ResponseData doCreateOrAlterTable(@PathVariable String table, @RequestBody List<ColumnInfo> columns) {
         try{
 
@@ -83,7 +83,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build/view", method = {RequestMethod.POST, RequestMethod.PUT} )
+    @RequestMapping( value = "{table}/build/view", method = {RequestMethod.POST, RequestMethod.PUT} )
     public ResponseData doCreateOrAlterView(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try{
 
@@ -103,7 +103,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.GET )
+    @RequestMapping( value = "{table}/{id}", method = RequestMethod.GET )
     public ResponseData doGet(@PathVariable String table, @PathVariable String id)  {
         try {
 
@@ -125,7 +125,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.POST )
+    @RequestMapping( value = "{table}", method = RequestMethod.POST )
     public ResponseData doQuery(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -148,7 +148,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/update", method = RequestMethod.PUT )
+    @RequestMapping( value = "{table}/update", method = RequestMethod.PUT )
     public ResponseData doQueryUpdate(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -169,7 +169,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/search/{table}", method = RequestMethod.POST )
+    @RequestMapping( value = "search/{table}", method = RequestMethod.POST )
     public ResponseData doSearch(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -193,7 +193,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/exist", method = RequestMethod.POST )
+    @RequestMapping( value = "{table}/exist", method = RequestMethod.POST )
     public ResponseData doExist(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try {
 
@@ -214,7 +214,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/count", method = RequestMethod.POST )
+    @RequestMapping( value = "{table}/count", method = RequestMethod.POST )
     public ResponseData doCount(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try {
 
@@ -234,7 +234,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.PUT )
+    @RequestMapping( value = "{table}", method = RequestMethod.PUT )
     public ResponseData doInsert(@PathVariable String table, @RequestBody Object postData)
     {
         try {
@@ -265,7 +265,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.PUT )
+    @RequestMapping( value = "{table}/{id}", method = RequestMethod.PUT )
     public ResponseData doUpdate(@PathVariable String table, @PathVariable String id, @RequestBody Map<String, Object> postData) {
         try {
 
@@ -287,7 +287,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.DELETE )
+    @RequestMapping( value = "{table}/{id}", method = RequestMethod.DELETE )
     public ResponseData doDelete(@PathVariable String table, @PathVariable String id) {
         try {
 
@@ -310,7 +310,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/list", method = RequestMethod.DELETE )
+    @RequestMapping( value = "{table}/list", method = RequestMethod.DELETE )
     public ResponseData deleteByIds(@PathVariable String table, @RequestBody List<String> idList) {
 
         List result = null;
@@ -430,7 +430,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/import", method = {RequestMethod.POST, RequestMethod.PUT} )
+    @RequestMapping( value = "{table}/import", method = {RequestMethod.POST, RequestMethod.PUT} )
     public void doImport(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles) throws Exception {
         super.importData(table, uploadFiles);
     }

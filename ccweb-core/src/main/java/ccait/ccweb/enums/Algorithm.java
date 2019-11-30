@@ -25,8 +25,9 @@ public enum Algorithm {
     NOTEQ(8, "!="),
     LIKE(9, " LIKE "),
     START(10, "[START]"),
-    END(10, "[END]"),
-    IN(11, " IN ")
+    END(11, "[END]"),
+    IN(12, " IN "),
+    NOTIN(13, " NOT IN "),
     ;
 
     private int code;

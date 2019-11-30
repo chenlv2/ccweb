@@ -95,7 +95,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12), NOTIN(13)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -136,7 +136,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12), NOTIN(13)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -178,7 +178,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12), NOTIN(13)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -233,7 +233,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12), NOTIN(13)
     }, ... ],
 
     "sortList": [{ //排序条件
@@ -374,7 +374,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     "conditionList": [{ //查询条件
         "name": "id",   //字段名
         "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12)
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12), NOTIN(13)
     }, ... ],
 
     "keywords" : [{ //关键词模糊查询条件
@@ -386,13 +386,82 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 ### 16. 批量删除
-* URL：/api/{datasource}/{table}/list 
+* URL：/api/{datasource}/batch/{table} 
 * 请求方式：DELETE
 * URL参数：{table}为数据库表名称
 * POST参数：
 ```javascript
 [id1, id2, ...]
 ```
+
+
+
+### 17. 导出excel
+* URL：/api/{datasource}/{table}/export 
+* 请求方式：POST
+* URL参数：{table}为数据库表名称
+* POST参数：
+```javascript
+{
+    "conditionList": [{ //查询条件
+        "name": "id",   //字段名
+        "value": "1",   //值
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12), NOTIN(13)
+    }, ... ],
+
+    "keywords" : [{ //关键词模糊查询条件
+        "name": "id",   //字段名
+        "value": "1"   //值
+    }, ...],
+
+    "selectList": [{ //显示字段
+        "field": "id",  //字段名 
+        "function": "MAX",  //数据库相关函数：MAX, MIN, UPPER, LOWER, LENGTH, AVG, COUNT, SUM, GROUP_CONCAT等; 
+    }, ... ]
+}
+```
+
+
+### 18. 联表查询导出excel
+* URL：/api/{datasource}/export/join 
+* 请求方式：POST
+* URL参数：{table}为数据库表名称
+* POST参数：
+```javascript
+{
+    "joinTables": [{
+        "tablename": "salary",
+        "alias": "a",
+        "joinMode": "inner"
+    }, {
+        "tablename": "archives",
+        "alias": "b",
+        "joinMode": "Inner",
+        "onList": [{ 
+            "name": "b.id",   
+            "value": "a.archives_id",   
+            "algorithm": "EQ"
+        }]
+    }, ...],
+
+    "conditionList": [{ //查询条件
+        "name": "id",   //字段名
+        "value": "1",   //值
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12), NOTIN(13)
+    }, ... ],
+
+    "keywords" : [{ //关键词模糊查询条件
+        "name": "id",   //字段名
+        "value": "1"   //值
+    }, ...],
+
+    "selectList": [{ //显示字段
+        "field": "id",  //字段名 
+        "function": "MAX",  //数据库相关函数：MAX, MIN, UPPER, LOWER, LENGTH, AVG, COUNT, SUM, GROUP_CONCAT等; 
+    }, ... ]
+}
+```
+
 
 ## 系统用户/权限表结构说明
 用户权限相关表在服务启动时会自动创建，目的在于使用系统服务控制数据库表的访问权限，用户组是扁平结构的，需要更复杂的权限控制功能建议通过二次开发实现。

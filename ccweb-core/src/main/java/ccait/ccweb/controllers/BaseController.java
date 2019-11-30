@@ -1013,7 +1013,7 @@ public abstract class BaseController {
      * @throws Exception
      */
     public boolean updateByQuery(String table, QueryInfo queryInfo) throws Exception {
-        // TODO
+
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
@@ -1022,8 +1022,6 @@ public abstract class BaseController {
         Map<String, Object> postData = queryInfo.getData();
 
         encrypt(postData);
-
-        fillData(postData, entity);
 
         encrypt(queryInfo.getConditionList());
 
@@ -1608,7 +1606,22 @@ public abstract class BaseController {
 
             InputStream is = new ByteArrayInputStream(fileBytes);
 
-            EasyExcel.read(is, Map.class, new ExcelListener()).sheet().doRead();
+            Map<String, Object> dataMap = new HashMap<String, Object>();
+            List<List<String>> headers = EasyExcel.readSheet().sheetName("schema").build().getHead();
+            int count = headers.get(0).size();
+            List<SheetHeaderModel> headerList = new ArrayList<SheetHeaderModel>();
+            for(int i=0; i<count; i++) {
+                SheetHeaderModel headerModel = new SheetHeaderModel();
+                headerModel.setHeader(headers.get(0).get(i));
+                headerModel.setField(headers.get(1).get(i));
+                headerModel.setIndex(i);
+
+                dataMap.put(headers.get(1).get(i), "");
+                headerList.add(headerModel);
+            }
+            Queryable entity = (Queryable) EntityContext.getEntity(table, dataMap);
+
+            EasyExcel.read(is, Map.class, new ExcelListener(entity, headerList)).sheet().doRead();
         }
     }
 

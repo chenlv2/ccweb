@@ -37,7 +37,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.GET, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "{table}/{id}", method = RequestMethod.GET, produces="application/json;charset=UTF-8" )
     public Mono doGet(@PathVariable String table, @PathVariable String id, final Model model)  {
         try {
 
@@ -61,7 +61,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "{table}", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
     public Mono doQuery(@PathVariable String table, @RequestBody QueryInfo queryInfo, final Model model) {
 
         try {
@@ -87,7 +87,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/exist", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "{table}/exist", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
     public Mono doExist(@PathVariable String table, @RequestBody QueryInfo queryInfo, final Model model) {
         try {
 
@@ -110,7 +110,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/count", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "{table}/count", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
     public Mono doCount(@PathVariable String table, @RequestBody QueryInfo queryInfo, final Model model) {
         try {
 
@@ -133,7 +133,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/join", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "join", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
     public Mono doJoinQuery(@RequestBody QueryInfo queryInfo, final Model model) {
 
         try {
@@ -163,7 +163,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "{table}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
     public Mono doInsert(@PathVariable String table, @RequestBody Map<String, Object> postData, final Model model)
     {
         try {
@@ -188,7 +188,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "{table}/{id}", method = RequestMethod.PUT, produces="application/json;charset=UTF-8" )
     public Mono doUpdate(@PathVariable String table, @PathVariable String id,
                          @RequestBody Map<String, Object> postData, final Model model) {
         try {
@@ -213,7 +213,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "{table}/{id}", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
     public Mono doDelete(@PathVariable String table, @PathVariable String id, final Model model) {
         try {
 
@@ -238,7 +238,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/list", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "batch/{table}", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
     public Mono deleteByIds(@PathVariable String table, @RequestBody List<String> idList, final Model model) {
 
         List result = null;

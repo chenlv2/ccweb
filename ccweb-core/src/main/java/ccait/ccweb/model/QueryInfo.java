@@ -17,6 +17,7 @@ import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.dynamic.DynamicClassBuilder;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.generator.EntitesGenerator;
+import com.alibaba.fastjson.JSONArray;
 import entity.query.*;
 import entity.query.core.DataSource;
 import entity.query.core.DataSourceFactory;
@@ -331,24 +332,36 @@ public class QueryInfo implements Serializable {
                 }
 
                 Field fld = opt.get();
-                String column = DBUtils.getSqlInjValue(info.getName()).replaceAll("\\s", "");
                 switch (info.getAlgorithm()) {
                     case LIKE:
-                        where.and(column + " LIKE '%#{"+fld.getName()+"}%'");
+                        where.and(ensureColumn(info.getName()) + " LIKE '%#{"+fld.getName()+"}%'");
                         break;
                     case START:
-                        where.and(column + " LIKE '%#{"+fld.getName()+"}'");
+                        where.and(ensureColumn(info.getName()) + " LIKE '%#{"+fld.getName()+"}'");
                         break;
                     case END:
-                        where.and(column + " LIKE '#{"+fld.getName()+"}'");
+                        where.and(ensureColumn(info.getName()) + " LIKE '#{"+fld.getName()+"}'");
                         break;
                     case IN:
-                        where.and(column + " IN (#{"+fld.getName()+"})");
+                        where.and(ensureColumn(info.getName()) + " IN (#{"+fld.getName()+"})");
+                        break;
+                    case NOTIN:
+                        where.and(ensureColumn(info.getName()) + " NOT IN (#{"+fld.getName()+"})");
                         break;
                     default:
-                        where.and(String.format("%s%s#{%s}", column, info.getAlgorithm().getValue(), fld.getName()));
+                        where.and(String.format("%s%s#{%s}", ensureColumn(info.getName()), info.getAlgorithm().getValue(), fld.getName()));
                 }
-                ReflectionUtils.setFieldValue(entity, fld.getName(), cast(fld.getType(), info.getValue().toString()));
+
+                String value = info.getValue().toString();
+                if(info.getValue().getClass().equals(JSONArray.class)) {
+                    value = value.substring(1).substring(0, value.length() - 2);
+                    List<String> list = StringUtils.splitString2List(value, ",");
+                    for(int i=0; i<list.size(); i++) {
+                        list.set(i, list.get(i).replaceAll("['\"]", "").trim());
+                    }
+                    value = StringUtils.join(",", list);
+                }
+                ReflectionUtils.setFieldValue(entity, fld.getName(), cast(fld.getType(), value));
             }
         }
 
@@ -375,11 +388,11 @@ public class QueryInfo implements Serializable {
 
                 if(info.getValue().getClass().equals(String.class)) {
 
-                    sb.append(String.format("[%s] LIKE '%s'", info.getName(), "%"+ DBUtils.getSqlInjValue(info.getValue()) +"%"));
+                    sb.append(String.format("%s LIKE '%s'", ensureColumn(info.getName()), "%"+ DBUtils.getSqlInjValue(info.getValue()) +"%"));
                 }
 
                 else {
-                    sb.append(String.format("[%s]='%s'", info.getName(), info.getValue()));
+                    sb.append(String.format("%s='%s'", ensureColumn(info.getName()), info.getValue()));
                 }
                 isFirst = false;
             }
@@ -459,6 +472,11 @@ public class QueryInfo implements Serializable {
         return where;
     }
 
+    private String ensureColumn(String name) {
+        return DBUtils.getSqlInjValue(name).trim().replaceAll("\\s", "")
+                .replaceAll("([_\\w\\d]+)(\\.?)", "[$1]$2");
+    }
+
     public Where getWhereQueryableById(Object entity, String id) throws Exception {
         PrimaryKeyInfo pk = EntityContext.getPrimaryKeyInfo(entity);
         if(pk == null) {
@@ -484,7 +502,7 @@ public class QueryInfo implements Serializable {
             if(StringUtils.isEmpty(group.trim())) {
                 continue;
             }
-            list.add(DBUtils.getSqlInjValue(group.trim()));
+            list.add(ensureColumn(group));
         }
 
         if(list.size() < 1) {
@@ -506,7 +524,7 @@ public class QueryInfo implements Serializable {
             if(StringUtils.isEmpty(sort.getName().trim())) {
                 continue;
             }
-            list.add(String.format("[%s] %s", DBUtils.getSqlInjValue(sort.getName().trim()), sort.isDesc() ? "DESC" : "ASC"));
+            list.add(String.format("[%s] %s", ensureColumn(sort.getName()), sort.isDesc() ? "DESC" : "ASC"));
         }
 
         if(list.size() < 1) {
@@ -532,7 +550,7 @@ public class QueryInfo implements Serializable {
             if(StringUtils.isEmpty(sort.getName().trim())) {
                 continue;
             }
-            list.add(String.format("[%s] %s", DBUtils.getSqlInjValue(sort.getName().trim()), sort.isDesc() ? "DESC" : "ASC"));
+            list.add(String.format("%s %s", ensureColumn(sort.getName()), sort.isDesc() ? "DESC" : "ASC"));
         }
 
         if(list.size() < 1) {

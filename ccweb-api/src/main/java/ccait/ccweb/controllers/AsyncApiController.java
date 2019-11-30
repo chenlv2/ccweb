@@ -40,7 +40,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/join", method = RequestMethod.POST )
+    @RequestMapping( value = "join", method = RequestMethod.POST )
     public Mono doJoinQuery(@RequestBody QueryInfo queryInfo) {
 
         try {
@@ -62,7 +62,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build/table", method = {RequestMethod.POST, RequestMethod.PUT}  )
+    @RequestMapping( value = "{table}/build/table", method = {RequestMethod.POST, RequestMethod.PUT}  )
     public Mono doCreateOrAlterTable(@PathVariable String table, @RequestBody List<ColumnInfo> columns) {
         try{
 
@@ -81,7 +81,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/build/view", method = {RequestMethod.POST, RequestMethod.PUT}  )
+    @RequestMapping( value = "{table}/build/view", method = {RequestMethod.POST, RequestMethod.PUT}  )
     public Mono doCreateOrAlterView(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try{
 
@@ -101,7 +101,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.GET  )
+    @RequestMapping( value = "{table}/{id}", method = RequestMethod.GET  )
     public Mono doGet(@PathVariable String table, @PathVariable String id)  {
         try {
 
@@ -123,7 +123,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.POST  )
+    @RequestMapping( value = "{table}", method = RequestMethod.POST  )
     public Mono doQuery(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -146,7 +146,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/search/{table}", method = RequestMethod.POST  )
+    @RequestMapping( value = "search/{table}", method = RequestMethod.POST  )
     public Mono doSearch(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -170,7 +170,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/exist", method = RequestMethod.POST  )
+    @RequestMapping( value = "{table}/exist", method = RequestMethod.POST  )
     public Mono doExist(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try {
 
@@ -191,7 +191,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/count", method = RequestMethod.POST  )
+    @RequestMapping( value = "{table}/count", method = RequestMethod.POST  )
     public Mono doCount(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
         try {
 
@@ -211,7 +211,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}", method = RequestMethod.PUT  )
+    @RequestMapping( value = "{table}", method = RequestMethod.PUT  )
     public Mono doInsert(@PathVariable String table, @RequestBody Object postData)
     {
         try {
@@ -242,7 +242,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.PUT  )
+    @RequestMapping( value = "{table}/{id}", method = RequestMethod.PUT  )
     public Mono doUpdate(@PathVariable String table, @PathVariable String id, @RequestBody Map<String, Object> postData) {
         try {
 
@@ -264,7 +264,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/update", method = RequestMethod.PUT )
+    @RequestMapping( value = "{table}/update", method = RequestMethod.PUT )
     public Mono doQueryUpdate(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -285,7 +285,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/{id}", method = RequestMethod.DELETE  )
+    @RequestMapping( value = "{table}/{id}", method = RequestMethod.DELETE  )
     public Mono doDelete(@PathVariable String table, @PathVariable String id) {
         try {
 
@@ -308,7 +308,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/list", method = RequestMethod.DELETE  )
+    @RequestMapping( value = "{table}/list", method = RequestMethod.DELETE  )
     public Mono deleteByIds(@PathVariable String table, @RequestBody List<String> idList) {
 
         List result = null;
@@ -386,7 +386,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "/{table}/stream", method = RequestMethod.POST, produces= MediaType.APPLICATION_STREAM_JSON_VALUE  )
+    @RequestMapping( value = "{table}/stream", method = RequestMethod.POST, produces= MediaType.APPLICATION_STREAM_JSON_VALUE  )
     public Mono stream(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {

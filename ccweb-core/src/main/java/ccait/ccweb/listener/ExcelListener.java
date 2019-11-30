@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import ccait.ccweb.model.SheetHeaderModel;
+import entity.query.Queryable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,20 +26,17 @@ public class ExcelListener extends AnalysisEventListener<HashMap> {
      * 每隔5条存储数据库，实际使用中可以3000条，然后清理list ，方便内存回收
      */
     private static final int BATCH_COUNT = 5;
+    private final List<SheetHeaderModel> headerList;
+    private final Queryable entity;
+
     List<HashMap> list = new ArrayList<HashMap>();
-
-    public ExcelListener() {
-        // 这里是demo，所以随便new一个。实际使用如果到了spring,请使用下面的有参构造函数
-
-    }
 
     /**
      * 如果使用了spring,请使用这个构造方法。每次创建Listener的时候需要把spring管理的类传进来
-     *
-     * @param demoDAO
      */
-    public ExcelListener(HashMap demoDAO) {
-
+    public ExcelListener(Queryable entity, List<SheetHeaderModel> headerList) {
+        this.entity = entity;
+        this.headerList = headerList;
     }
 
     /**
