@@ -103,7 +103,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         //  null == request.getHeader("x-requested-with") TODO 暂时用这个来判断是否为ajax请求
         // 如果没有权限 则抛403异常 springboot会处理，跳转到 /error/403 页面
-        response.sendError(HttpStatus.FORBIDDEN.value(), "没有足够的权限访问请求的内容");
+        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "没有足够的权限访问请求的内容");
         if(request.getRequestURI().indexOf("asyncapi") > -1) {
             throw new Exception("没有足够的权限访问请求的内容");
         }

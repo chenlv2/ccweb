@@ -15,6 +15,7 @@ package ccait.ccweb.model;
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.dynamic.DynamicClassBuilder;
+import ccait.ccweb.enums.Algorithm;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.generator.EntitesGenerator;
 import com.alibaba.fastjson.JSONArray;
@@ -332,35 +333,29 @@ public class QueryInfo implements Serializable {
                 }
 
                 Field fld = opt.get();
-                switch (info.getAlgorithm()) {
-                    case LIKE:
-                        where.and(ensureColumn(info.getName()) + " LIKE '%#{"+fld.getName()+"}%'");
-                        break;
-                    case START:
-                        where.and(ensureColumn(info.getName()) + " LIKE '%#{"+fld.getName()+"}'");
-                        break;
-                    case END:
-                        where.and(ensureColumn(info.getName()) + " LIKE '#{"+fld.getName()+"}'");
-                        break;
-                    case IN:
-                        where.and(ensureColumn(info.getName()) + " IN (#{"+fld.getName()+"})");
-                        break;
-                    case NOTIN:
-                        where.and(ensureColumn(info.getName()) + " NOT IN (#{"+fld.getName()+"})");
-                        break;
-                    default:
-                        where.and(String.format("%s%s#{%s}", ensureColumn(info.getName()), info.getAlgorithm().getValue(), fld.getName()));
-                }
 
                 String value = info.getValue().toString();
+                String fieldText = "#{" + fld.getName() + "}";
                 if(info.getValue().getClass().equals(JSONArray.class)) {
                     value = value.substring(1).substring(0, value.length() - 2);
                     List<String> list = StringUtils.splitString2List(value, ",");
                     for(int i=0; i<list.size(); i++) {
                         list.set(i, list.get(i).replaceAll("['\"]", "").trim());
                     }
-                    value = StringUtils.join(",", list);
+
+                    if(list.size() == 1) {
+                        value = StringUtils.join(",", list);
+                    }
+                    else if(list.size() > 1) {
+                        if(Algorithm.IN.equals(info.getAlgorithm()) || Algorithm.NOTIN.equals(info.getAlgorithm())) {
+                            value = StringUtils.join("','", list);
+                            fieldText = "'" + value + "'";
+                        }
+                    }
                 }
+
+                where = setWhereStament(where, info, fieldText);
+
                 ReflectionUtils.setFieldValue(entity, fld.getName(), cast(fld.getType(), value));
             }
         }
@@ -425,8 +420,10 @@ public class QueryInfo implements Serializable {
 
         switch(privilegeScope) {
             case DENIED:
-                where = where.and("1=2");
-                break;
+                if(user == null) {
+                    throw new Exception("Session maybe to timeout!!!");
+                }
+                throw new Exception("Data access denied!!!");
             case SELF:
                 if(!EntitesGenerator.hasColumn(dataSource.getId(), tablename, createByFieldString)) {
                     where = where.and(String.format("%s=%s", createByFieldString, user.getId()));
@@ -467,6 +464,39 @@ public class QueryInfo implements Serializable {
                 where = where.and(String.format("%s is not null AND %s in ('%s')",
                         groupIdFieldString, groupIdFieldString, join("', '", groupIdList)));
                 break;
+        }
+
+        return where;
+    }
+
+    private Where setWhereStament(Where where, ConditionInfo info, String value) throws Exception {
+        try {
+            switch (info.getAlgorithm()) {
+                case LIKE:
+                    where.and(ensureColumn(info.getName()) + " LIKE '%" + value + "%'");
+                    break;
+                case START:
+                    where.and(ensureColumn(info.getName()) + " LIKE '%" + value + "'");
+                    break;
+                case END:
+                    where.and(ensureColumn(info.getName()) + " LIKE '" + value + "'");
+                    break;
+                case IN:
+                    where.and(ensureColumn(info.getName()) + " IN (" + value + ")");
+                    break;
+                case NOTIN:
+                    where.and(ensureColumn(info.getName()) + " NOT IN (" + value + ")");
+                    break;
+                default:
+                    where.and(String.format("%s%s%s", ensureColumn(info.getName()), info.getAlgorithm().getValue(), value));
+            }
+        }
+        catch (Exception e) {
+            if(info.getAlgorithm() == null) {
+                throw new Exception("Algorithm can not be empty!!!");
+            }
+
+            throw e;
         }
 
         return where;

@@ -157,6 +157,10 @@ public class DynamicClassBuilder {
 
     public static String ensureColumnName(String name) {
 
+        if(name == null) {
+            return null;
+        }
+
         Matcher matcher = Pattern.compile("\\w[\\w\\d]*\\.(\\w[\\w\\d]*)").matcher(name);
         if(matcher.matches()) {
             name = matcher.group(1);

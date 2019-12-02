@@ -21,6 +21,7 @@ import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
@@ -160,6 +161,7 @@ public class InitializationFilter implements WebFilter, Filter {
             responseData.setMessage(message);
 
             res.reset();
+            res.sendError(HttpStatus.FORBIDDEN.value(), message);
             res.getWriter().write(JsonUtils.toJson(responseData));
             res.getWriter().flush();
             res.getWriter().close();
@@ -173,7 +175,8 @@ public class InitializationFilter implements WebFilter, Filter {
 
     private String getErrorMessage(Exception e) {
         String message = e.getMessage();
-        if(e.getCause() != null && ((InvocationTargetException)e.getCause()).getTargetException() != null) {
+        if(e.getCause() != null &&
+                (e.getCause() instanceof InvocationTargetException && ((InvocationTargetException)e.getCause()).getTargetException() != null)) {
             message = ((InvocationTargetException)e.getCause()).getTargetException().getMessage();
         }
 

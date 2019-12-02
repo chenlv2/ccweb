@@ -403,7 +403,7 @@ public class ApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "{table}/export", method = RequestMethod.POST )
-    public void doExport(String table, QueryInfo queryInfo) throws Exception {
+    public void doExport(@PathVariable String table, @RequestBody QueryInfo queryInfo) throws Exception {
 
         List list = query(table, queryInfo);
 
@@ -419,7 +419,7 @@ public class ApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "export/join", method = RequestMethod.POST )
-    public void doExport(QueryInfo queryInfo) throws Exception {
+    public void doExport(@RequestBody QueryInfo queryInfo) throws Exception {
         List list = joinQuery(queryInfo);
         export(UUID.randomUUID().toString().replace("-", ""), list, queryInfo);
     }

@@ -413,7 +413,7 @@ public class AsyncApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "{table}/export", method = RequestMethod.POST )
-    public Mono doExport(String table, QueryInfo queryInfo) throws Exception {
+    public Mono doExport(@PathVariable String table, @RequestBody QueryInfo queryInfo) throws Exception {
         List list = query(table, queryInfo);
         return exportAs(table, list, queryInfo);
     }
@@ -427,7 +427,7 @@ public class AsyncApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "export/join", method = RequestMethod.POST )
-    public Mono doExport(QueryInfo queryInfo) throws Exception {
+    public Mono doExport(@RequestBody QueryInfo queryInfo) throws Exception {
         List list = joinQuery(queryInfo);
         return exportAs(UUID.randomUUID().toString().replace("-", ""), list, queryInfo);
     }

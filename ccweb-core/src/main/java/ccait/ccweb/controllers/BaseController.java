@@ -1040,6 +1040,10 @@ public abstract class BaseController {
             total = single.blockingGet();
         }
 
+        if(queryInfo.getPageInfo() == null) {
+            queryInfo.setPageInfo(new PageInfo());
+        }
+
         queryInfo.getPageInfo().setTotalRecords(total);
 
         GroupBy groupBy = queryInfo.getGroupByQuerable(where);
@@ -1059,7 +1063,7 @@ public abstract class BaseController {
             }
         }
 
-        if(maxPageSize != null && queryInfo.getPageInfo().getPageSize() > maxPageSize) {
+        if (maxPageSize != null && queryInfo.getPageInfo().getPageSize() > maxPageSize) {
             queryInfo.getPageInfo().setPageSize(maxPageSize);
         }
 
