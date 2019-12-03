@@ -125,6 +125,9 @@ public class ApplicationContext implements ApplicationContextAware {
     @Value("${entity.table.reservedField.modifyOn:modifyTime}")
     private String modifyOnField;
 
+    @Value("${entity.table.reservedField.modifyBy:modifyBy}")
+    private String modifyByField;
+
     @Value("${entity.table.reservedField.userPath:userPath}")
     private String userPathField;
 
@@ -259,7 +262,7 @@ public class ApplicationContext implements ApplicationContextAware {
             UserModel user = new UserModel();
             user.setCreateBy(Long.valueOf(0));
             user.setStatus(0);
-            user.setCreateTime(Datetime.getTime());
+            user.setCreateOn(Datetime.getTime());
             user.setUsername(admin);
             user.setPassword(pwd);
             user.setPath("0");
@@ -321,6 +324,29 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setCanNotNull(true);
         col.setMaxLength(2048);
         col.setType(String.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(modifyByField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(modifyOnField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(createOnField);
+        col.setType(Date.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(createByField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
         columns.add(col);
 
         Queryable.createTable(ds.getId(), userGroupRoleTablename, columns);
@@ -445,6 +471,36 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setType(Integer.class);
         columns.add(col);
 
+        col = new ColumnInfo();
+        col.setColumnName(userPathField);
+        col.setCanNotNull(true);
+        col.setMaxLength(2048);
+        col.setType(String.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(modifyOnField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(modifyByField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(createOnField);
+        col.setType(Date.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(createByField);
+        col.setCanNotNull(true);
+        col.setType(Long.class);
+        columns.add(col);
+
         Queryable.createTable(ds.getId(), privilegeTablename, columns);
         log.info(String.format(LOG_PRE_SUFFIX + "权限表[%s]创建成功！", privilegeTablename));
     }
@@ -480,6 +536,36 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setMaxLength(32);
         col.setType(String.class);
         columns.add(col);
+        col = new ColumnInfo();
+
+        col.setColumnName(userPathField);
+        col.setCanNotNull(true);
+        col.setMaxLength(2048);
+        col.setType(String.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(modifyOnField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(modifyByField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(createOnField);
+        col.setType(Date.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(createByField);
+        col.setCanNotNull(true);
+        col.setType(Long.class);
+        columns.add(col);
 
         Queryable.createTable(ds.getId(), aclTablename, columns);
         log.info(String.format(LOG_PRE_SUFFIX + "访问控制表[%s]创建成功！", aclTablename));
@@ -514,6 +600,25 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setColumnName("description");
         col.setMaxLength(255);
         col.setType(String.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(userPathField);
+        col.setCanNotNull(true);
+        col.setMaxLength(2048);
+        col.setType(String.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(modifyOnField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(modifyByField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -570,6 +675,18 @@ public class ApplicationContext implements ApplicationContextAware {
         columns.add(col);
 
         col = new ColumnInfo();
+        col.setColumnName(modifyOnField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(modifyByField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
         col.setColumnName(createOnField);
         col.setType(Date.class);
         columns.add(col);
@@ -592,7 +709,7 @@ public class ApplicationContext implements ApplicationContextAware {
 
         user.setPassword(pwd);
         user.setPath("0");
-        user.setCreateTime(new Date());
+        user.setCreateOn(new Date());
         user.setStatus(0);
         user.setCreateBy(Long.valueOf(0));
 
@@ -640,19 +757,31 @@ public class ApplicationContext implements ApplicationContextAware {
         columns.add(col);
 
         col = new ColumnInfo();
-        col.setColumnName(createOnField);
-        col.setType(Date.class);
+        col.setColumnName(modifyOnField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
         columns.add(col);
 
         col = new ColumnInfo();
-        col.setColumnName("status");
-        col.setType(Integer.class);
+        col.setColumnName(modifyByField);
+        col.setCanNotNull(false);
+        col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName(createOnField);
+        col.setType(Date.class);
         columns.add(col);
 
         col = new ColumnInfo();
         col.setColumnName(createByField);
         col.setCanNotNull(true);
         col.setType(Long.class);
+        columns.add(col);
+
+        col = new ColumnInfo();
+        col.setColumnName("status");
+        col.setType(Integer.class);
         columns.add(col);
 
         Queryable.createTable(ds.getId(), userTablename, columns);

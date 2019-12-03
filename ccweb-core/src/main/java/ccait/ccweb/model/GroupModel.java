@@ -35,14 +35,44 @@ public class GroupModel extends Queryable<GroupModel> {
   @Fieldname("description")
   private String description;
 
-  @Fieldname("createTime")
-  private Date createTime;
-
   @Fieldname("${entity.table.reservedField.userPath:userPath}")
   private String path;
 
+  public Date getCreateOn() {
+    return createOn;
+  }
+
+  public void setCreateOn(Date createOn) {
+    this.createOn = createOn;
+  }
+
+  public Date getModifyOn() {
+    return modifyOn;
+  }
+
+  public void setModifyOn(Date modifyOn) {
+    this.modifyOn = modifyOn;
+  }
+
+  public Long getModifyBy() {
+    return modifyBy;
+  }
+
+  public void setModifyBy(Long modifyBy) {
+    this.modifyBy = modifyBy;
+  }
+
+  @Fieldname("${entity.table.reservedField.createOn:createOn}")
+  private Date createOn;
+
   @Fieldname("${entity.table.reservedField.createBy:createBy}")
   private Long createBy;
+
+  @Fieldname("${entity.table.reservedField.modifyOn:modifyOn}")
+  private Date modifyOn;
+
+  @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
+  private Long modifyBy;
 
   public UUID getGroupId() {
     return this.groupId;
@@ -66,14 +96,6 @@ public class GroupModel extends Queryable<GroupModel> {
 
   public void setDescription(String description) {
     this.description = description;
-  }
-
-  public Date getCreateTime() {
-    return this.createTime;
-  }
-
-  public void setCreateTime(Date createTime) {
-    this.createTime = createTime;
   }
 
   public Long getCreateBy() {

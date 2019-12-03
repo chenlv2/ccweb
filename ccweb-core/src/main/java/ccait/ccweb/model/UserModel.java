@@ -39,14 +39,56 @@ public class UserModel extends Queryable<UserModel> {
   @Fieldname("${entity.table.reservedField.userPath:userPath}")
   private String path;
 
-  @Fieldname("createTime")
-  private Date createTime;
+  @Fieldname("${entity.table.reservedField.createOn:createOn}")
+  private Date createOn;
+
+  @Fieldname("${entity.table.reservedField.createBy:createBy}")
+  private Long createBy;
+
+  @Fieldname("${entity.table.reservedField.modifyOn:modifyOn}")
+  private Date modifyOn;
+
+  @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
+  private Long modifyBy;
 
   @Fieldname("status")
   private Integer status;
 
-  @Fieldname("${entity.table.reservedField.createBy:createBy}")
-  private Long createBy;
+  public Date getCreateOn() {
+    return createOn;
+  }
+
+  public void setCreateOn(Date createOn) {
+    this.createOn = createOn;
+  }
+
+  public Long getCreateBy() {
+    return createBy;
+  }
+
+  public void setCreateBy(Long createBy) {
+    this.createBy = createBy;
+  }
+
+  public Date getModifyOn() {
+    return modifyOn;
+  }
+
+  public void setModifyOn(Date modifyOn) {
+    this.modifyOn = modifyOn;
+  }
+
+  public Long getModifyBy() {
+    return modifyBy;
+  }
+
+  public void setModifyBy(Long modifyBy) {
+    this.modifyBy = modifyBy;
+  }
+
+  public void setUserGroupRoleModels(List<UserGroupRoleModel> userGroupRoleModels) {
+    this.userGroupRoleModels = userGroupRoleModels;
+  }
 
   @Exclude
   private List<UserGroupRoleModel> userGroupRoleModels;
@@ -106,27 +148,11 @@ public class UserModel extends Queryable<UserModel> {
     this.path = path;
   }
 
-  public Date getCreateTime() {
-    return this.createTime;
-  }
-
-  public void setCreateTime(Date createTime) {
-    this.createTime = createTime;
-  }
-
   public Integer getStatus() {
     return this.status;
   }
 
   public void setStatus(Integer status) {
     this.status = status;
-  }
-
-  public Long getCreateBy() {
-    return createBy;
-  }
-
-  public void setCreateBy(Long createBy) {
-    this.createBy = createBy;
   }
 }

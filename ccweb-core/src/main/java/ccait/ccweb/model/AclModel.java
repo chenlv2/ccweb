@@ -18,6 +18,7 @@ import entity.query.annotation.Tablename;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.UUID;
 
 @Component
@@ -33,6 +34,61 @@ public class AclModel extends Queryable<AclModel> {
 
   @Fieldname("tableName")
   private String tableName;
+
+  public String getPath() {
+    return path;
+  }
+
+  public void setPath(String path) {
+    this.path = path;
+  }
+
+  public Date getCreateOn() {
+    return createOn;
+  }
+
+  public void setCreateOn(Date createOn) {
+    this.createOn = createOn;
+  }
+
+  public Long getCreateBy() {
+    return createBy;
+  }
+
+  public void setCreateBy(Long createBy) {
+    this.createBy = createBy;
+  }
+
+  public Date getModifyOn() {
+    return modifyOn;
+  }
+
+  public void setModifyOn(Date modifyOn) {
+    this.modifyOn = modifyOn;
+  }
+
+  public Long getModifyBy() {
+    return modifyBy;
+  }
+
+  public void setModifyBy(Long modifyBy) {
+    this.modifyBy = modifyBy;
+  }
+
+  @Fieldname("${entity.table.reservedField.userPath:userPath}")
+  private String path;
+
+  @Fieldname("${entity.table.reservedField.createOn:createOn}")
+  private Date createOn;
+
+  @Fieldname("${entity.table.reservedField.createBy:createBy}")
+  private Long createBy;
+
+  @Fieldname("${entity.table.reservedField.modifyOn:modifyOn}")
+  private Date modifyOn;
+
+  @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
+  private Long modifyBy;
 
   public UUID getAclId() {
     return this.aclId;

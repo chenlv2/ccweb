@@ -31,14 +31,14 @@ entity:
     email: ^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$
     mobile: ^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$
 
-  formatter: #查询结果输出格式，createTime、modifyTime，也可以精确格式化:[表名].[字段名]
-    createTime: yyyy-MM-dd HH:mm
-    modifyTime: yyyy-MM-dd HH:mm
+  formatter: #查询结果输出格式，createOn、modifyOn，也可以精确格式化:[表名].[字段名]
+    createOn: yyyy-MM-dd HH:mm
+    modifyOn: yyyy-MM-dd HH:mm
 
   table:
     reservedField: #系统保留字段(必填)
       userPath: userPath #创建者所属路径，体现父子关系，用于like查询
-      createOn: createTime #数据创建时间
+      createOn: createOn #数据创建时间
       createBy: createBy #数据创建者
       modifyOn: modifyTime #数据修改时间
       groupId: groupId  #群组ID

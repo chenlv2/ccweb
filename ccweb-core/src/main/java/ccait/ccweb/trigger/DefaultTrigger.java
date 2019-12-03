@@ -64,6 +64,9 @@ public final class DefaultTrigger {
     @Value("${entity.table.reservedField.createBy:createBy}")
     private String createByField;
 
+    @Value("${entity.table.reservedField.modifyBy:modifyBy}")
+    private String modifyByField;
+
     @Value("${entity.encoding:UTF-8}")
     private String encoding;
 
@@ -75,6 +78,7 @@ public final class DefaultTrigger {
         encoding = ApplicationConfig.getInstance().get("${entity.encoding}", encoding);
         createOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createOn}", createOnField);
         modifyOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.modifyOn}", modifyOnField);
+        modifyByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.modifyBy}", modifyByField);
         userPathField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userPath}", userPathField);
         createByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createBy}", createByField);
     }
@@ -116,6 +120,11 @@ public final class DefaultTrigger {
 
         if(data.containsKey(createByField)) {
             data.remove(createByField);
+        }
+
+        UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
+        if(user != null) {
+            data.put(modifyByField, user.getId());
         }
 
         data.put(modifyOnField, Datetime.now());
