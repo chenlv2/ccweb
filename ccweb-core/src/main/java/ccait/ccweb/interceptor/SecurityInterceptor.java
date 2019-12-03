@@ -23,8 +23,6 @@ import ccait.ccweb.utils.UploadUtils;
 import entity.query.ColumnInfo;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.StringUtils;
-import net.sf.jmimemagic.Magic;
-import net.sf.jmimemagic.MagicMatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -103,11 +101,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         //  null == request.getHeader("x-requested-with") TODO 暂时用这个来判断是否为ajax请求
         // 如果没有权限 则抛403异常 springboot会处理，跳转到 /error/403 页面
-        response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "没有足够的权限访问请求的内容");
-        if(request.getRequestURI().indexOf("asyncapi") > -1) {
-            throw new Exception("没有足够的权限访问请求的内容");
-        }
-        return false;
+        // response.sendError(HttpStatus.FORBIDDEN.value(), "没有足够的权限访问请求的内容");
+        throw new Exception("没有足够的权限访问请求的内容");
     }
 
     private boolean vaildForUploadFiles(RequestWrapper request, String table) throws Exception {
@@ -152,8 +147,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
             String extName = arr[arr.length - 1];
 
             byte[] fileBytes = (byte[]) fileEntry.getValue();
-            MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
-            String mimeType = mimeMatcher.getMimeType();
+            //MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
+            String mimeType = UploadUtils.getMIMEType(extName); //mimeMatcher.getMimeType();
 
             if(StringUtils.isEmpty(mimeType)) {
                 continue;
@@ -163,7 +158,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 Map<String, Object> configMap = (Map<String, Object>) uploadConfigMap.get(fileEntry.getKey());
                 if (configMap.get("mimeType") != null) {
                     if (!StringUtils.splitString2List(configMap.get("mimeType").toString(), ",").stream()
-                            .filter(a -> mimeMatcher.getExtension().equalsIgnoreCase(a.toString().trim()))
+                            .filter(a -> extName.equalsIgnoreCase(a.toString().trim()))
                             .findAny().isPresent()) {
                         throw new Exception("Can not supported file type!!!");
                     }
@@ -455,6 +450,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             case "POST":
                 Pattern tablePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/table$", Pattern.CASE_INSENSITIVE);
                 Pattern viewPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/view$", Pattern.CASE_INSENSITIVE);
+                Pattern uploadPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+)/upload(/[^/]+){2}$", Pattern.CASE_INSENSITIVE);
                 if(tablePattern.matcher(request.getRequestURI()).find()) {
                     List<ColumnInfo> columns = FastJsonUtils.toList(postString, ColumnInfo.class);
                     TriggerContext.exec(table, EventType.BuildTable, columns, request);
@@ -467,8 +463,15 @@ public class SecurityInterceptor implements HandlerInterceptor {
                     break;
                 }
 
+                else if(uploadPattern.matcher(request.getRequestURI()).find()) {
+                    QueryInfo queryInfo = FastJsonUtils.convertJsonToObject(postString, QueryInfo.class);
+                    TriggerContext.exec(table, EventType.Upload, queryInfo, request);
+                    break;
+                }
+
                 QueryInfo queryInfo = FastJsonUtils.convertJsonToObject(postString, QueryInfo.class);
-                if(queryInfo.getKeywords().size() > 0 || queryInfo.getConditionList().size() > 0) {
+                if((queryInfo.getKeywords() != null && queryInfo.getKeywords().size() > 0) ||
+                        (queryInfo.getConditionList() != null && queryInfo.getConditionList().size() > 0)) {
                     TriggerContext.exec(table, EventType.Query, queryInfo, request);
                 }
 

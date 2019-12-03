@@ -1,5 +1,6 @@
 package ccait.ccweb.utils;
 
+import ccait.ccweb.dynamic.DynamicClassBuilder;
 import entity.query.Datetime;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -15,6 +16,11 @@ import java.util.UUID;
 public class UploadUtils {
     private static final Logger log = LogManager.getLogger(UploadUtils.class);
     public static String upload(String path, String filename, byte[] data) throws IOException {
+
+        if(DynamicClassBuilder.isWindows() && "/".equals(path.substring(0, 1))) {
+            path = System.getProperty("user.dir") + path;
+        }
+
         File root = new File(path);
         if(!root.exists()) {
             root.mkdirs();

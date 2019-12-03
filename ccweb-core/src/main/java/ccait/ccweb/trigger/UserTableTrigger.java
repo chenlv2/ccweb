@@ -56,6 +56,9 @@ public final class UserTableTrigger implements ITrigger {
     @Value("${entity.security.admin.username:admin}")
     private String admin;
 
+    @Value("${entity.table.reservedField.userId:userId}")
+    private String userIdField;
+
     @PostConstruct
     private void construct() {
         admin = ApplicationConfig.getInstance().get("${entity.encoding}", admin);
@@ -69,7 +72,7 @@ public final class UserTableTrigger implements ITrigger {
         List<String> keys = data.keySet().stream().collect(Collectors.toList());
         for (String key : keys) {
             String lowerKey = key.toLowerCase();
-            if("id".equals(lowerKey)) {
+            if(userIdField.toLowerCase().equals(lowerKey)) {
                 data.remove(key);
             }
 
@@ -109,7 +112,7 @@ public final class UserTableTrigger implements ITrigger {
                 throw new Exception("username can not be modify!!!");
             }
 
-            if("id".equals(lowerKey)) {
+            if(userIdField.toLowerCase().equals(lowerKey)) {
                 data.remove(key);
             }
         }
@@ -118,8 +121,8 @@ public final class UserTableTrigger implements ITrigger {
         wrapper.setPostParameter(data);
 
         Map<String, String> attrs = (Map<String, String>)request.getAttribute(VARS_PATH);
-        if(attrs != null && attrs.containsKey("id")) {
-            attrs = decryptIdString(attrs.get("id"), attrs);
+        if(attrs != null && attrs.containsKey(userIdField)) {
+            attrs = decryptIdString(attrs.get(userIdField), attrs);
 
             request.setAttribute(VARS_PATH, attrs);
         }
@@ -139,14 +142,14 @@ public final class UserTableTrigger implements ITrigger {
 
         if(admin.equals(user.getUsername())) {
             UserModel currentUser = new UserModel();
-            currentUser.setId(Long.parseLong(attrs.get("id")));
+            currentUser.setId(Long.parseLong(attrs.get(userIdField)));
             currentUser = currentUser.where("[id]=#{id}").first();
             if(currentUser != null && currentUser.getUsername().equals(admin)) {
                 throw new Exception("admin can not be removed!!!");
             }
         }
 
-        if(attrs.get("id").equals(user.getId().toString())) {
+        if(attrs.get(userIdField).equals(user.getId().toString())) {
             throw new Exception("can not delete self!!!");
         }
 
@@ -173,9 +176,9 @@ public final class UserTableTrigger implements ITrigger {
             data = new HashMap<String, Object>();
         }
 
-        data.put("id", decrypt(id, EncryptMode.AES, aesPublicKey));
+        data.put(userIdField, decrypt(id, EncryptMode.AES, aesPublicKey));
 
-        if(data.get("id") == null) {
+        if(data.get(userIdField) == null) {
             log.error(LOG_PRE_SUFFIX + String.format("(UserId: %s) encryption has been failure!!!", id));
         }
 

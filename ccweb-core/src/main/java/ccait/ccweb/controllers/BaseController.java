@@ -34,8 +34,6 @@ import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
-import net.sf.jmimemagic.Magic;
-import net.sf.jmimemagic.MagicMatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1360,6 +1358,10 @@ public abstract class BaseController {
             throw new IOException("SelectList can not be empty!!!");
         }
 
+        if(getLoginUser() == null) {
+            throw new IOException("login please!!!");
+        }
+
         List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
 
         Object entity = DynamicClassBuilder.create(getTablename(), columns);
@@ -1502,6 +1504,10 @@ public abstract class BaseController {
             throw new IOException("request error!!!");
         }
 
+        if(getLoginUser() == null) {
+            throw new IOException("login please!!!");
+        }
+
         List<Map.Entry<String, Object>> files = uploadFiles.entrySet().stream()
                 .filter(a -> a.getKey().indexOf("_upload_filename") == -1).collect(Collectors.toList());
         if(files == null || files.size() < 1) {
@@ -1535,8 +1541,8 @@ public abstract class BaseController {
 
             byte[] fileBytes = ImageUtils.getBytesForBase64(fileEntry.getValue().toString());
 
-            MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
-            String mimeType = mimeMatcher.getMimeType();
+//            MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
+            String mimeType = UploadUtils.getMIMEType(extName); //mimeMatcher.getMimeType();
 
             if(StringUtils.isEmpty(mimeType)) {
                 continue;
@@ -1544,7 +1550,7 @@ public abstract class BaseController {
 
             if (configMap.get("mimeType") != null) {
                 if (!StringUtils.splitString2List(configMap.get("mimeType").toString(), ",").stream()
-                        .filter(a -> mimeMatcher.getExtension().equalsIgnoreCase(a.toString().trim()))
+                        .filter(a -> extName.equalsIgnoreCase(a.toString().trim()))
                         .findAny().isPresent()) {
                     throw new IOException("Can not supported file type!!!");
                 }
@@ -1578,6 +1584,10 @@ public abstract class BaseController {
             throw new IOException("request error!!!");
         }
 
+        if(getLoginUser() == null) {
+            throw new IOException("login please!!!");
+        }
+
         List<Map.Entry<String, Object>> files = uploadFiles.entrySet().stream()
                 .filter(a -> a.getKey().indexOf("_upload_filename") == -1).collect(Collectors.toList());
         if(files == null || files.size() < 1) {
@@ -1595,16 +1605,17 @@ public abstract class BaseController {
             String filename = uploadFiles.get(tempKey).toString();
             String[] arr = filename.split("\\.");
             byte[] fileBytes = ImageUtils.getBytesForBase64(fileEntry.getValue().toString());
+            String extName = arr[arr.length - 1];
 
-            MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
-            String mimeType = mimeMatcher.getMimeType();
+            //MagicMatch mimeMatcher = Magic.getMagicMatch(fileBytes, true);
+            String mimeType = UploadUtils.getMIMEType(extName); //mimeMatcher.getMimeType();
 
             if(StringUtils.isEmpty(mimeType)) {
                 continue;
             }
 
-            if (!mimeMatcher.getExtension().equalsIgnoreCase("xls") &&
-                    mimeMatcher.getExtension().equalsIgnoreCase("xlsx")) {
+            if (!extName.equalsIgnoreCase("xls") &&
+                    extName.equalsIgnoreCase("xlsx")) {
                 throw new IOException("Can not supported file type!!!");
             }
 
@@ -1668,6 +1679,10 @@ public abstract class BaseController {
             decrypt(data);
 
             String content = data.get(field).toString();
+
+            if(StringUtils.isEmpty(content)) {
+                throw new Exception("can not find image in the field!");
+            }
 
 
             String currentDatasource = getCurrentDatasourceId();

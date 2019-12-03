@@ -131,6 +131,9 @@ public class ApplicationContext implements ApplicationContextAware {
     @Value("${entity.table.reservedField.groupId:groupId}")
     private String groupIdField;
 
+    @Value("${entity.table.reservedField.userId:userId}")
+    private String userIdField;
+
     @Value("${entity.table.reservedField.roleId:roleId}")
     private String roleIdField;
 
@@ -607,7 +610,7 @@ public class ApplicationContext implements ApplicationContextAware {
         columns.clear();
 
         col = new ColumnInfo();
-        col.setColumnName("id");
+        col.setColumnName(userIdField);
         col.setIsAutoIncrement(true);
         col.setCanNotNull(true);
         col.setMaxLength(16);

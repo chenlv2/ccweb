@@ -43,6 +43,11 @@ entity:
       modifyOn: modifyTime #数据修改时间
       groupId: groupId  #群组ID
       roleId: roleId #角色ID
+      aclId: roleId #访问控制ID
+      privilegeId: privilegeId #权限ID
+      userGroupRoleId: userGroupRoleId #用户组角色关联ID
+      userId: id #用户ID(整型，会被计算到userPath中)
+      id: id #系统默认id字段名
 
     #系统保留表(必填)
     user: user #用户表
@@ -62,7 +67,28 @@ entity:
         photo: #字段名
           maxSize: 5 #上传文件最大尺寸，单位: MB
           mimeType: gif, jpg, png #允许上传的文件格式
-          path: D:/project/workerlib/uploadFiles #上传路径的绝对路径
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        id_card_front:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        id_card_reverse:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        certificate:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+      courseware: #表名
+        cover_picture:
+          maxSize: 200 #上传文件最大尺寸，单位: MB
+          mimeType: avi, mov, rmvb, rm, flv, mp4, 3GP #允许上传的文件格式
+          path: /home/workerlib-ui/upload/video #上传路径的绝对路径
+        video:
+          maxSize: 200 #上传文件最大尺寸，单位: MB
+          mimeType: avi, mov, rmvb, rm, flv, mp4, 3GP #允许上传的文件格式
+          path: /home/workerlib-ui/upload/video #上传路径的绝对路径
 
   download: #下载设置
     thumb:  #预览的缩略图

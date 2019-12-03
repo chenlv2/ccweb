@@ -48,10 +48,13 @@ public final class UserGroupRoleTableTrigger implements ITrigger {
     @Value("${entity.encoding:UTF-8}")
     private String encoding;
 
+    @Value("${entity.table.reservedField.userGroupRoleId:userGroupRoleId}")
+    private String userGroupRoleIdField;
+
     @Override
     public void onInsert(Map<String, Object> data, HttpServletRequest request) {
 
-        data.put("userGroupRoleId", UUID.randomUUID().toString().replace("-", ""));
+        data.put(userGroupRoleIdField, UUID.randomUUID().toString().replace("-", ""));
 
         RequestWrapper wrapper = (RequestWrapper) request;
         wrapper.setPostParameter(data);
@@ -59,7 +62,11 @@ public final class UserGroupRoleTableTrigger implements ITrigger {
 
     @Override
     public void onUpdate(Map<String, Object> data, HttpServletRequest request) {
-
+        if(data.containsKey(userGroupRoleIdField)) {
+            data.remove(userGroupRoleIdField);
+        }
+        RequestWrapper wrapper = (RequestWrapper) request;
+        wrapper.setPostParameter(data);
     }
 
     @Override

@@ -63,27 +63,27 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
 
             postString = new String(requestBody, "ISO-8859-1"); //上传文件的编码要用ISO-8859-1格式才不会变
             Map<String, Object> map = new HashMap<String, Object>();
-            List<String> list = StringUtils.splitString2List(postString, "(\\-\\-)+\\-*[\\d\\w]+");
-            for(String content : list) {
-                Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?\\s*?([\\w\\W]+)", Pattern.CASE_INSENSITIVE);
-                Matcher m = regex.matcher(content);
-                while (m.find()) {
-                    String key = m.group(1);
-                    Object value = m.group(6);
-                    if(m.group(5) != null && Pattern.matches("[^/]+/.+", m.group(5))) {
-
-                        //返回字节数组，fastjson序列化时会进行Base64编码
-                        value = m.group(6).getBytes("ISO-8859-1");
-                        map.put(String.format("%s_upload_filename", key), m.group(3));
-                    }
-
-                    else {
-                        //不是文件要改回UTF-8编码中文才不会乱码
-                        value = new String(m.group(6).getBytes("ISO-8859-1"), "UTF-8");
-                    }
-
-                    map.put(key, value);
+            Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?\\s*?([\\w\\W]+)\\-{20}", Pattern.CASE_INSENSITIVE);
+            Matcher m = regex.matcher(postString);
+            while (m.find()) {
+                String key = m.group(1);
+                Object value = m.group(6);
+                if("--------".equals(m.group(6).substring(m.group(6).length() - 8))) {
+                    value = m.group(6).substring(0, m.group(6).length() - 8);
                 }
+                if(m.group(5) != null && Pattern.matches("[^/]+/.+", m.group(5))) {
+
+                    //返回字节数组，fastjson序列化时会进行Base64编码
+                    value = m.group(6).getBytes("ISO-8859-1");
+                    map.put(String.format("%s_upload_filename", key), m.group(3));
+                }
+
+                else {
+                    //不是文件要改回UTF-8编码中文才不会乱码
+                    value = new String(m.group(6).getBytes("ISO-8859-1"), "UTF-8");
+                }
+
+                map.put(key, value);
             }
 
             if(map.size() > 0) {
@@ -228,8 +228,10 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
         byte body[] = new byte[formDataLength];
         int totalBytes = 0;
         while (totalBytes < formDataLength) {
-            int bytes = dataStream.read(body, totalBytes, formDataLength);
-            totalBytes += bytes;
+            int len = dataStream.read(body, totalBytes, formDataLength);
+            if(len > -1) {
+                totalBytes += len;
+            }
         }
         return body;
     }

@@ -722,3 +722,14 @@ public final class DefaultTrigger {
 
 ## 打包说明
 目前只支持jar包启动，要使用动态查询功能需要将rxjava-2.1.10.jar、spring-context-5.0.4.RELEASE.jar、entity.queryable-2.0-SNAPSHOT.jar复制到jar包同级路径的libs下，建议使用EntitesGenerator生成实体类。
+
+## 注意
+使用动态查询的表在设计阶段需要加上以下字段：
+```
+  userPath: userPath #创建者所属路径，体现父子关系，用于like查询
+  createOn: createTime #数据创建时间
+  createBy: createBy #数据创建者
+  modifyOn: modifyTime #数据修改时间
+  groupId: groupId  #群组ID
+  roleId: roleId #角色ID
+```

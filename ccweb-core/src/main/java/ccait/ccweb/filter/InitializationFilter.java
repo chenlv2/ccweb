@@ -161,7 +161,8 @@ public class InitializationFilter implements WebFilter, Filter {
             responseData.setMessage(message);
 
             res.reset();
-            res.sendError(HttpStatus.FORBIDDEN.value(), message);
+            res.setCharacterEncoding("UTF-8");
+            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             res.getWriter().write(JsonUtils.toJson(responseData));
             res.getWriter().flush();
             res.getWriter().close();
