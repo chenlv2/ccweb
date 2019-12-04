@@ -336,7 +336,7 @@ public abstract class BaseController {
         for(final String argname : argNames) {
 
             Optional<Field> opt = fields.stream().filter(a->a.getName().toLowerCase().equals(argname.toLowerCase())).findAny();
-            if(!opt.isPresent()) {
+            if("id".equals(argname) || !opt.isPresent()) {
                 postData.remove(argname);
                 continue;
             }
@@ -389,6 +389,7 @@ public abstract class BaseController {
             }
 
             ReflectionUtils.setFieldValue(entity.getClass(), entity, fieldName, value);
+            postData.put(argname, String.format("#{%s}", fieldName));
         }
     }
 
