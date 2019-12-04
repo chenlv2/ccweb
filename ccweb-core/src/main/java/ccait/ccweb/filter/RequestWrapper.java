@@ -63,7 +63,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
 
             postString = new String(requestBody, "ISO-8859-1"); //上传文件的编码要用ISO-8859-1格式才不会变
             Map<String, Object> map = new HashMap<String, Object>();
-            List<String> list = StringUtils.splitString2List(postString, "(\\-\\-)+\\-*[\\d\\w]+");
+            List<String> list = StringUtils.splitString2List(postString, "\\-{20}\\-*[\\d\\w]{20}[\\d\\w]*");
             Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?", Pattern.CASE_INSENSITIVE);
             for(String content : list) { // TODO
                 //Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?\\s*?([\\w\\W]+)", Pattern.CASE_INSENSITIVE);

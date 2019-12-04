@@ -66,6 +66,12 @@ public final class EntityContext {
         log.info(LOG_PRE_SUFFIX + "实体类上下文 ： [EntityContext]", "初始化完成");
     }
 
+    public static Object getEntity(String tablename, Map<String, Object> data, String id) {
+
+        data.put("id", id);
+        return getEntity(tablename, data);
+    }
+
     public static Object getEntity(String tablename, Map<String, Object> data) {
 
         Object bean = getEntity(tablename);
@@ -91,22 +97,26 @@ public final class EntityContext {
         if(bean == null) {
             List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
 
-            if(Pattern.matches("^[0-9]{1,32}$", id)) {
-                columns.add(new ColumnInfo("id", "integer", true));
-            }
-
-            else if(Pattern.matches("^\\d+$", id)) {
-                columns.add(new ColumnInfo("id", "long", true));
-            }
-
-            else {
-                columns.add(new ColumnInfo("id", "text", true));
-            }
+            addColumnById(id, columns);
 
             bean = DynamicClassBuilder.create(tablename, columns);
         }
 
         return bean;
+    }
+
+    private static void addColumnById(String id, List<ColumnInfo> columns) {
+        if(Pattern.matches("^[0-9]{1,32}$", id)) {
+            columns.add(new ColumnInfo("id", "integer", true));
+        }
+
+        else if(Pattern.matches("^\\d+$", id)) {
+            columns.add(new ColumnInfo("id", "long", true));
+        }
+
+        else {
+            columns.add(new ColumnInfo("id", "text", true));
+        }
     }
 
     private static Object getEntity(String tablename) {

@@ -82,6 +82,10 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
+        if("yes".equals(response.getHeader("finish"))) {
+            return true;
+        }
+
         Map<String, String> attrs = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
         InitLocalMap initLocalMap = new InitLocalMap(response, attrs).invoke();
         if (initLocalMap.is()) return false;

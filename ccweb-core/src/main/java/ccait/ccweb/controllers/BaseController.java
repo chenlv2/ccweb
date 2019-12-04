@@ -242,6 +242,8 @@ public abstract class BaseController {
 
         result = handleResultEvent(result);
 
+        response.addHeader("finish", "yes");
+
         return result;
     }
 
@@ -1237,7 +1239,7 @@ public abstract class BaseController {
      * @throws Exception
      */
     public Integer update(String table, String id, Map<String, Object> postData) throws Exception {
-        Object entity = EntityContext.getEntity(table, postData);
+        Object entity = EntityContext.getEntity(table, postData, id);
 
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
