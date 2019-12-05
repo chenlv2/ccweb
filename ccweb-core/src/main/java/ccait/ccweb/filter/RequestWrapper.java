@@ -71,10 +71,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
                 while (m.find()) {
                     String key = m.group(1);
                     Object value = content.substring(m.group(0).length());
-//                    Object value = m.group(6);
-//                    if ("--------".equals(m.group(6).substring(m.group(6).length() - 8))) {
-//                        value = m.group(6).substring(0, m.group(6).length() - 8);
-//                    }
+
                     if (m.group(5) != null && Pattern.matches("[^/]+/.+", m.group(5))) {
 
                         //返回字节数组，fastjson序列化时会进行Base64编码
