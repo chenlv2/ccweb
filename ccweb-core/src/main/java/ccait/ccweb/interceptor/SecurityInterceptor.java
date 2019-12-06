@@ -486,7 +486,14 @@ public class SecurityInterceptor implements HandlerInterceptor {
             case "PUT":
                 Map data = FastJsonUtils.convert(postString, Map.class);
                 if(StringUtils.isEmpty(attrs.get("id"))) {
-                    TriggerContext.exec(table, EventType.Insert, data, request);
+                    if(data != null) {
+                        TriggerContext.exec(table, EventType.Insert, data, request);
+                    }
+
+                    else {
+                        List<Map<String, Object>> params = FastJsonUtils.convert(postString, List.class);
+                        TriggerContext.exec(table, EventType.Insert, params, request);
+                    }
                 }
 
                 else {

@@ -272,7 +272,7 @@ public class QueryInfo implements Serializable {
         return orderBy.select(StringUtils.join(", ", list.toArray()));
     }
 
-    public QueryableAction getSelectQuerable(Where where) {
+    public QueryableAction getSelectQuerable(Where where, boolean isMutilTable) {
 
         if(this.getSelectList() == null || this.getSelectList().size() < 1) {
             return where;
@@ -280,12 +280,19 @@ public class QueryInfo implements Serializable {
 
         List<String> list = new ArrayList<String>();
         for(SelectInfo info : this.getSelectList()) {
-            if(StringUtils.isEmpty(info.getField())) {
-                continue;
+
+            if(!isMutilTable) {
+                if (StringUtils.isEmpty(info.getField())) {
+                    continue;
+                }
             }
 
             String field = info.getField();
-            if(!Pattern.matches("^\\w[A-Za-z0-9_]*$", field)) {
+            if(isMutilTable) {
+                field = info.getField();
+            }
+
+            if(StringUtils.isEmpty(field)) {
                 continue;
             }
 
@@ -295,6 +302,12 @@ public class QueryInfo implements Serializable {
             if(Pattern.matches(regSqlInject, field)) {
                 continue;
             }
+
+            if(!Pattern.matches("^\\w[A-Za-z0-9_]*(\\.\\w[A-Za-z0-9_]*)*$", field)) {
+                continue;
+            }
+
+            field = ensureColumn(field);
 
             if(info.getFunction() == Function.NONE) {
                 list.add(field);

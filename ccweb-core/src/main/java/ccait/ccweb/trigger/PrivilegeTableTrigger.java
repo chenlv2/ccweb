@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,11 +30,12 @@ public final class PrivilegeTableTrigger implements ITrigger {
     private String privilegeIdField;
 
     @Override
-    public void onInsert(Map<String, Object> data, HttpServletRequest request) {
-
-        data.put(privilegeIdField, UUID.randomUUID().toString().replace("-", ""));
+    public void onInsert(List<Map<String, Object>> list, HttpServletRequest request) {
+        for(Map<String, Object> data : list) {
+            data.put(privilegeIdField, UUID.randomUUID().toString().replace("-", ""));
+        }
         RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(data);
+        wrapper.setPostParameter(list);
     }
 
     @Override

@@ -67,39 +67,41 @@ public final class UserTableTrigger implements ITrigger {
     }
 
     @Override
-    public void onInsert(Map<String, Object> data, HttpServletRequest request) throws Exception {
+    public void onInsert(List<Map<String, Object>> list, HttpServletRequest request) throws Exception {
 
-        List<String> keys = data.keySet().stream().collect(Collectors.toList());
-        for (String key : keys) {
-            String lowerKey = key.toLowerCase();
-            if(userIdField.toLowerCase().equals(lowerKey)) {
-                data.remove(key);
+        for(Map<String, Object> data : list) {
+            List<String> keys = data.keySet().stream().collect(Collectors.toList());
+            for (String key : keys) {
+                String lowerKey = key.toLowerCase();
+                if (userIdField.toLowerCase().equals(lowerKey)) {
+                    data.remove(key);
+                }
+
+                if ("status".equals(lowerKey) || data.get(key) == null) {
+                    data.remove(key);
+                    data.put("status", 0);
+                }
+
+                if ("username".equals(lowerKey) || data.get(key) == null) {
+                    if (data.get(key) == null) {
+                        throw new Exception("username can not be empty!!!");
+                    }
+
+                    UserModel user = new UserModel();
+                    user.setUsername(data.get(key).toString());
+                    if (user.where("[username]=#{username}").exist()) {
+                        throw new Exception(String.format("username %s already exist!!!", data.get(key)));
+                    }
+                }
             }
 
-            if("status".equals(lowerKey) || data.get(key) == null) {
-                data.remove(key);
+            if (!data.containsKey("status")) {
                 data.put("status", 0);
             }
-
-            if("username".equals(lowerKey) || data.get(key) == null) {
-                if(data.get(key) == null) {
-                    throw new Exception("username can not be empty!!!");
-                }
-
-                UserModel user = new UserModel();
-                user.setUsername(data.get(key).toString());
-                if(user.where("[username]=#{username}").exist()) {
-                    throw new Exception(String.format("username %s already exist!!!", data.get(key)));
-                }
-            }
-        }
-
-        if(!data.containsKey("status")) {
-            data.put("status", 0);
         }
 
         RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(data);
+        wrapper.setPostParameter(list);
     }
 
     @Override

@@ -52,12 +52,13 @@ public final class UserGroupRoleTableTrigger implements ITrigger {
     private String userGroupRoleIdField;
 
     @Override
-    public void onInsert(Map<String, Object> data, HttpServletRequest request) {
-
-        data.put(userGroupRoleIdField, UUID.randomUUID().toString().replace("-", ""));
+    public void onInsert(List<Map<String, Object>> list, HttpServletRequest request) {
+        for(Map<String, Object> data : list) {
+            data.put(userGroupRoleIdField, UUID.randomUUID().toString().replace("-", ""));
+        }
 
         RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(data);
+        wrapper.setPostParameter(list);
     }
 
     @Override

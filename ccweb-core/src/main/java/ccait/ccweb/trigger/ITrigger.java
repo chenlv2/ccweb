@@ -19,6 +19,7 @@ import org.springframework.core.annotation.Order;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Map;
 
 public interface ITrigger {
@@ -31,7 +32,7 @@ public interface ITrigger {
      */
     @OnInsert
     @Order(-55555)
-    void onInsert(Map<String, Object> data, HttpServletRequest request) throws Exception;
+    void onInsert(List<Map<String, Object>> list, HttpServletRequest request) throws Exception;
 
     /***
      * 更新数据事件

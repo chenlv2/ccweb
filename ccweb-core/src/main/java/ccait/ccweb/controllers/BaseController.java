@@ -895,7 +895,7 @@ public abstract class BaseController {
 
         Where where = getWhereQueryableByJoin(queryInfo);
 
-        QueryableAction ac = getQueryableAction(queryInfo, where);
+        QueryableAction ac = getQueryableAction(queryInfo, where, true);
 
         return ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
     }
@@ -1001,7 +1001,7 @@ public abstract class BaseController {
 
         Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
-        QueryableAction ac = getQueryableAction(queryInfo, where);
+        QueryableAction ac = getQueryableAction(queryInfo, where, false);
 
         return ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
     }
@@ -1031,8 +1031,8 @@ public abstract class BaseController {
         return where.update(postData);
     }
 
-    protected QueryableAction getQueryableAction(QueryInfo queryInfo, Where where) throws Exception {
-        QueryableAction ac = queryInfo.getSelectQuerable(where);
+    protected QueryableAction getQueryableAction(QueryInfo queryInfo, Where where, boolean isMutilTable) throws Exception {
+        QueryableAction ac = queryInfo.getSelectQuerable(where, isMutilTable);
 
         long total = 0;
 

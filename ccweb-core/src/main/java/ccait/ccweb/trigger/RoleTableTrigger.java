@@ -30,11 +30,12 @@ public final class RoleTableTrigger implements ITrigger {
     private String roleIdField;
 
     @Override
-    public void onInsert(Map<String, Object> data, HttpServletRequest request) {
-
-        data.put(roleIdField, UUID.randomUUID().toString().replace("-", ""));
+    public void onInsert(List<Map<String, Object>> list, HttpServletRequest request) {
+        for(Map<String, Object> data : list) {
+            data.put(roleIdField, UUID.randomUUID().toString().replace("-", ""));
+        }
         RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(data);
+        wrapper.setPostParameter(list);
     }
 
     @Override

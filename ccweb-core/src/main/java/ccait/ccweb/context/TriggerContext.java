@@ -103,7 +103,7 @@ public final class TriggerContext {
                 if(method == null) {
                     continue;
                 }
-                
+
                 if(m.getAnnotation(OnInsert.class) != null) {
                     eventInfo.getOnInsertMethodSet().add(method);
                     continue;
@@ -191,6 +191,12 @@ public final class TriggerContext {
 
             switch (eventType) {
                 case Insert:
+                    if(params instanceof Map) {
+                        List<Map<String, Object>> paramsList = new ArrayList<Map<String, Object>>();
+                        paramsList.add((Map<String, Object>) params);
+                        invoke(eventInfo.getOnInsertMethodSet(), obj, paramsList, request);
+                        break;
+                    }
                     invoke(eventInfo.getOnInsertMethodSet(), obj, params, request);
                     break;
                 case Update:

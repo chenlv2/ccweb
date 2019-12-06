@@ -212,18 +212,17 @@ public class AsyncApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "{table}", method = RequestMethod.PUT  )
-    public Mono doInsert(@PathVariable String table, @RequestBody Object postData)
+    public Mono doInsert(@PathVariable String table, @RequestBody List<Map<String, Object>> postData)
     {
         try {
-            if(postData instanceof Map) {
-                return successAs(super.insert(table, (Map)postData));
+            List<Integer> result = new ArrayList<>();
+            for(int i=0; i < postData.size(); i++) {
+                Map data = (Map)postData.get(i);
+                result.add(super.insert(table, data));
             }
 
-            List<Integer> result = new ArrayList<>();
-            List list = (List)postData;
-            for(int i=0; i < list.size(); i++) {
-                Map data = (Map)list.get(i);
-                result.add(super.insert(table, data));
+            if(result.size() == 1) {
+                return successAs(result.get(0));
             }
 
             return successAs(result);

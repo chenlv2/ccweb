@@ -84,25 +84,38 @@ public final class DefaultTrigger {
     }
 
     @OnInsert
-    public void onInsert(Map<String, Object> data, HttpServletRequest request) throws Exception {
+    public void onInsert(Object params, HttpServletRequest request) throws Exception {
 
-        vaildPostData(data);
+        List<Object> list = new ArrayList();
 
-        UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
-        if(user != null) {
-            if(StringUtils.isEmpty(user.getPath())) {
-                data.put(userPathField, user.getId() + "/" + user.getId());
-            }
-            else {
-                data.put(userPathField, user.getPath() + "/" + user.getId());
-            }
-            data.put(createByField, user.getId());
+        if(params instanceof List) {
+            list = (List)params;
+        }
+        else {
+            list.add((Map) params);
         }
 
-        data.put(createOnField, Datetime.now());
+        for(Object item : list) {
+
+            Map data = (Map) item;
+            vaildPostData(data);
+
+            UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
+            if(user != null) {
+                if(StringUtils.isEmpty(user.getPath())) {
+                    data.put(userPathField, user.getId() + "/" + user.getId());
+                }
+                else {
+                    data.put(userPathField, user.getPath() + "/" + user.getId());
+                }
+                data.put(createByField, user.getId());
+            }
+
+            data.put(createOnField, Datetime.now());
+        }
 
         RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(data);
+        wrapper.setPostParameter(list);
     }
 
     @OnUpdate
