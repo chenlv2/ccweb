@@ -484,6 +484,9 @@ public class QueryInfo implements Serializable {
 
     private Where setWhereStament(Where where, ConditionInfo info, String value) throws Exception {
         try {
+            if(info.getAlgorithm() == null) {
+                return where;
+            }
             switch (info.getAlgorithm()) {
                 case LIKE:
                     where.and(ensureColumn(info.getName()) + " LIKE '%" + value + "%'");

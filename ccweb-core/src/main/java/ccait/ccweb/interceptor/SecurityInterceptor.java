@@ -260,21 +260,16 @@ public class SecurityInterceptor implements HandlerInterceptor {
             }
 
             else {
+                RequestWrapper requestWarpper = (RequestWrapper)request;
+                QueryInfo queryInfo = FastJsonUtils.convertJsonToObject((requestWarpper).getRequestPostString(), QueryInfo.class);
                 List<String> tableList = new ArrayList<String>();
-                for(int i=0; i<maxJoin; i++) {
-
-                    if(!x) {
-                        break;
+                if(queryInfo.getJoinTables() != null && queryInfo.getJoinTables().size() > 0) {
+                    for (int i = 0; i < queryInfo.getJoinTables().size(); i++) {
+                        if(StringUtils.isEmpty(queryInfo.getJoinTables().get(i).getTablename())) {
+                            continue;
+                        }
+                        x = x && canAccessTable(method, (RequestWrapper) request, requiredPermission, attrs, queryInfo.getJoinTables().get(i).getTablename());
                     }
-
-                    String key = String.format("table%s", i);
-                    if(StringUtils.isEmpty(attrs.get(key))) {
-                        continue;
-                    }
-
-                    table = attrs.get(key);
-
-                    x = x && canAccessTable(method, (RequestWrapper) request, requiredPermission, attrs, table);
                 }
             }
 
