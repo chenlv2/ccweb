@@ -330,7 +330,12 @@ public abstract class BaseController {
         return EncryptionUtil.md5(str, md5PublicKey, encoding);
     }
 
-    protected void fillData(@RequestBody Map<String, Object> postData, Object entity) throws Exception {
+    protected void fillData(@RequestBody Map<String, Object> postData, Object entity)  {
+
+        fillData(postData, entity, defaultDateByNow);
+    }
+
+    public static void fillData(Map<String, Object> postData, Object entity, boolean isDefaultDateByNow) {
         List<Field> fields = EntityContext.getFields(entity);
         List<String> argNames = postData.keySet().stream().collect(Collectors.toList());
         for(final String argname : argNames) {
@@ -372,7 +377,7 @@ public abstract class BaseController {
             }
 
             if(value == null) {
-                if(type.equals(Date.class) && defaultDateByNow) {
+                if(type.equals(Date.class) && isDefaultDateByNow) {
                     value = Datetime.now();
                 }
 
@@ -1639,7 +1644,7 @@ public abstract class BaseController {
             }
             Queryable entity = (Queryable) EntityContext.getEntity(table, dataMap);
 
-            EasyExcel.read(is, Map.class, new ExcelListener(entity, headerList)).sheet().doRead();
+            EasyExcel.read(is, Map.class, new ExcelListener(table, entity, headerList)).sheet().doRead();
         }
     }
 
