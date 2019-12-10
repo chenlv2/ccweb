@@ -130,7 +130,7 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/ #注册中心
 server:
-  port: 6666 #端口号
+  port: 8080 #端口号
 
 feign:
   hystrix:

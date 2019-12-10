@@ -216,7 +216,9 @@ public class QueryInfo implements Serializable {
                 continue;
             }
 
-            if(info.getFunction() == Function.NONE) {
+            field = ensureColumn(field);
+
+            if(info.getFunction() == null || info.getFunction() == Function.NONE) {
                 list.add(field);
             }
 
@@ -228,6 +230,8 @@ public class QueryInfo implements Serializable {
         if(list.size() < 1) {
             return groupBy;
         }
+
+        groupBy.select().clean();
 
         return groupBy.select(StringUtils.join(", ", list.toArray()));
     }
@@ -256,6 +260,8 @@ public class QueryInfo implements Serializable {
                 continue;
             }
 
+            field = ensureColumn(field);
+
             if(info.getFunction() == Function.NONE) {
                 list.add(field);
             }
@@ -268,6 +274,8 @@ public class QueryInfo implements Serializable {
         if(list.size() < 1) {
             return orderBy;
         }
+
+        orderBy.select().clean();
 
         return orderBy.select(StringUtils.join(", ", list.toArray()));
     }
@@ -327,6 +335,8 @@ public class QueryInfo implements Serializable {
         if(list.size() < 1) {
             return where;
         }
+
+        where.select().clean();
 
         return where.select(StringUtils.join(", ", list.toArray()));
     }
