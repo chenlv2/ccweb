@@ -346,6 +346,9 @@ public abstract class BaseController {
                 continue;
             }
 
+            if(postData.get(argname) == null) {
+                continue;
+            }
             String valString = DBUtils.getSqlInjValue(postData.get(argname).toString());
             String fieldName = opt.get().getName();
             Class<?> type = opt.get().getType();
@@ -888,6 +891,17 @@ public abstract class BaseController {
                 file.delete();
             }
         }
+    }
+
+    /***
+     * query join result count
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    public Long joinQueryCount(QueryInfo queryInfo) throws Exception {
+        Where where = getWhereQueryableByJoin(queryInfo);
+        return where.count();
     }
 
     /***

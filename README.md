@@ -207,7 +207,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ### 7. 联表查询
 * URL：/api/{datasource}/join 
 * 请求方式：POST
-* URL参数：{table}为数据库表名称
+* URL参数：{datasource}为数据源ID
 * POST参数：
 ```javascript
 {
@@ -259,7 +259,47 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 8. ID查询
+### 8. 联表查询统计
+* URL：/api/{datasource}/join/count 
+* 请求方式：POST
+* URL参数：{datasource}为数据源ID
+* POST参数：
+```javascript
+{
+    "joinTables": [{
+        "tablename": "salary",
+        "alias": "a",
+        "joinMode": "inner"
+    }, {
+        "tablename": "archives",
+        "alias": "b",
+        "joinMode": "Inner",
+        "onList": [{ 
+            "name": "b.id",   
+            "value": "a.archives_id",   
+            "algorithm": "EQ"
+        }]
+    }, ...],
+    "conditionList": [{ //查询条件
+        "name": "id",   //字段名
+        "value": "1",   //值
+        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!="), LIKE(9), START(10), END(11), IN(12), NOTIN(13)
+    }, ... ],
+
+    "groupList" : [ //分组条件
+        "id", //字段名 
+        ...
+    ],
+
+    "keywords" : [{ //关键词模糊查询条件
+        "name": "id",   //字段名
+        "value": "1"   //值
+    }, ...]
+}
+```
+
+
+### 9. ID查询
 查询与联合查询加密的字段不会解密显示，多用于列表，而ID查询的结果可以显示解密后内容，可用于保密详情。
 * URL：/api/{datasource}/{table}/{id} 
 * 请求方式：GET
@@ -267,7 +307,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * POST参数：无
 
 
-### 9. 登录
+### 10. 登录
 * URL：/api/{datasource}/login 
 * 请求方式：POST
 * POST参数：
@@ -279,26 +319,26 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 10. 登出
+### 11. 登出
 * URL：/api/{datasource}/logout 
 * 请求方式：GET
 
 
-### 11. 下载文件
+### 12. 下载文件
 * URL：/api/{datasource}/download/{table}/{field}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
 * POST参数：无
 
 
-### 12. 文件预览
+### 13. 文件预览
 * URL：/api/{datasource}/preview/{table}/{field}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
 * POST参数：无
 
 
-### 13. 搜索（通过es搜索引擎）
+### 14. 搜索（通过es搜索引擎）
 * URL：/api/{datasource}/search/{table} 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -338,7 +378,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
-### 14. 上传
+### 15. 上传
 * URL：/api/{datasource}/upload/{table}/{field} 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称，{field}为字段名
@@ -360,7 +400,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 15. 批量查询更新
+### 16. 批量查询更新
 * URL：/api/{datasource}/{table}/update 
 * 请求方式：PUT
 * URL参数：{table}为数据库表名称
@@ -385,7 +425,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 16. 批量删除
+### 17. 批量删除
 * URL：/api/{datasource}/batch/{table} 
 * 请求方式：DELETE
 * URL参数：{table}为数据库表名称
@@ -396,7 +436,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 
-### 17. 导出excel
+### 18. 导出excel
 * URL：/api/{datasource}/{table}/export 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -422,7 +462,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 18. 联表查询导出excel
+### 19. 联表查询导出excel
 * URL：/api/{datasource}/export/join 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称

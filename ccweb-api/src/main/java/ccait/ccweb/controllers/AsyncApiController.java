@@ -57,6 +57,26 @@ public class AsyncApiController extends BaseController {
     }
 
     /***
+     * join query count
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "join/count", method = RequestMethod.POST )
+    public Mono doJoinQueryCount(@RequestBody QueryInfo queryInfo) {
+
+        try {
+            Long result = super.joinQueryCount(queryInfo);
+
+            return successAs( result );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return errorAs(113, e);
+        }
+    }
+
+    /***
      * create or alter table
      * @return
      */

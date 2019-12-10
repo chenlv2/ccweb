@@ -36,6 +36,27 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 @RequestMapping( value = {"api/{datasource}"} )
 public class ApiController extends BaseController {
 
+
+    /***
+     * join query count
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "join/count", method = RequestMethod.POST )
+    public ResponseData doJoinQueryCount(@RequestBody QueryInfo queryInfo) {
+
+        try {
+            Long result = super.joinQueryCount(queryInfo);
+
+            return success( result );
+        } catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return error(113, e);
+        }
+    }
+
     /***
      * join query
      * @return
