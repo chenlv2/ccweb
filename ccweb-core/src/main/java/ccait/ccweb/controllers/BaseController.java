@@ -1800,7 +1800,7 @@ public abstract class BaseController {
                                         String.format("%s.%s", tablename, key).equals(a))
                                 .findAny();
 
-                        if (opt.isPresent()) {
+                        if (opt.isPresent() && item.get(key) != null) {
                             if (item.get(key) instanceof Date) {
                                 item.put(key, Datetime.format((Date) item.get(key), opt.get().toString()));
                                 needReset = true;
