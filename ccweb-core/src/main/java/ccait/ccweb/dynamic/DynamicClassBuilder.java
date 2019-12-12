@@ -175,27 +175,38 @@ public class DynamicClassBuilder {
         if(queryInfo != null) {
             if(queryInfo.getConditionList() != null) {
                 for (ConditionInfo item : queryInfo.getConditionList()) {
-                    if ("id".equals(ensureColumnName(item.getName()).toLowerCase())) {
-                        continue;
-                    }
                     ColumnInfo col = new ColumnInfo();
                     col.setColumnName(ensureColumnName(item.getName()));
-                    if(item.getValue() != null) {
-                        col.setDefaultValue(item.getValue().toString());
-                        col.setDataType(item.getValue().getClass().getTypeName());
+                    if ("id".equals(ensureColumnName(item.getName()).toLowerCase())) {
+                        if(item.getValue() != null) {
+                            col.setDefaultValue("0");
+                            col.setDataType(item.getValue().getClass().getTypeName());
+                        }
                     }
+
+                    else {
+                        if(item.getValue() != null) {
+                            col.setDefaultValue(item.getValue().toString());
+                            col.setDataType(item.getValue().getClass().getTypeName());
+                        }
+                    }
+
                     columns.add(col);
                 }
             }
 
             if(queryInfo.getSortList() != null) {
                 for (SortInfo item : queryInfo.getSortList()) {
-                    if ("id".equals(ensureColumnName(item.getName().toLowerCase()))) {
-                        continue;
-                    }
                     ColumnInfo col = new ColumnInfo();
                     col.setColumnName(ensureColumnName(item.getName()));
-                    col.setDataType("object");
+
+                    if ("id".equals(ensureColumnName(item.getName().toLowerCase()))) {
+                        col.setDataType("int");
+                    }
+
+                    else {
+                        col.setDataType("object");
+                    }
 
                     columns.add(col);
                 }
@@ -203,15 +214,21 @@ public class DynamicClassBuilder {
 
             if(queryInfo.getKeywords() != null) {
                 for (FieldInfo item : queryInfo.getKeywords()) {
-                    if ("id".equals(ensureColumnName(item.getName()).toLowerCase())) {
-                        continue;
-                    }
                     ColumnInfo col = new ColumnInfo();
                     col.setColumnName(ensureColumnName(item.getName()));
-                    if(item.getValue() != null) {
-                        col.setDefaultValue(item.getValue().toString());
+
+                    if ("id".equals(ensureColumnName(item.getName()).toLowerCase())) {
+                        if(item.getValue() != null) {
+                            col.setDefaultValue("0");
+                        }
+                        col.setDataType("int");
                     }
-                    col.setDataType("string");
+                    else {
+                        if(item.getValue() != null) {
+                            col.setDefaultValue(item.getValue().toString());
+                        }
+                        col.setDataType("string");
+                    }
 
                     columns.add(col);
                 }
@@ -219,12 +236,14 @@ public class DynamicClassBuilder {
 
             if(queryInfo.getGroupList() != null) {
                 for (String name : queryInfo.getGroupList()) {
-                    if ("id".equals(ensureColumnName(name).toLowerCase())) {
-                        continue;
-                    }
                     ColumnInfo col = new ColumnInfo();
                     col.setColumnName(ensureColumnName(name));
-                    col.setDataType("object");
+                    if ("id".equals(ensureColumnName(name).toLowerCase())) {
+                        col.setDataType("int");
+                    }
+                    else {
+                        col.setDataType("object");
+                    }
 
                     columns.add(col);
                 }

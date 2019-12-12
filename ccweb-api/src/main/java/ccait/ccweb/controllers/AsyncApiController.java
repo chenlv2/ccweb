@@ -283,7 +283,7 @@ public class AsyncApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "{table}/update", method = RequestMethod.PUT )
+    @RequestMapping( value = "{table}/update", method = RequestMethod.POST )
     public Mono doQueryUpdate(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -433,7 +433,7 @@ public class AsyncApiController extends BaseController {
     @AccessCtrl
     @RequestMapping( value = "{table}/export", method = RequestMethod.POST )
     public Mono doExport(@PathVariable String table, @RequestBody QueryInfo queryInfo) throws Exception {
-        List list = query(table, queryInfo);
+        List list = query(table, queryInfo, true);
         return exportAs(table, list, queryInfo);
     }
 
@@ -447,7 +447,7 @@ public class AsyncApiController extends BaseController {
     @AccessCtrl
     @RequestMapping( value = "export/join", method = RequestMethod.POST )
     public Mono doExport(@RequestBody QueryInfo queryInfo) throws Exception {
-        List list = joinQuery(queryInfo);
+        List list = joinQuery(queryInfo, true);
         return exportAs(UUID.randomUUID().toString().replace("-", ""), list, queryInfo);
     }
 

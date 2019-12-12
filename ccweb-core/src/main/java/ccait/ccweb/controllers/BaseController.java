@@ -913,9 +913,29 @@ public abstract class BaseController {
      */
     public List joinQuery(QueryInfo queryInfo) throws Exception {
 
+        return joinQuery(queryInfo, false);
+    }
+
+    /***
+     * query select data
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    public List joinQuery(QueryInfo queryInfo, boolean bySelectInfos) throws Exception {
+
         Where where = getWhereQueryableByJoin(queryInfo);
 
         QueryableAction ac = getQueryableAction(queryInfo, where, true);
+
+        if(bySelectInfos && queryInfo.getSelectList().size() > 0) {
+
+            List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
+
+            Object info = DynamicClassBuilder.create("TABLE" + UUID.randomUUID().toString().replace("-", ""), columns);
+
+            return ac.query(info.getClass(), queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
+        }
 
         return ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
     }
@@ -1012,6 +1032,17 @@ public abstract class BaseController {
      * @throws Exception
      */
     public List query(String table, QueryInfo queryInfo) throws Exception {
+        return query(table, queryInfo, false);
+    }
+
+    /***
+     * query select data
+     * @param table
+     * @param queryInfo
+     * @return
+     * @throws Exception
+     */
+    public List query(String table, QueryInfo queryInfo, boolean bySelectInfos) throws Exception {
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
@@ -1022,6 +1053,15 @@ public abstract class BaseController {
         Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
         QueryableAction ac = getQueryableAction(queryInfo, where, false);
+
+        if(bySelectInfos && queryInfo.getSelectList().size() > 0) {
+
+            List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
+
+            Object info = DynamicClassBuilder.create(getTablename(), columns);
+
+            return ac.query(info.getClass(), queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
+        }
 
         return ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
     }
@@ -1038,6 +1078,10 @@ public abstract class BaseController {
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
+        }
+
+        if(queryInfo == null) {
+            throw new Exception("Invalid post data!!!");
         }
 
         Map<String, Object> postData = queryInfo.getData();
@@ -1385,16 +1429,16 @@ public abstract class BaseController {
             throw new IOException("login please!!!");
         }
 
-        List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
-
-        Object entity = DynamicClassBuilder.create(getTablename(), columns);
+        if(data.size() < 1) {
+            throw new IOException("can not find data!!!");
+        }
 
         filename = filename + ExcelTypeEnum.XLSX.getValue();
         response.setHeader(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" +
                 URLEncoder.encode(filename, "UTF-8") );
         response.setHeader(HttpHeaders.CONTENT_TYPE, UploadUtils.getMIMEType("xlsx"));
 
-        EasyExcel.write(response.getOutputStream()).sheet().head(entity.getClass()).doWrite(data);
+        EasyExcel.write(response.getOutputStream()).sheet().head(data.get(0).getClass()).doWrite(data);
     }
 
     protected Mono downloadAs(String table, String field, String id) throws Exception {

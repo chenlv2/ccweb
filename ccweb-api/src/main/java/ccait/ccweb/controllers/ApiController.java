@@ -169,7 +169,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "{table}/update", method = RequestMethod.PUT )
+    @RequestMapping( value = "{table}/update", method = RequestMethod.POST )
     public ResponseData doQueryUpdate(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
 
         try {
@@ -425,7 +425,7 @@ public class ApiController extends BaseController {
     @RequestMapping( value = "{table}/export", method = RequestMethod.POST )
     public void doExport(@PathVariable String table, @RequestBody QueryInfo queryInfo) throws Exception {
 
-        List list = query(table, queryInfo);
+        List list = query(table, queryInfo, true);
 
         export(table, list, queryInfo);
     }
@@ -440,7 +440,7 @@ public class ApiController extends BaseController {
     @AccessCtrl
     @RequestMapping( value = "export/join", method = RequestMethod.POST )
     public void doExport(@RequestBody QueryInfo queryInfo) throws Exception {
-        List list = joinQuery(queryInfo);
+        List list = joinQuery(queryInfo, true);
         export(UUID.randomUUID().toString().replace("-", ""), list, queryInfo);
     }
 
