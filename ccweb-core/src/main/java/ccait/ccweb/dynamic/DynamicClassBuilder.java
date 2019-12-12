@@ -231,8 +231,6 @@ public class DynamicClassBuilder {
             }
         }
 
-        columns.add(new ColumnInfo("id", "text", true));
-
         //去重
         columns = columns.stream().collect(
                 Collectors.collectingAndThen(Collectors.toCollection(() ->

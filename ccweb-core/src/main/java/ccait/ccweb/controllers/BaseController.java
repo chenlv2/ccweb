@@ -346,14 +346,15 @@ public abstract class BaseController {
                 continue;
             }
 
-            if(postData.get(argname) == null) {
-                continue;
-            }
-            String valString = DBUtils.getSqlInjValue(postData.get(argname).toString());
             String fieldName = opt.get().getName();
             Class<?> type = opt.get().getType();
 
-            Object value = cast(type, valString);
+            Object value = null;
+
+            if(postData.get(argname) != null) {
+                String valString = DBUtils.getSqlInjValue(postData.get(argname).toString());
+                value = cast(type, valString);
+            }
 
             String key = fieldName;
 
