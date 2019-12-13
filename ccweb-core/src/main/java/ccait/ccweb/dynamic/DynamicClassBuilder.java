@@ -41,9 +41,13 @@ public class DynamicClassBuilder {
     private static final String DEFAULT_PACKAGE = "ccait.ccweb.entites";
 
     public static Object create(String tablename, List<ColumnInfo> columns) {
+        return create(tablename, columns, true);
+    }
+
+    public static Object create(String tablename, List<ColumnInfo> columns, boolean isQueryable) {
 
         String suffix = UUID.randomUUID().toString().replace("-", "");
-        JavaFile javaFile = getJavaFile(columns, tablename, "id", "public", suffix);
+        JavaFile javaFile = getJavaFile(columns, tablename, "id", "public", suffix, isQueryable);
 
         try {
             String className = String.format("%s%s", tablename.substring(0, 1).toUpperCase() + tablename.substring(1), suffix);
@@ -293,5 +297,28 @@ public class DynamicClassBuilder {
             }
         }
         return jars[0];
+    }
+
+    public static String smallHump(String columnName) {
+        List<String> list = StringUtils.splitString2List(columnName, "_");
+        if(list.size() < 1) {
+            return columnName;
+        }
+
+        if(list.size() == 1) {
+            return list.get(0);
+        }
+
+        list.set(0, list.get(0).substring(0,1).toLowerCase() + list.get(0).substring(1));
+        for(int i=1; i<list.size(); i++) {
+            if(StringUtils.isEmpty(list.get(i))) {
+                continue;
+            }
+            list.set(i, list.get(i).substring(0,1).toUpperCase() + list.get(i).substring(1));
+        }
+
+        String result = StringUtils.join("", list);
+
+        return result;
     }
 }

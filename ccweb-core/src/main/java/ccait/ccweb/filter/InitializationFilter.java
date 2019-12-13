@@ -19,6 +19,7 @@ import ccait.ccweb.utils.FastJsonUtils;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
+import org.apache.http.HttpException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
@@ -59,14 +60,6 @@ public class InitializationFilter implements WebFilter, Filter {
         final HttpServletRequest req = (HttpServletRequest)request;
         final HttpServletResponse res = (HttpServletResponse)response;
 
-        res.setHeader("Access-Control-Allow-Origin","*");
-        res.setHeader("Access-Control-Allow-Credentials", "true");
-        res.setHeader("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, PUT");
-        res.setHeader("Access-Control-Max-Age", "3600");
-        res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        res.setContentType("application/json; charset=utf-8");
-        res.setCharacterEncoding("UTF-8");
-
         RequestWrapper requestWrapper = new RequestWrapper(req);
 //        ResponseWrapper responseWrapper = new ResponseWrapper(res);
 
@@ -75,29 +68,36 @@ public class InitializationFilter implements WebFilter, Filter {
 
         try
         {
-            log.info("entity.enableFlux============================================>>>" + ApplicationConfig.getInstance().get("${entity.enableFlux}"));
-            if("true".equals(ApplicationConfig.getInstance().get("${entity.enableFlux}")) &&
-                    req.getRequestURI().toLowerCase().startsWith("/api")) {
+            if(req.getRequestURI().toLowerCase().startsWith("/api")) {
 
-                if(req.getRequestURI().indexOf("/preview/") == -1 &&
-                        req.getRequestURI().indexOf("/download/") == -1 &&
-                        req.getRequestURI().indexOf("/upload/") == -1 &&
-                        req.getRequestURI().indexOf("/import") == -1 &&
-                        req.getRequestURI().indexOf("/export") == -1) {
-                    String path = req.getRequestURI();
-                    List<String> list = StringUtils.splitString2List(path, "/");
-                    list.set(1, "asyncapi");
-                    path = StringUtils.join("/", list);
+                res.setHeader("Access-Control-Allow-Origin", "*");
+                res.setHeader("Access-Control-Allow-Credentials", "true");
+                res.setHeader("Access-Control-Allow-Methods", "POST, GET, PATCH, DELETE, PUT");
+                res.setHeader("Access-Control-Max-Age", "3600");
+                res.setHeader("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+                res.setContentType("application/json; charset=utf-8");
+                res.setCharacterEncoding("UTF-8");
 
-                    request.getRequestDispatcher(path).forward(requestWrapper, response);
-                    return;
+                log.info("entity.enableFlux============================================>>>" + ApplicationConfig.getInstance().get("${entity.enableFlux}"));
+                if ("true".equals(ApplicationConfig.getInstance().get("${entity.enableFlux}"))) {
+
+                    if (req.getRequestURI().indexOf("/preview/") == -1 &&
+                            req.getRequestURI().indexOf("/download/") == -1 &&
+                            req.getRequestURI().indexOf("/upload/") == -1 &&
+                            req.getRequestURI().indexOf("/import") == -1 &&
+                            req.getRequestURI().indexOf("/export") == -1) {
+                        String path = req.getRequestURI();
+                        List<String> list = StringUtils.splitString2List(path, "/");
+                        list.set(1, "asyncapi");
+                        path = StringUtils.join("/", list);
+
+                        request.getRequestDispatcher(path).forward(requestWrapper, response);
+                        return;
+                    }
                 }
             }
 
             chain.doFilter(requestWrapper, res);
-            /*** don't need responseBody
-            chain.doFilter(requestWrapper, responseWrapper);
-             ***/
 
             try {
                 log.info(LOG_PRE_SUFFIX + "Status：" + res.getStatus());
@@ -126,15 +126,6 @@ public class InitializationFilter implements WebFilter, Filter {
                     log.info(LOG_PRE_SUFFIX + "Post String：" + postString);
                 }
 
-                /*** don't need responseBody
-                final String responseBody = responseWrapper.getResponseBody();
-                if(StringUtils.isNotEmpty(responseBody)) {
-                    responseWrapper.flushBuffer();
-                }
-
-                log.info(LOG_PRE_SUFFIX + "responseBody：" + responseBody);
-                ***/
-
                 if(StringUtils.isNotEmpty(BaseController.getTablename()))    {
                     TriggerContext.exec(BaseController.getTablename(), EventType.Response, res, requestWrapper);
                 }
@@ -162,7 +153,15 @@ public class InitializationFilter implements WebFilter, Filter {
 
             res.reset();
             res.setCharacterEncoding("UTF-8");
-            res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+
+            if(e instanceof HttpException) {
+                res.setStatus(HttpStatus.FORBIDDEN.value());
+            }
+
+            else {
+                res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            }
+
             res.getWriter().write(JsonUtils.toJson(responseData));
             res.getWriter().flush();
             res.getWriter().close();

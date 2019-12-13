@@ -109,7 +109,7 @@ public class EntitesGenerator {
                     }
 
                     String suffix = ApplicationConfig.getInstance().get("entity.suffix", "Entity");
-                    JavaFile javaFile = getJavaFile(tb.getValue(), tb.getKey().toString(), primaryKey, ds.getClassScope(), suffix);
+                    JavaFile javaFile = getJavaFile(tb.getValue(), tb.getKey().toString(), primaryKey, ds.getClassScope(), suffix, true);
 
                     if(javaFile != null) {
 

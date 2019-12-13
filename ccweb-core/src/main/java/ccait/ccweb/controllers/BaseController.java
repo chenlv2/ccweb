@@ -24,6 +24,7 @@ import ccait.ccweb.utils.EncryptionUtil;
 import ccait.ccweb.utils.FastJsonUtils;
 import ccait.ccweb.utils.ImageUtils;
 import ccait.ccweb.utils.UploadUtils;
+import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
 import entity.query.*;
@@ -67,6 +68,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static ccait.ccweb.dynamic.DynamicClassBuilder.smallHump;
 import static ccait.ccweb.utils.StaticVars.*;
 import static entity.tool.util.StringUtils.cast;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
@@ -340,7 +342,7 @@ public abstract class BaseController {
         List<String> argNames = postData.keySet().stream().collect(Collectors.toList());
         for(final String argname : argNames) {
 
-            Optional<Field> opt = fields.stream().filter(a->a.getName().toLowerCase().equals(argname.toLowerCase())).findAny();
+            Optional<Field> opt = fields.stream().filter(a->a.getName().equals(smallHump(argname))).findAny();
             if("id".equals(argname) || !opt.isPresent()) {
                 postData.remove(argname);
                 continue;
@@ -356,12 +358,12 @@ public abstract class BaseController {
                 value = cast(type, valString);
             }
 
-            String key = fieldName;
+            String key = argname;
 
             Map<String, Object> defaultValueMap = ApplicationConfig.getInstance().getMap("entity.defaultValue");
             if(defaultValueMap != null) {
                 if(!defaultValueMap.containsKey(key)) {
-                    key = String.format("%s.%s", getTablename(), fieldName);
+                    key = String.format("%s.%s", getTablename(), key);
                 }
 
                 if(defaultValueMap.containsKey(key)) {
@@ -932,7 +934,7 @@ public abstract class BaseController {
 
             List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
 
-            Object info = DynamicClassBuilder.create("TABLE" + UUID.randomUUID().toString().replace("-", ""), columns);
+            Object info = DynamicClassBuilder.create("TABLE" + UUID.randomUUID().toString().replace("-", ""), columns, false);
 
             return ac.query(info.getClass(), queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
         }
@@ -1058,7 +1060,7 @@ public abstract class BaseController {
 
             List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
 
-            Object info = DynamicClassBuilder.create(getTablename(), columns);
+            Object info = DynamicClassBuilder.create(getTablename(), columns, false);
 
             return ac.query(info.getClass(), queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
         }
@@ -1346,6 +1348,19 @@ public abstract class BaseController {
      * @throws Exception
      */
     public Integer insert(String table, Map<String, Object> postData) throws Exception {
+        String result = insert(table, postData, null);
+
+        return Integer.parseInt(result);
+    }
+
+    /***
+     * insert data
+     * @param table
+     * @param postData
+     * @return
+     * @throws Exception
+     */
+    public String insert(String table, Map<String, Object> postData, String idField) throws Exception {
         Object entity = EntityContext.getEntity(table, postData);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
@@ -1355,11 +1370,25 @@ public abstract class BaseController {
 
         fillData(postData, entity);
 
-        Integer result = ((Queryable) entity).insert();
+        Queryable queryable = ((Queryable) entity);
 
-        indexingContext.createIndex(((Queryable)entity).tablename(), postData);
+        if(StringUtils.isEmpty(idField)) {
+            Integer result = queryable.insert();
+            indexingContext.createIndex(((Queryable)entity).tablename(), postData);
+            if(result == null) {
+                return "0";
+            }
 
-        return result;
+            return result.toString();
+        }
+
+        DruidPooledConnection conn = queryable.dataSource().getConnection();
+        conn.setAutoCommit(false);
+        queryable.insert();
+        Object idValue = queryable.orderby("createOn desc").select(idField).first(String.class);
+        conn.commit();
+
+        return idValue.toString();
     }
 
     public Long count(String table, QueryInfo queryInfo) throws Exception {

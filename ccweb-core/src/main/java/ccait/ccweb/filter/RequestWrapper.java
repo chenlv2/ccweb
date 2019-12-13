@@ -63,9 +63,9 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
 
             postString = new String(requestBody, "ISO-8859-1"); //上传文件的编码要用ISO-8859-1格式才不会变
             Map<String, Object> map = new HashMap<String, Object>();
-            List<String> list = StringUtils.splitString2List(postString, "\\-{20}\\-*[\\d\\w]{20}[\\d\\w]*");
+            List<String> list = StringUtils.splitString2List(postString, "\\-{6}\\-*[\\d\\w]{6}[\\d\\w]*");
             Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?", Pattern.CASE_INSENSITIVE);
-            for(String content : list) { // TODO
+            for(String content : list) {
                 //Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?\\s*?([\\w\\W]+)", Pattern.CASE_INSENSITIVE);
                 Matcher m = regex.matcher(content);
                 while (m.find()) {
@@ -224,6 +224,9 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
     public static byte[] readBody(HttpServletRequest request)
             throws IOException{
         int formDataLength = request.getContentLength();
+        if(formDataLength < 1) {
+            return null;
+        }
         DataInputStream dataStream = new DataInputStream(request.getInputStream());
         byte body[] = new byte[formDataLength];
         int totalBytes = 0;

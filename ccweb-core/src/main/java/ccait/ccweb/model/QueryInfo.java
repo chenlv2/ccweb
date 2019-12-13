@@ -26,6 +26,7 @@ import entity.query.enums.Function;
 import entity.tool.util.DBUtils;
 import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
+import org.apache.http.HttpException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -42,6 +43,8 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static ccait.ccweb.dynamic.DynamicClassBuilder.ensureColumnName;
+import static ccait.ccweb.dynamic.DynamicClassBuilder.smallHump;
 import static ccait.ccweb.utils.StaticVars.CURRENT_DATASOURCE;
 import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
 import static entity.tool.util.StringUtils.cast;
@@ -70,7 +73,6 @@ public class QueryInfo implements Serializable {
 
     @Value("${entity.table.reservedField.groupId:groupId}")
     private String groupIdField;
-
 
     public PageInfo getPageInfo() {
         return pageInfo;
@@ -345,7 +347,7 @@ public class QueryInfo implements Serializable {
                                       String tablename, String alias) throws Exception {
         if(this.getConditionList() != null) {
             for(ConditionInfo info : this.getConditionList()) {
-                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(DynamicClassBuilder.ensureColumnName(info.getName()))).findFirst();
+                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(smallHump(ensureColumnName(info.getName())))).findFirst();
                 if(!opt.isPresent()) {
                     continue;
                 }
@@ -388,13 +390,10 @@ public class QueryInfo implements Serializable {
             StringBuffer sb = new StringBuffer();
             boolean isFirst = true;
             for(FieldInfo info : this.getKeywords()) {
-                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(DynamicClassBuilder.ensureColumnName(info.getName()))).findFirst();
+                Optional<Field> opt = fields.stream().filter(a->a.getName().equals(smallHump(ensureColumnName(info.getName())))).findFirst();
                 if(!opt.isPresent()) {
                     continue;
                 }
-
-                Field fld = opt.get();
-                String column =fld.getName();
 
                 if(info.getValue() == null || info.getValue().toString().trim().equals("")) {
                     continue;
@@ -444,7 +443,7 @@ public class QueryInfo implements Serializable {
         switch(privilegeScope) {
             case DENIED:
                 if(user == null) {
-                    throw new Exception("Session maybe to timeout!!!");
+                    throw new HttpException("Session maybe to timeout!!!");
                 }
                 throw new Exception("Data access denied!!!");
             case SELF:
@@ -542,7 +541,7 @@ public class QueryInfo implements Serializable {
         ReflectionUtils.invoke(entity.getClass(), entity, pk.getSetter(), cast(pk.getField().getType(), id));
 
         Where where = (Where) ReflectionUtils.invoke(entity.getClass(), entity, "where",
-                String.format("[%s]=#{%s}", pk.getColumnName(), pk.getField().getName()));
+                String.format("%s=#{%s}", ensureColumn(pk.getColumnName()), pk.getField().getName()));
 
         return where;
     }
@@ -580,7 +579,7 @@ public class QueryInfo implements Serializable {
             if(StringUtils.isEmpty(sort.getName().trim())) {
                 continue;
             }
-            list.add(String.format("[%s] %s", ensureColumn(sort.getName()), sort.isDesc() ? "DESC" : "ASC"));
+            list.add(String.format("%s %s", ensureColumn(sort.getName()), sort.isDesc() ? "DESC" : "ASC"));
         }
 
         if(list.size() < 1) {

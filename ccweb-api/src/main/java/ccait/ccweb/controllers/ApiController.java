@@ -250,6 +250,36 @@ public class ApiController extends BaseController {
     }
 
     /***
+     * insert and select id
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "{table}/max/{field}", method = RequestMethod.PUT )
+    public ResponseData doInsertAndReturnId(@PathVariable String table, @PathVariable String field, @RequestBody List<Map<String, Object>> postData)
+    {
+        try {
+            List<String> result = new ArrayList<>();
+            for(int i=0; i < postData.size(); i++) {
+                Map data = (Map)postData.get(i);
+                result.add(super.insert(table, data, field));
+            }
+
+            if(result.size() == 1) {
+                return success(result.get(0));
+            }
+
+            return success(result);
+        }
+
+        catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return error(120, e);
+        }
+    }
+
+    /***
      * insert
      * @return
      */

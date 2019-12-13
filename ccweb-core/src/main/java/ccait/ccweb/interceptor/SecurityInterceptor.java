@@ -86,27 +86,33 @@ public class SecurityInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        Map<String, String> attrs = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-        InitLocalMap initLocalMap = new InitLocalMap(response, attrs).invoke();
-        if (initLocalMap.is()) return false;
+        if(request instanceof RequestWrapper) {
 
-        String currentTable = initLocalMap.getCurrentTable();
+            Map<String, String> attrs = (Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+            InitLocalMap initLocalMap = new InitLocalMap(response, attrs).invoke();
+            if (initLocalMap.is()) return false;
 
-        if(!vaildForUploadFiles((RequestWrapper) request, currentTable)) {
-            response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "无效的上传文件格式!!!");
-            return false;
+            String currentTable = initLocalMap.getCurrentTable();
+
+            if (!vaildForUploadFiles((RequestWrapper) request, currentTable)) {
+                response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "无效的上传文件格式!!!");
+                return false;
+            }
+
+            // 验证权限
+            if (allowIp(request) &&
+                    this.hasPermission(handler, request.getMethod(), request, attrs, currentTable)) {
+                return true;
+            }
+
+            //  null == request.getHeader("x-requested-with") TODO 暂时用这个来判断是否为ajax请求
+            // 如果没有权限 则抛403异常 springboot会处理，跳转到 /error/403 页面
+            // response.sendError(HttpStatus.FORBIDDEN.value(), "没有足够的权限访问请求的内容");
+            throw new Exception("没有足够的权限访问请求的内容");
         }
-
-        // 验证权限
-        if (allowIp(request) &&
-                this.hasPermission(handler, request.getMethod(), request, attrs, currentTable)) {
+        else {
             return true;
         }
-
-        //  null == request.getHeader("x-requested-with") TODO 暂时用这个来判断是否为ajax请求
-        // 如果没有权限 则抛403异常 springboot会处理，跳转到 /error/403 页面
-        // response.sendError(HttpStatus.FORBIDDEN.value(), "没有足够的权限访问请求的内容");
-        throw new Exception("没有足够的权限访问请求的内容");
     }
 
     private boolean vaildForUploadFiles(RequestWrapper request, String table) throws Exception {
@@ -263,7 +269,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 RequestWrapper requestWarpper = (RequestWrapper)request;
                 QueryInfo queryInfo = FastJsonUtils.convertJsonToObject((requestWarpper).getRequestPostString(), QueryInfo.class);
                 List<String> tableList = new ArrayList<String>();
-                if(queryInfo.getJoinTables() != null && queryInfo.getJoinTables().size() > 0) {
+                if(queryInfo != null && queryInfo.getJoinTables() != null && queryInfo.getJoinTables().size() > 0) {
                     for (int i = 0; i < queryInfo.getJoinTables().size(); i++) {
                         if(StringUtils.isEmpty(queryInfo.getJoinTables().get(i).getTablename())) {
                             continue;

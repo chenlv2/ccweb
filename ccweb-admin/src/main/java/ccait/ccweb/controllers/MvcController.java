@@ -14,6 +14,7 @@ package ccait.ccweb.controllers;
 
 import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.model.QueryInfo;
+import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.model.UserModel;
 import entity.tool.util.StringUtils;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -154,6 +156,36 @@ public class MvcController extends BaseController {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
             return Mono.create(monoSink -> monoSink.error(e));
+        }
+    }
+
+    /***
+     * insert and select id
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "{table}/max/{field}", method = RequestMethod.PUT )
+    public Mono doInsertAndReturnId(@PathVariable String table, @PathVariable String field, @RequestBody List<Map<String, Object>> postData)
+    {
+        try {
+            List<String> result = new ArrayList<>();
+            for(int i=0; i < postData.size(); i++) {
+                Map data = (Map)postData.get(i);
+                result.add(super.insert(table, data, field));
+            }
+
+            if(result.size() == 1) {
+                return successAs(result.get(0));
+            }
+
+            return successAs(result);
+        }
+
+        catch (Exception e) {
+            getLogger().error(LOG_PRE_SUFFIX + e, e);
+
+            return errorAs(120, e);
         }
     }
 

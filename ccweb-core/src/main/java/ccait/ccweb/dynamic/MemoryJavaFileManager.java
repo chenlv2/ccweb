@@ -35,6 +35,7 @@ import java.sql.Blob;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ccait.ccweb.dynamic.DynamicClassBuilder.smallHump;
 import static ccait.ccweb.utils.StaticVars.CURRENT_DATASOURCE;
 
 /**
@@ -116,7 +117,7 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
         }
     }
 
-    public static JavaFile getJavaFile(List<ColumnInfo> columns, String tablename, String primaryKey, String scope, String suffix) {
+    public static JavaFile getJavaFile(List<ColumnInfo> columns, String tablename, String primaryKey, String scope, String suffix, boolean isQueryable) {
 
         String packagePath = ApplicationConfig.getInstance().get("entity.package", DEFAULT_PACKAGE);
         String className = String.format("%s%s", tablename.substring(0, 1).toUpperCase() + tablename.substring(1), suffix);
@@ -135,9 +136,11 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
         AnnotationSpec annClassSpec = AnnotationSpec.builder(Tablename.class).addMember("value", "$S", tablename).build();
         builder.addAnnotation(annClassSpec);
 
-        builder.superclass(ParameterizedTypeName.get(
-                ClassName.get(Queryable.class), ClassName.get(packagePath, className))
-        );
+        if(isQueryable) {
+            builder.superclass(ParameterizedTypeName.get(
+                    ClassName.get(Queryable.class), ClassName.get(packagePath, className))
+            );
+        }
 
         JavaFile javaFile = null;
 
@@ -155,7 +158,7 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
                     }
                 }
 
-                FieldSpec.Builder fldSpec = FieldSpec.builder(getFieldType(col.getDataType()), col.getColumnName(), Modifier.PRIVATE);
+                FieldSpec.Builder fldSpec = FieldSpec.builder(getFieldType(col.getDataType()), smallHump(col.getColumnName()), Modifier.PRIVATE);
 
                 if(col.getColumnComment() != null) {
                     fldSpec.addJavadoc(col.getColumnComment());
@@ -183,7 +186,7 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
                 if(StringUtils.isNotEmpty(col.getAlias())) {
                     AnnotationSpec annExcelProperty = AnnotationSpec.builder(ExcelProperty.class)
                             .addMember("value", "$S", col.getAlias())
-                            .addMember("index", "$S", i).build();
+                            .addMember("index", String.valueOf(i), i).build();
                     fldSpec.addAnnotation(annExcelProperty);
                 }
 
@@ -219,32 +222,32 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
     }
 
     private static MethodSpec genGetter(ColumnInfo col) {
-        MethodSpec.Builder method = getMethodName("get", col.getColumnName());
+        MethodSpec.Builder method = getMethodName("get", smallHump(col.getColumnName()));
         if(col.getColumnComment() == null) {
-            method.addModifiers(Modifier.PUBLIC).returns(getFieldType(col.getDataType())).addStatement(String.format("return this.%s", col.getColumnName()));
+            method.addModifiers(Modifier.PUBLIC).returns(getFieldType(col.getDataType())).addStatement(String.format("return this.%s", smallHump(col.getColumnName())));
         }
 
         else {
-            method.addJavadoc(col.getColumnComment()).addModifiers(Modifier.PUBLIC).returns(getFieldType(col.getDataType())).addStatement(String.format("return this.%s", col.getColumnName()));
+            method.addJavadoc(col.getColumnComment()).addModifiers(Modifier.PUBLIC).returns(getFieldType(col.getDataType())).addStatement(String.format("return this.%s", smallHump(col.getColumnName())));
         }
 
         return method.build();
     }
 
     private static MethodSpec genSetter(ColumnInfo col) {
-        MethodSpec.Builder method = getMethodName("set", col.getColumnName());
+        MethodSpec.Builder method = getMethodName("set", smallHump(col.getColumnName()));
 
         if(col.getColumnComment() == null) {
-            method.addParameter(getFieldType(col.getDataType()), col.getColumnName())
+            method.addParameter(getFieldType(col.getDataType()), smallHump(col.getColumnName()))
                     .addModifiers(Modifier.PUBLIC)
-                    .addStatement(String.format("this.%s = %s", col.getColumnName(), col.getColumnName()));
+                    .addStatement(String.format("this.%s = %s", smallHump(col.getColumnName()), smallHump(col.getColumnName())));
         }
 
         else {
-            method.addParameter(getFieldType(col.getDataType()), col.getColumnName())
+            method.addParameter(getFieldType(col.getDataType()), smallHump(col.getColumnName()))
                     .addJavadoc(col.getColumnComment())
                     .addModifiers(Modifier.PUBLIC)
-                    .addStatement(String.format("this.%s = %s", col.getColumnName(), col.getColumnName()));
+                    .addStatement(String.format("this.%s = %s", smallHump(col.getColumnName()), smallHump(col.getColumnName())));
         }
 
         return method.build();
