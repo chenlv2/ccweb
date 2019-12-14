@@ -762,6 +762,7 @@ public abstract class BaseController {
     public UserModel logoin(UserModel user) throws Exception {
 
         if(StringUtils.isEmpty(user.getUsername()) || StringUtils.isEmpty(user.getPassword())) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             throw new Exception("Username and password can not be empty!!!");
         }
 
@@ -772,10 +773,12 @@ public abstract class BaseController {
         user = where.first();
 
         if(user == null) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             throw new Exception("Username or password is invalid!!!");
         }
 
         if(!user.getStatus().equals(0)) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             throw new Exception("user status has been frozen!!!");
         }
 
