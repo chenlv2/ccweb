@@ -35,6 +35,7 @@ import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
+import org.apache.http.HttpException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -223,6 +225,11 @@ public abstract class BaseController {
     }
 
     protected ResponseData error(int code, Exception e) {
+
+        if(e instanceof HttpException) {
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            code = HttpStatus.UNAUTHORIZED.value();
+        }
 
         if(StringUtils.isEmpty(e.getMessage())) {
             return this.result(code, e.toString(), "", null);
