@@ -1664,7 +1664,7 @@ public abstract class BaseController {
                     root.lastIndexOf("\\") == root.length() - 1) {
                 root = root.substring(0, root.length() - 2);
             }
-            root = String.format("%s/%s/%s/%s", root, currentDatasource, table, fileEntry.getKey());
+            root = String.format("%s/%s/%s/%s", root, currentDatasource, table, field);
 
             value = UploadUtils.upload(root, filename, fileBytes);
 
@@ -1807,6 +1807,7 @@ public abstract class BaseController {
                 if("/".equals(content.substring(0,1))) {
                     content = content.substring(1);
                 }
+                root = String.format("%s/%s/%s/%s", root, currentDatasource, table, field);
 
                 String fullpath = String.format("%s/%s", root, content);
                 File file = new File(fullpath);
