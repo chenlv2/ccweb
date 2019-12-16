@@ -773,12 +773,10 @@ public abstract class BaseController {
         user = where.first();
 
         if(user == null) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             throw new Exception("Username or password is invalid!!!");
         }
 
         if(!user.getStatus().equals(0)) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             throw new Exception("user status has been frozen!!!");
         }
 
