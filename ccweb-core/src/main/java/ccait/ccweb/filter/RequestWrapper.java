@@ -69,7 +69,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
                 //Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?\\s*?([\\w\\W]+)", Pattern.CASE_INSENSITIVE);
                 Matcher m = regex.matcher(content);
                 while (m.find()) {
-                    String key = m.group(1);
+                    String key = new String(m.group(1).getBytes("ISO-8859-1"), "UTF-8");
                     Object value = content.substring(m.group(0).length());
 
                     if (m.group(5) != null && Pattern.matches("[^/]+/.+", m.group(5))) {

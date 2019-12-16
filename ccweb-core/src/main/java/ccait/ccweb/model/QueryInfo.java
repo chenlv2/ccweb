@@ -22,6 +22,7 @@ import com.alibaba.fastjson.JSONArray;
 import entity.query.*;
 import entity.query.core.DataSource;
 import entity.query.core.DataSourceFactory;
+import entity.query.enums.Condition;
 import entity.query.enums.Function;
 import entity.tool.util.DBUtils;
 import entity.tool.util.ReflectionUtils;
@@ -225,7 +226,12 @@ public class QueryInfo implements Serializable {
             }
 
             else {
-                list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                if(info.getAlias() == null) {
+                    list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                }
+                else {
+                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), field, ensureColumnName(info.getAlias())));
+                }
             }
         }
 
@@ -264,12 +270,17 @@ public class QueryInfo implements Serializable {
 
             field = ensureColumn(field);
 
-            if(info.getFunction() == Function.NONE) {
+            if(info.getFunction() == null || info.getFunction() == Function.NONE) {
                 list.add(field);
             }
 
             else {
-                list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                if(info.getAlias() == null) {
+                    list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                }
+                else {
+                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), field, ensureColumnName(info.getAlias())));
+                }
             }
         }
 
@@ -319,17 +330,16 @@ public class QueryInfo implements Serializable {
 
             field = ensureColumn(field);
 
-            if(info.getFunction() == Function.NONE) {
+            if(info.getFunction() == null || info.getFunction() == Function.NONE) {
                 list.add(field);
             }
 
             else {
-                if(null == info.getFunction()) {
-                    list.add(field);
-                }
-
-                else {
+                if(info.getAlias() == null) {
                     list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                }
+                else {
+                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), field, ensureColumnName(info.getAlias())));
                 }
             }
         }
@@ -352,12 +362,29 @@ public class QueryInfo implements Serializable {
                     continue;
                 }
 
-                if(info.getValue() == null ||
-                        info.getValue().toString().trim().equals("")) {
+                Field fld = opt.get();
+
+                if(info.getValue() == null) {
+                    if(Algorithm.EQ.equals(info.getAlgorithm())) {
+                        where = where.and(ensureColumnName(fld.getName()) + " IS NULL ");
+                    }
+
+                    else if(Algorithm.NOT.equals(info.getAlgorithm())) {
+                        where = where.and(ensureColumnName(fld.getName()) + " IS NOT NULL ");
+                    }
                     continue;
                 }
 
-                Field fld = opt.get();
+                if(info.getValue().toString().trim().equals("")) {
+                    if(Algorithm.EQ.equals(info.getAlgorithm())) {
+                        where = where.and(ensureColumnName(fld.getName()) + "=''");
+                    }
+
+                    else if(Algorithm.NOT.equals(info.getAlgorithm())) {
+                        where = where.and(ensureColumnName(fld.getName()) + "!=''");
+                    }
+                    continue;
+                }
 
                 String value = info.getValue().toString();
                 String fieldText = "#{" + fld.getName() + "}";

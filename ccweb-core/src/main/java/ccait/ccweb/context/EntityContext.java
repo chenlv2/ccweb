@@ -15,10 +15,13 @@ import ccait.ccweb.dynamic.DynamicClassBuilder;
 import ccait.ccweb.model.PrimaryKeyInfo;
 import ccait.ccweb.model.QueryInfo;
 import entity.query.ColumnInfo;
+import entity.query.Queryable;
 import entity.query.annotation.Fieldname;
 import entity.query.annotation.PrimaryKey;
 import entity.query.annotation.Tablename;
 import entity.query.core.ApplicationConfig;
+import entity.query.core.DataSource;
+import entity.query.core.DataSourceFactory;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,11 +29,10 @@ import org.apache.logging.log4j.core.config.Order;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.SQLException;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
@@ -47,8 +49,12 @@ public final class EntityContext {
 
     private static final Map<Class<?>, List<Field>> objectFieldsMap = new HashMap<Class<?>, List<Field>>() ;
 
+    private static final Map<String, Map<String, List<ColumnInfo>>> tableColumnsMap = new HashMap<String, Map<String, List<ColumnInfo>>>();
+
     @PostConstruct
     private void postConstruct() {
+
+        initTableColumnsCache();
         org.springframework.context.ApplicationContext app = ApplicationContext.getInstance();
         String[] names = app.getBeanNamesForAnnotation(Tablename.class);
         if(names != null) {
@@ -92,12 +98,12 @@ public final class EntityContext {
         return bean;
     }
 
-    public static Object getEntityId(String tablename, String id) {
+    public static Object getEntityId(String datasourceId, String tablename, String id) {
         Object bean = getEntity(tablename);
         if(bean == null) {
             List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
 
-            addColumnById(id, columns);
+            addColumnById(datasourceId, tablename, id, columns);
 
             bean = DynamicClassBuilder.create(tablename, columns);
         }
@@ -105,17 +111,29 @@ public final class EntityContext {
         return bean;
     }
 
-    private static void addColumnById(String id, List<ColumnInfo> columns) {
+    private static void addColumnById(String datasourceId, String table, String id, List<ColumnInfo> columns) {
+
+        String fieldname = "id";
+        if(tableColumnsMap.containsKey(datasourceId) && tableColumnsMap.get(datasourceId).containsKey(table)) {
+            Optional<ColumnInfo> optional = tableColumnsMap.get(datasourceId).get(table).stream()
+                    .filter(a -> a.getPrimaryKey() == true).findAny();
+
+            if(optional.isPresent()) {
+                ColumnInfo column = optional.get();
+                fieldname = column.getColumnName();
+            }
+        }
+
         if(Pattern.matches("^[0-9]{1,32}$", id)) {
-            columns.add(new ColumnInfo("id", "integer", true));
+            columns.add(new ColumnInfo(fieldname, "integer", true));
         }
 
         else if(Pattern.matches("^\\d+$", id)) {
-            columns.add(new ColumnInfo("id", "long", true));
+            columns.add(new ColumnInfo(fieldname, "long", true));
         }
 
         else {
-            columns.add(new ColumnInfo("id", "text", true));
+            columns.add(new ColumnInfo(fieldname, "text", true));
         }
     }
 
@@ -135,6 +153,7 @@ public final class EntityContext {
 
     public static PrimaryKeyInfo getPrimaryKeyInfo(Object instance) {
 
+        PrimaryKeyInfo result = new PrimaryKeyInfo();
         List<Field> fields = getFields(instance);
         for(Field fld : fields) {
             PrimaryKey ann = fld.getAnnotation(PrimaryKey.class);
@@ -142,7 +161,6 @@ public final class EntityContext {
                 continue;
             }
 
-            PrimaryKeyInfo result = new PrimaryKeyInfo();
             result.setPrimaryKey(ann);
             result.setField(fld);
 
@@ -186,5 +204,54 @@ public final class EntityContext {
         }
 
         return ApplicationConfig.getInstance().get(ann.value());
+    }
+
+    public void initTableColumnsCache() {
+        try {
+            String configPath = System.getProperty("user.dir") + "/src/main/resources/"
+                    + ApplicationConfig.getInstance().get("entity.queryable.configFile", "db-config.xml");
+
+            Collection<DataSource> dsList = DataSourceFactory.getInstance().getAllDataSource(configPath);
+            if(dsList == null || dsList.size() < 1) {
+                //tomcat路径
+                String property = System.getProperty("catalina.home");
+                System.out.println("catalina home: " + property);
+                String path =property+ File.separator + "conf" + File.separator + "db-config.xml";
+                dsList = DataSourceFactory.getInstance().getAllDataSource(path);
+            }
+
+            for(DataSource ds : dsList) {
+                try {
+                    if(ds.getConnection() == null) {
+                        continue;
+                    }
+
+                    List<String> tablenames = Queryable.getTables(ds.getId());
+                    for (String tb : tablenames) {
+
+                        if (StringUtils.isEmpty(tb)) {
+                            continue;
+                        }
+
+                        List<ColumnInfo> columns = Queryable.getColumns(ds.getId(), tb);
+                        String primaryKey = Queryable.getPrimaryKey(ds.getId(), tb);
+                        for(ColumnInfo column : columns) {
+                            if(column.getColumnName().equals(primaryKey)) {
+                                column.setPrimaryKey(Boolean.TRUE);
+                            }
+                        }
+                        if (!tableColumnsMap.containsKey(ds.getId())) {
+                            tableColumnsMap.put(ds.getId(), new HashMap<String, List<ColumnInfo>>());
+                        }
+                        tableColumnsMap.get(ds.getId()).put(tb, columns);
+                    }
+                }
+                catch (Exception e) {
+                    log.error(e);
+                }
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
     }
 }

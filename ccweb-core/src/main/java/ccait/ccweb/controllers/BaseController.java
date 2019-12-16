@@ -31,6 +31,7 @@ import entity.query.*;
 import entity.query.annotation.PrimaryKey;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.DBUtils;
+import entity.tool.util.JsonUtils;
 import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
 import io.reactivex.Maybe;
@@ -808,7 +809,7 @@ public abstract class BaseController {
         if(Pattern.matches("[^0-9]+", strIds)) {
             strid += "A";
         }
-        Object entity = EntityContext.getEntityId(table, strid);
+        Object entity = EntityContext.getEntityId(getCurrentDatasourceId(), table, strid);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
         }
@@ -844,7 +845,7 @@ public abstract class BaseController {
      * @throws Exception
      */
     public Integer delete(String table, String id) throws Exception {
-        Object entity = EntityContext.getEntityId(table, id);
+        Object entity = EntityContext.getEntityId(getCurrentDatasourceId(), table, id);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
         }
@@ -1068,7 +1069,10 @@ public abstract class BaseController {
 
             List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
 
-            Object info = DynamicClassBuilder.create(getTablename(), columns, false);
+            log.info("Table: " + table);
+            log.info(JsonUtils.toJson(columns));
+
+            Object info = DynamicClassBuilder.create(table, columns, false);
 
             return ac.query(info.getClass(), queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
         }
@@ -1153,14 +1157,9 @@ public abstract class BaseController {
      * @throws Exception
      */
     public Map get( String table, String id ) throws Exception {
-        Object entity = EntityContext.getEntityId(table, id);
+        Object entity = EntityContext.getEntityId(getCurrentDatasourceId(), table, id);
         if(entity == null) {
             new Exception("Can not find entity!!!");
-        }
-
-        PrimaryKeyInfo pk = EntityContext.getPrimaryKeyInfo(entity);
-        if(pk == null) {
-            new Exception("Can not find primary key!!!");
         }
 
         Where where = queryInfo.getWhereQueryableById(entity, id);

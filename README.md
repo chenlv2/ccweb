@@ -787,3 +787,11 @@ public final class DefaultTrigger {
   groupId: groupId  #群组ID
   roleId: roleId #角色ID
 ```
+
+## github代理服务器
+```
+#hosts
+192.30.253.112 github.com
+151.101.185.194 github.global.ssl.fastly.net
+192.30.253.120 codeload.github.com
+```
