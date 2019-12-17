@@ -44,7 +44,7 @@ ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组�
 ## 接口说明
 ccweb-start内置了默认的api接口可以让前端直接通过表名操作数据，需要限制访问的可以设置系统默认创建的用户权限表进行控制，接口的请求类型同时支持json和表单提交，表单中存在文件上传的会自动上传到表的字段中，字段类型必须为blob。
 
-### 1. 新增
+### 1. 新增 (可批量)
 * URL：/api/{datasource}/{table} 
 * 请求方式：PUT
 * URL参数：{datasource},{table}为数据库表名称
@@ -430,7 +430,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * 请求方式：DELETE
 * URL参数：{table}为数据库表名称
 * POST参数：
-```javascript
+```json
 [id1, id2, ...]
 ```
 
@@ -567,7 +567,7 @@ public class Application {
     public static void main(String[] args) {
         CcwebAppliction.run(Application.class, args);
     }
-｝
+}
 ```
 ## 生成实体类
 * ccweb虽然支持通过请求动态生成数据查询实体类，但推荐在二次开发的时候通过实体生成器生成数据查询的实体以提高访问的性能，实体生在器在ccweb-core包里，包路径为package ccait.generator，启动类EntitesGenerator，生成的路径与包名可在application.yml中设置。
@@ -620,7 +620,7 @@ BaseContoller规范了ResponseData返回数据的格式，并为用户封装了�
 ```java
 @Component
 @Scope("prototype")
-@Trigger //触发器注解
+@Trigger(tablename = "${entity.table.privilege}") //触发器注解,tablename为表名,可选参数
 public final class DefaultTrigger {
 
     /***
@@ -779,7 +779,7 @@ public final class DefaultTrigger {
 
 ## 注意
 使用动态查询的表在设计阶段需要加上以下字段：
-```
+```yaml
   userPath: userPath #创建者所属路径，体现父子关系，用于like查询
   createOn: createTime #数据创建时间
   createBy: createBy #数据创建者
@@ -789,7 +789,7 @@ public final class DefaultTrigger {
 ```
 
 ## github代理服务器
-```
+```yaml
 #hosts
 192.30.253.112 github.com
 151.101.185.194 github.global.ssl.fastly.net

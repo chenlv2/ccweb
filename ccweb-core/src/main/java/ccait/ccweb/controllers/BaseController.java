@@ -1069,9 +1069,6 @@ public abstract class BaseController {
 
             List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
 
-            log.info("Table: " + table);
-            log.info(JsonUtils.toJson(columns));
-
             Object info = DynamicClassBuilder.create(table, columns, false);
 
             return ac.query(info.getClass(), queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());

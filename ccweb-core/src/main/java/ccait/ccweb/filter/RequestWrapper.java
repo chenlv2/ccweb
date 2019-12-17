@@ -65,8 +65,15 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
             Map<String, Object> map = new HashMap<String, Object>();
             List<String> list = StringUtils.splitString2List(postString, "\\-{6}\\-*[\\d\\w]{6}[\\d\\w]*");
             Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?", Pattern.CASE_INSENSITIVE);
+            if(list.size() == 1 && request.getRequestURI().indexOf("/upload/")>0) {
+                byte[] bytes = list.get(0).toString().getBytes("ISO-8859-1");
+                map.put("temp_upload_filename", "application/octet-stream"); //contentType
+                map.put("temp", bytes);
+            }
             for(String content : list) {
-                //Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?\\s*?([\\w\\W]+)", Pattern.CASE_INSENSITIVE);
+                if(list.size() == 1) {
+                    break;
+                }
                 Matcher m = regex.matcher(content);
                 while (m.find()) {
                     String key = new String(m.group(1).getBytes("ISO-8859-1"), "UTF-8");
@@ -76,7 +83,7 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
 
                         //返回字节数组，fastjson序列化时会进行Base64编码
                         value = value.toString().getBytes("ISO-8859-1");
-                        map.put(String.format("%s_upload_filename", key), m.group(3));
+                        map.put(String.format("%s_upload_filename", key), new String(m.group(3).getBytes("ISO-8859-1"), "UTF-8"));
                     } else {
                         //不是文件要改回UTF-8编码中文才不会乱码
                         value = new String(m.group(6).getBytes("ISO-8859-1"), "UTF-8");
