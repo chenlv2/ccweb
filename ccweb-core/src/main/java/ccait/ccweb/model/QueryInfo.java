@@ -222,15 +222,20 @@ public class QueryInfo implements Serializable {
             field = ensureColumn(field);
 
             if(info.getFunction() == null || info.getFunction() == Function.NONE) {
-                list.add(field);
+                if(info.getAlias() == null) {
+                    list.add(field);
+                }
+                else {
+                    list.add(String.format("%s AS %s", ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
+                }
             }
 
             else {
                 if(info.getAlias() == null) {
-                    list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                    list.add(String.format("%s(%s)", info.getFunction().getValue(), ensureColumnName(field)));
                 }
                 else {
-                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), field, ensureColumnName(info.getAlias())));
+                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
                 }
             }
         }
@@ -271,15 +276,20 @@ public class QueryInfo implements Serializable {
             field = ensureColumn(field);
 
             if(info.getFunction() == null || info.getFunction() == Function.NONE) {
-                list.add(field);
+                if(info.getAlias() == null) {
+                    list.add(field);
+                }
+                else {
+                    list.add(String.format("%s AS %s", ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
+                }
             }
 
             else {
                 if(info.getAlias() == null) {
-                    list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                    list.add(String.format("%s(%s)", info.getFunction().getValue(), ensureColumnName(field)));
                 }
                 else {
-                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), field, ensureColumnName(info.getAlias())));
+                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
                 }
             }
         }
@@ -331,15 +341,20 @@ public class QueryInfo implements Serializable {
             field = ensureColumn(field);
 
             if(info.getFunction() == null || info.getFunction() == Function.NONE) {
-                list.add(field);
+                if(info.getAlias() == null) {
+                    list.add(field);
+                }
+                else {
+                    list.add(String.format("%s AS %s", ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
+                }
             }
 
             else {
                 if(info.getAlias() == null) {
-                    list.add(String.format("%s(%s)", info.getFunction().getValue(), field));
+                    list.add(String.format("%s(%s)", info.getFunction().getValue(), ensureColumnName(field)));
                 }
                 else {
-                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), field, ensureColumnName(info.getAlias())));
+                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
                 }
             }
         }
@@ -366,22 +381,22 @@ public class QueryInfo implements Serializable {
 
                 if(info.getValue() == null) {
                     if(Algorithm.EQ.equals(info.getAlgorithm())) {
-                        where = where.and(ensureColumnName(DBUtils.getSqlInjValue(info.getName())) + " IS NULL ");
+                        where = where.and(DBUtils.getSqlInjValue(ensureColumnName(info.getName())) + " IS NULL ");
                     }
 
                     else if(Algorithm.NOT.equals(info.getAlgorithm())) {
-                        where = where.and(ensureColumnName(DBUtils.getSqlInjValue(info.getName())) + " IS NOT NULL ");
+                        where = where.and(DBUtils.getSqlInjValue(ensureColumnName(info.getName())) + " IS NOT NULL ");
                     }
                     continue;
                 }
 
                 if(info.getValue().toString().trim().equals("")) {
                     if(Algorithm.EQ.equals(info.getAlgorithm())) {
-                        where = where.and(ensureColumnName(DBUtils.getSqlInjValue(info.getName())) + "=''");
+                        where = where.and(DBUtils.getSqlInjValue(ensureColumnName(info.getName())) + "=''");
                     }
 
                     else if(Algorithm.NOT.equals(info.getAlgorithm())) {
-                        where = where.and(ensureColumnName(DBUtils.getSqlInjValue(info.getName())) + "!=''");
+                        where = where.and(DBUtils.getSqlInjValue(ensureColumnName(info.getName())) + "!=''");
                     }
                     continue;
                 }
