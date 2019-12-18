@@ -366,22 +366,22 @@ public class QueryInfo implements Serializable {
 
                 if(info.getValue() == null) {
                     if(Algorithm.EQ.equals(info.getAlgorithm())) {
-                        where = where.and(ensureColumnName(fld.getName()) + " IS NULL ");
+                        where = where.and(ensureColumnName(DBUtils.getSqlInjValue(info.getName())) + " IS NULL ");
                     }
 
                     else if(Algorithm.NOT.equals(info.getAlgorithm())) {
-                        where = where.and(ensureColumnName(fld.getName()) + " IS NOT NULL ");
+                        where = where.and(ensureColumnName(DBUtils.getSqlInjValue(info.getName())) + " IS NOT NULL ");
                     }
                     continue;
                 }
 
                 if(info.getValue().toString().trim().equals("")) {
                     if(Algorithm.EQ.equals(info.getAlgorithm())) {
-                        where = where.and(ensureColumnName(fld.getName()) + "=''");
+                        where = where.and(ensureColumnName(DBUtils.getSqlInjValue(info.getName())) + "=''");
                     }
 
                     else if(Algorithm.NOT.equals(info.getAlgorithm())) {
-                        where = where.and(ensureColumnName(fld.getName()) + "!=''");
+                        where = where.and(ensureColumnName(DBUtils.getSqlInjValue(info.getName())) + "!=''");
                     }
                     continue;
                 }
