@@ -14,7 +14,6 @@ package ccait.ccweb.model;
 
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
-import ccait.ccweb.dynamic.DynamicClassBuilder;
 import ccait.ccweb.enums.Algorithm;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.generator.EntitesGenerator;
@@ -22,7 +21,6 @@ import com.alibaba.fastjson.JSONArray;
 import entity.query.*;
 import entity.query.core.DataSource;
 import entity.query.core.DataSourceFactory;
-import entity.query.enums.Condition;
 import entity.query.enums.Function;
 import entity.tool.util.DBUtils;
 import entity.tool.util.ReflectionUtils;
@@ -37,10 +35,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -226,7 +221,7 @@ public class QueryInfo implements Serializable {
                     list.add(field);
                 }
                 else {
-                    list.add(String.format("%s AS %s", ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
+                    list.add(String.format("%s AS %s", ensureColumnName(field), DBUtils.getSqlInjText(ensureColumnName(info.getAlias()))));
                 }
             }
 
@@ -235,7 +230,7 @@ public class QueryInfo implements Serializable {
                     list.add(String.format("%s(%s)", info.getFunction().getValue(), ensureColumnName(field)));
                 }
                 else {
-                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
+                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), ensureColumnName(field), DBUtils.getSqlInjText(ensureColumnName(info.getAlias()))));
                 }
             }
         }
@@ -280,7 +275,7 @@ public class QueryInfo implements Serializable {
                     list.add(field);
                 }
                 else {
-                    list.add(String.format("%s AS %s", ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
+                    list.add(String.format("%s AS %s", ensureColumnName(field), DBUtils.getSqlInjText(ensureColumnName(info.getAlias()))));
                 }
             }
 
@@ -289,7 +284,7 @@ public class QueryInfo implements Serializable {
                     list.add(String.format("%s(%s)", info.getFunction().getValue(), ensureColumnName(field)));
                 }
                 else {
-                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
+                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), ensureColumnName(field), DBUtils.getSqlInjText(ensureColumnName(info.getAlias()))));
                 }
             }
         }
@@ -345,7 +340,7 @@ public class QueryInfo implements Serializable {
                     list.add(field);
                 }
                 else {
-                    list.add(String.format("%s AS %s", ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
+                    list.add(String.format("%s AS %s", ensureColumnName(field), DBUtils.getSqlInjText(ensureColumnName(info.getAlias()))));
                 }
             }
 
@@ -354,7 +349,7 @@ public class QueryInfo implements Serializable {
                     list.add(String.format("%s(%s)", info.getFunction().getValue(), ensureColumnName(field)));
                 }
                 else {
-                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), ensureColumnName(field), DBUtils.getSqlInjValue(ensureColumnName(info.getAlias()))));
+                    list.add(String.format("%s(%s) AS %s", info.getFunction().getValue(), ensureColumnName(field), DBUtils.getSqlInjText(ensureColumnName(info.getAlias()))));
                 }
             }
         }
@@ -381,22 +376,22 @@ public class QueryInfo implements Serializable {
 
                 if(info.getValue() == null) {
                     if(Algorithm.EQ.equals(info.getAlgorithm())) {
-                        where = where.and(DBUtils.getSqlInjValue(ensureColumnName(info.getName())) + " IS NULL ");
+                        where = where.and(DBUtils.getSqlInjText(ensureColumnName(info.getName())) + " IS NULL ");
                     }
 
                     else if(Algorithm.NOT.equals(info.getAlgorithm())) {
-                        where = where.and(DBUtils.getSqlInjValue(ensureColumnName(info.getName())) + " IS NOT NULL ");
+                        where = where.and(DBUtils.getSqlInjText(ensureColumnName(info.getName())) + " IS NOT NULL ");
                     }
                     continue;
                 }
 
                 if(info.getValue().toString().trim().equals("")) {
                     if(Algorithm.EQ.equals(info.getAlgorithm())) {
-                        where = where.and(DBUtils.getSqlInjValue(ensureColumnName(info.getName())) + "=''");
+                        where = where.and(DBUtils.getSqlInjText(ensureColumnName(info.getName())) + "=''");
                     }
 
                     else if(Algorithm.NOT.equals(info.getAlgorithm())) {
-                        where = where.and(DBUtils.getSqlInjValue(ensureColumnName(info.getName())) + "!=''");
+                        where = where.and(DBUtils.getSqlInjText(ensureColumnName(info.getName())) + "!=''");
                     }
                     continue;
                 }
@@ -447,7 +442,7 @@ public class QueryInfo implements Serializable {
 
                 if(info.getValue().getClass().equals(String.class)) {
 
-                    sb.append(String.format("%s LIKE '%s'", ensureColumn(info.getName()), "%"+ DBUtils.getSqlInjValue(info.getValue()) +"%"));
+                    sb.append(String.format("%s LIKE '%s'", ensureColumn(info.getName()), "%"+ DBUtils.getSqlInjText(info.getValue()) +"%"));
                 }
 
                 else {
@@ -570,7 +565,7 @@ public class QueryInfo implements Serializable {
     }
 
     private String ensureColumn(String name) {
-        return DBUtils.getSqlInjValue(name).trim().replaceAll("\\s", "")
+        return DBUtils.getSqlInjText(name).trim().replaceAll("\\s", "")
                 .replaceAll("([_\\w\\d]+)(\\.?)", "[$1]$2");
     }
 
@@ -659,11 +654,16 @@ public class QueryInfo implements Serializable {
 
     public int getSkip() {
 
+        int result = 0;
+        if(this.getPageInfo() == null) {
+            return result;
+        }
+
         if(this.getPageInfo().getPageIndex() > 0 && getPageInfo().getPageSize() > 0) {
             return this.getPageInfo().getPageIndex() * this.getPageInfo().getPageSize() - this.getPageInfo().getPageSize();
         }
 
-        return 0;
+        return result;
     }
 
     public Connection getConnection(Object entity) {

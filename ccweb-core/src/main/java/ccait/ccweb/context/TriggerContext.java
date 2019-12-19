@@ -14,6 +14,7 @@ package ccait.ccweb.context;
 import ccait.ccweb.annotation.*;
 import ccait.ccweb.enums.EventType;
 import ccait.ccweb.model.EventInfo;
+import ccait.ccweb.model.QueryInfo;
 import ccait.ccweb.trigger.ITrigger;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -244,6 +245,11 @@ public final class TriggerContext {
     private static <T> void invoke(Set<Method> methodSet, Object instance, T params, HttpServletRequest request) throws InvocationTargetException, IllegalAccessException {
 
         for(Method method : methodSet) {
+            if(method.getParameterTypes()[0].equals(Map.class) && params instanceof QueryInfo) {
+                method.invoke(instance, ((QueryInfo) params).getData(), request);
+                continue;
+            }
+
             method.invoke(instance, params, request);
         }
     }

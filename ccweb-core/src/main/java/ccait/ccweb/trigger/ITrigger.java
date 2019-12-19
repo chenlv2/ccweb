@@ -26,7 +26,7 @@ public interface ITrigger {
 
     /***
      * 新增数据事件
-     * @param data （提交的数据）
+     * @param list （提交的数据）
      * @param request （当前请求）
      * @throws Exception
      */
@@ -36,13 +36,13 @@ public interface ITrigger {
 
     /***
      * 更新数据事件
-     * @param data （提交的数据）
+     * @param queryInfo （提交的数据）
      * @param request （当前请求）
      * @throws Exception
      */
     @OnUpdate
     @Order(-55555)
-    void onUpdate(Map<String, Object> data, HttpServletRequest request) throws Exception;
+    void onUpdate(QueryInfo queryInfo, HttpServletRequest request) throws Exception;
 
     /***
      * 删除数据事件

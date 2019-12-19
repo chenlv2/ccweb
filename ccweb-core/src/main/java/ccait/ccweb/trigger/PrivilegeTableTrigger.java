@@ -39,12 +39,21 @@ public final class PrivilegeTableTrigger implements ITrigger {
     }
 
     @Override
-    public void onUpdate(Map<String, Object> data, HttpServletRequest request) {
+    public void onUpdate(QueryInfo queryInfo, HttpServletRequest request) {
+
+        Map<String, Object> data = queryInfo.getData();
         if(data.containsKey(privilegeIdField)) {
             data.remove(privilegeIdField);
         }
         RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(data);
+        String[] arr = request.getRequestURI().split("/");
+        if("update".equals(arr[arr.length - 1].toLowerCase())) {
+            wrapper.setPostParameter(queryInfo);
+        }
+
+        else {
+            wrapper.setPostParameter(data);
+        }
     }
 
     @Override

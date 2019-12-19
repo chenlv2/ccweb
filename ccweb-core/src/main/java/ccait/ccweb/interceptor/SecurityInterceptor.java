@@ -382,6 +382,11 @@ public class SecurityInterceptor implements HandlerInterceptor {
                     break;
                 }
 
+                if(Pattern.matches("^/(?i)(as)?(?i)api/[^/]+(/[^/]+)?/(?i)update$", request.getRequestURI())) {
+                    privilegeWhere = "canUpdate=1";
+                    break;
+                }
+
                 QueryInfo queryInfo = FastJsonUtils.convert(postString, QueryInfo.class);
                 if(queryInfo.getKeywords().size() > 0 || queryInfo.getConditionList().size() > 0) {
                     privilegeWhere = "canQuery=1";
@@ -456,6 +461,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 Pattern tablePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/table$", Pattern.CASE_INSENSITIVE);
                 Pattern viewPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/view$", Pattern.CASE_INSENSITIVE);
                 Pattern uploadPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+)/upload(/[^/]+){2}$", Pattern.CASE_INSENSITIVE);
+                Pattern updatePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/update$", Pattern.CASE_INSENSITIVE);
                 if(tablePattern.matcher(request.getRequestURI()).find()) {
                     List<ColumnInfo> columns = FastJsonUtils.toList(postString, ColumnInfo.class);
                     TriggerContext.exec(table, EventType.BuildTable, columns, request);
@@ -471,6 +477,12 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 else if(uploadPattern.matcher(request.getRequestURI()).find()) {
                     QueryInfo queryInfo = FastJsonUtils.convertJsonToObject(postString, QueryInfo.class);
                     TriggerContext.exec(table, EventType.Upload, queryInfo, request);
+                    break;
+                }
+
+                else if(updatePattern.matcher(request.getRequestURI()).find()) {
+                    QueryInfo queryInfo = FastJsonUtils.convertJsonToObject(postString, QueryInfo.class);
+                    TriggerContext.exec(table, EventType.Update, queryInfo, request);
                     break;
                 }
 

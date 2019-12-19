@@ -105,8 +105,9 @@ public final class UserTableTrigger implements ITrigger {
     }
 
     @Override
-    public void onUpdate(Map<String, Object> data, HttpServletRequest request) throws Exception {
+    public void onUpdate(QueryInfo queryInfo, HttpServletRequest request) throws Exception {
 
+        Map<String, Object> data = queryInfo.getData();
         List<String> keys = data.keySet().stream().collect(Collectors.toList());
         for (String key : keys) {
             String lowerKey = key.toLowerCase();
@@ -120,7 +121,14 @@ public final class UserTableTrigger implements ITrigger {
         }
 
         RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(data);
+        String[] arr = request.getRequestURI().split("/");
+        if("update".equals(arr[arr.length - 1].toLowerCase())) {
+            wrapper.setPostParameter(queryInfo);
+        }
+
+        else {
+            wrapper.setPostParameter(data);
+        }
 
         Map<String, String> attrs = (Map<String, String>)request.getAttribute(VARS_PATH);
         if(attrs != null && attrs.containsKey(userIdField)) {

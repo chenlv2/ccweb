@@ -27,11 +27,11 @@ import ccait.ccweb.utils.UploadUtils;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
+import com.alibaba.fastjson.JSONObject;
 import entity.query.*;
 import entity.query.annotation.PrimaryKey;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.DBUtils;
-import entity.tool.util.JsonUtils;
 import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
 import io.reactivex.Maybe;
@@ -362,7 +362,7 @@ public abstract class BaseController {
             Object value = null;
 
             if(postData.get(argname) != null) {
-                String valString = DBUtils.getSqlInjValue(postData.get(argname).toString());
+                String valString = DBUtils.getSqlInjText(postData.get(argname).toString());
                 value = cast(type, valString);
             }
 
@@ -1013,7 +1013,7 @@ public abstract class BaseController {
                         on.setAlgorithm(Algorithm.EQ);
                     }
 
-                    sbOn.append(String.format("%s%s%s", DBUtils.getSqlInjValue(on.getName()), on.getAlgorithm().getValue(), DBUtils.getSqlInjValue(on.getValue())));
+                    sbOn.append(String.format("%s%s%s", DBUtils.getSqlInjText(on.getName()), on.getAlgorithm().getValue(), DBUtils.getSqlInjText(on.getValue())));
                 }
 
                 tableOnMap.put(table.getTablename(), sbOn.toString());
@@ -1100,6 +1100,8 @@ public abstract class BaseController {
         encrypt(postData);
 
         encrypt(queryInfo.getConditionList());
+
+        ensureJsonData(postData);
 
         Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
@@ -1320,6 +1322,8 @@ public abstract class BaseController {
 
         fillData(postData, entity);
 
+        ensureJsonData(postData);
+
         Where where = queryInfo.getWhereQueryableById(entity, id);
 
         Map data = (Map) where.first(Map.class);
@@ -1374,6 +1378,8 @@ public abstract class BaseController {
 
         fillData(postData, entity);
 
+        ensureJsonData(postData);
+
         Queryable queryable = ((Queryable) entity);
 
         if(StringUtils.isEmpty(idField)) {
@@ -1393,6 +1399,20 @@ public abstract class BaseController {
         conn.commit();
 
         return idValue.toString();
+    }
+
+    protected void ensureJsonData(Map<String, Object> data) {
+
+        if(data != null) {
+            for(Map.Entry entry : data.entrySet()) {
+                if(entry.getValue() == null) {
+                    continue;
+                }
+                if(entry.getValue() instanceof JSONObject) {
+                    entry.setValue(entry.getValue().toString());
+                }
+            }
+        }
     }
 
     public Long count(String table, QueryInfo queryInfo) throws Exception {

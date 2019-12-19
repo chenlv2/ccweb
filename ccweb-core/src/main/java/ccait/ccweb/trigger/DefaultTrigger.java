@@ -84,34 +84,26 @@ public final class DefaultTrigger {
     }
 
     @OnInsert
-    public void onInsert(Object params, HttpServletRequest request) throws Exception {
+    public void onInsert(List<Map<String, Object>> params, HttpServletRequest request) throws Exception {
 
         List<Object> list = new ArrayList();
 
-        if(params instanceof List) {
-            list = (List)params;
-        }
-        else {
-            list.add((Map) params);
-        }
+        for(Map item : params) {
 
-        for(Object item : list) {
-
-            Map data = (Map) item;
-            vaildPostData(data);
+            vaildPostData(item);
 
             UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
             if(user != null) {
                 if(StringUtils.isEmpty(user.getPath())) {
-                    data.put(userPathField, user.getId() + "/" + user.getId());
+                    item.put(userPathField, user.getId() + "/" + user.getId());
                 }
                 else {
-                    data.put(userPathField, user.getPath() + "/" + user.getId());
+                    item.put(userPathField, user.getPath() + "/" + user.getId());
                 }
-                data.put(createByField, user.getId());
+                item.put(createByField, user.getId());
             }
 
-            data.put(createOnField, Datetime.now());
+            item.put(createOnField, Datetime.now());
         }
 
         RequestWrapper wrapper = (RequestWrapper) request;
@@ -119,7 +111,9 @@ public final class DefaultTrigger {
     }
 
     @OnUpdate
-    public void onUpdate(Map<String, Object> data, HttpServletRequest request) throws Exception {
+    public void onUpdate(QueryInfo queryInfo, HttpServletRequest request) throws Exception {
+
+        Map<String, Object> data = queryInfo.getData();
 
         vaildPostData(data);
 
@@ -143,7 +137,14 @@ public final class DefaultTrigger {
         data.put(modifyOnField, Datetime.now());
 
         RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(data);
+        String[] arr = request.getRequestURI().split("/");
+        if("update".equals(arr[arr.length - 1].toLowerCase())) {
+            wrapper.setPostParameter(queryInfo);
+        }
+
+        else {
+            wrapper.setPostParameter(data);
+        }
     }
 
     @OnBuildTable
