@@ -421,34 +421,4 @@ public class AsyncApiController extends BaseController {
             return errorAs(110, e);
         }
     }
-
-    /***
-     * export select data
-     * @param table
-     * @param queryInfo
-     * @return
-     * @throws Exception
-     */
-    @ResponseBody
-    @AccessCtrl
-    @RequestMapping( value = "{table}/export", method = RequestMethod.POST )
-    public Mono doExport(@PathVariable String table, @RequestBody QueryInfo queryInfo) throws Exception {
-        List list = query(table, queryInfo, true);
-        return exportAs(table, list, queryInfo);
-    }
-
-    /***
-     * export by join query
-     * @param queryInfo
-     * @return
-     * @throws Exception
-     */
-    @ResponseBody
-    @AccessCtrl
-    @RequestMapping( value = "export/join", method = RequestMethod.POST )
-    public Mono doExport(@RequestBody QueryInfo queryInfo) throws Exception {
-        List list = joinQuery(queryInfo, true);
-        return exportAs(UUID.randomUUID().toString().replace("-", ""), list, queryInfo);
-    }
-
 }

@@ -383,7 +383,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * 请求方式：POST
 * URL参数：{table}为数据库表名称，{field}为字段名
 * POST参数：
-```yaml
+```javascript
 表单：
     name1: 文件1
     name2: 文件2

@@ -86,15 +86,18 @@ public final class UserGroupRoleTableTrigger implements ITrigger {
 
     @Override
     public void onList(QueryInfo queryInfo, HttpServletRequest request) throws IOException {
-        queryInfo.getConditionList().forEach(a->{
-            if(a.getName().toUpperCase().equals("USERID")){
-                String id = decrypt(a.getValue().toString(), EncryptMode.AES, aesPublicKey);
-                a.setValue(id);
-            }
-        });
 
-        RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(FastJsonUtils.convert(queryInfo, Map.class));
+        if(queryInfo.getConditionList() != null) {
+            queryInfo.getConditionList().forEach(a -> {
+                if (a.getName().toUpperCase().equals("USERID")) {
+                    String id = decrypt(a.getValue().toString(), EncryptMode.AES, aesPublicKey);
+                    a.setValue(id);
+                }
+            });
+
+            RequestWrapper wrapper = (RequestWrapper) request;
+            wrapper.setPostParameter(FastJsonUtils.convert(queryInfo, Map.class));
+        }
     }
 
     @Override
@@ -102,15 +105,18 @@ public final class UserGroupRoleTableTrigger implements ITrigger {
 
     @Override
     public void onQuery(QueryInfo queryInfo, HttpServletRequest request) throws IOException {
-        queryInfo.getConditionList().forEach(a->{
-            if(a.getName().toUpperCase().equals("USERID")){
-                String id = decrypt(a.getValue().toString(), EncryptMode.AES, aesPublicKey);
-                a.setValue(id);
-            }
-        });
 
-        RequestWrapper wrapper = (RequestWrapper) request;
-        wrapper.setPostParameter(FastJsonUtils.convert(queryInfo, Map.class));
+        if(queryInfo.getConditionList() != null) {
+            queryInfo.getConditionList().forEach(a -> {
+                if (a.getName().toUpperCase().equals("USERID")) {
+                    String id = decrypt(a.getValue().toString(), EncryptMode.AES, aesPublicKey);
+                    a.setValue(id);
+                }
+            });
+
+            RequestWrapper wrapper = (RequestWrapper) request;
+            wrapper.setPostParameter(FastJsonUtils.convert(queryInfo, Map.class));
+        }
     }
 
     @Override

@@ -236,7 +236,7 @@ public final class DefaultTrigger {
 
     private void vaildCondition(QueryInfo queryInfo) throws Exception {
         Map<String, Object> map = ApplicationConfig.getInstance().getMap("entity.validation");
-        if(map != null) {
+        if(map != null && queryInfo.getConditionList() != null) {
             for(ConditionInfo condition : queryInfo.getConditionList()){
                 Optional opt = map.keySet().stream()
                         .filter(a -> a.equals(condition.getName()) ||
