@@ -16,6 +16,8 @@ import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.model.*;
 import entity.query.ColumnInfo;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -447,6 +449,10 @@ public class ApiController extends BaseController {
     @RequestMapping( value = "{table}/export", method = RequestMethod.POST )
     public void doExport(@PathVariable String table, @RequestBody QueryInfo queryInfo) throws Exception {
 
+        if(queryInfo.getSelectList() == null || queryInfo.getSelectList().size() < 1) {
+            throw new IOException("SelectList can not be empty!!!");
+        }
+
         List list = query(table, queryInfo, true);
 
         export(table, list, queryInfo);
@@ -462,6 +468,11 @@ public class ApiController extends BaseController {
     @AccessCtrl
     @RequestMapping( value = "export/join", method = RequestMethod.POST )
     public void doExport(@RequestBody QueryInfo queryInfo) throws Exception {
+
+        if(queryInfo.getSelectList() == null || queryInfo.getSelectList().size() < 1) {
+            throw new IOException("SelectList can not be empty!!!");
+        }
+
         List list = joinQuery(queryInfo, true);
         export(UUID.randomUUID().toString().replace("-", ""), list, queryInfo);
     }

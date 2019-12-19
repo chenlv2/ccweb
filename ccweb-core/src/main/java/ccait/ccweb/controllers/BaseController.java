@@ -933,20 +933,26 @@ public abstract class BaseController {
      * @return
      * @throws Exception
      */
-    public List joinQuery(QueryInfo queryInfo, boolean bySelectInfos) throws Exception {
+    public List joinQuery(QueryInfo queryInfo, boolean byExport) throws Exception {
 
-        Where where = getWhereQueryableByJoin(queryInfo);
 
-        QueryableAction ac = getQueryableAction(queryInfo, where, true);
-
-        if(bySelectInfos && queryInfo.getSelectList().size() > 0) {
+        if(byExport) {
 
             List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
 
             Object info = DynamicClassBuilder.create("TABLE" + UUID.randomUUID().toString().replace("-", ""), columns, false);
 
+            queryInfo.getSelectList().clear();
+
+            Where where = getWhereQueryableByJoin(queryInfo);
+
+            QueryableAction ac = getQueryableAction(queryInfo, where, true);
+
             return ac.query(info.getClass(), queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
         }
+
+        Where where = getWhereQueryableByJoin(queryInfo);
+        QueryableAction ac = getQueryableAction(queryInfo, where, true);
 
         return ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
     }
@@ -1053,7 +1059,7 @@ public abstract class BaseController {
      * @return
      * @throws Exception
      */
-    public List query(String table, QueryInfo queryInfo, boolean bySelectInfos) throws Exception {
+    public List query(String table, QueryInfo queryInfo, boolean byExport) throws Exception {
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
             throw new Exception("Can not find entity!!!");
@@ -1061,18 +1067,25 @@ public abstract class BaseController {
 
         encrypt(queryInfo.getConditionList());
 
-        Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
-
-        QueryableAction ac = getQueryableAction(queryInfo, where, false);
-
-        if(bySelectInfos && queryInfo.getSelectList().size() > 0) {
+        if(byExport) {
 
             List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
 
             Object info = DynamicClassBuilder.create(table, columns, false);
 
+            queryInfo.getSelectList().clear();
+
+            Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
+
+            QueryableAction ac = getQueryableAction(queryInfo, where, false);
+
             return ac.query(info.getClass(), queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
         }
+
+
+        Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
+
+        QueryableAction ac = getQueryableAction(queryInfo, where, false);
 
         return ac.query(Map.class, queryInfo.getSkip(), queryInfo.getPageInfo().getPageSize());
     }
@@ -1474,10 +1487,6 @@ public abstract class BaseController {
 
     protected void export(String filename, List data, QueryInfo queryInfo) throws IOException {
 
-        if(queryInfo.getSelectList() == null || queryInfo.getSelectList().size() < 1) {
-            throw new IOException("SelectList can not be empty!!!");
-        }
-
         if(getLoginUser() == null) {
             throw new IOException("login please!!!");
         }
@@ -1514,10 +1523,6 @@ public abstract class BaseController {
     }
 
     protected Mono exportAs(String filename, List data, QueryInfo queryInfo) throws IOException {
-
-        if(queryInfo.getSelectList() == null || queryInfo.getSelectList().size() < 1) {
-            throw new IOException("SelectList can not be empty!!!");
-        }
 
         List<ColumnInfo> columns = DynamicClassBuilder.getColumnInfosBySelectList(queryInfo.getSelectList());
 
