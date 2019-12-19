@@ -84,11 +84,9 @@ public final class DefaultTrigger {
     }
 
     @OnInsert
-    public void onInsert(List<Map<String, Object>> params, HttpServletRequest request) throws Exception {
+    public void onInsert(List<Map<String, Object>> list, HttpServletRequest request) throws Exception {
 
-        List<Object> list = new ArrayList();
-
-        for(Map item : params) {
+        for(Map item : list) {
 
             vaildPostData(item);
 
