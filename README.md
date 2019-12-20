@@ -430,7 +430,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * 请求方式：DELETE
 * URL参数：{table}为数据库表名称
 * POST参数：
-```json
+```javascript
 [id1, id2, ...]
 ```
 
