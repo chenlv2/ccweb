@@ -101,22 +101,16 @@ public class FastJsonUtils {
     public static <T> List<T> toList(String text, Class<T> clazz) {
         List<T> list = new ArrayList<T>();
 
-        try {
-            Object[] arr = JSON.parseArray(text, clazz).toArray();
-            if (arr == null) {
-                return null;
-            }
-
-            for (Object item : arr) {
-                list.add((T) item);
-            }
-
-            return list;
+        Object[] arr = JSON.parseArray(text, Map.class).toArray();
+        if (arr == null) {
+            return null;
         }
-        catch(Exception e) {
-            log.error(e);
-            return list;
+
+        for (Object item : arr) {
+            list.add((T) item);
         }
+
+        return list;
     }
 
     /**
@@ -145,13 +139,12 @@ public class FastJsonUtils {
             if (List.class.equals(clazz)) {
                 return (T) toList(jsonData, Map.class);
             }
-
-            return (T) toBean(jsonData, clazz);
         }
         catch (Exception e) {
             log.error(e);
-            return null;
         }
+
+        return (T) toBean(jsonData, clazz);
     }
 
     /**

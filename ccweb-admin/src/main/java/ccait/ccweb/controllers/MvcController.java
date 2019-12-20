@@ -270,7 +270,7 @@ public class MvcController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "batch/{table}", method = RequestMethod.DELETE, produces="application/json;charset=UTF-8" )
+    @RequestMapping( value = "{table}/delete", method = RequestMethod.POST, produces="application/json;charset=UTF-8" )
     public Mono deleteByIds(@PathVariable String table, @RequestBody List<String> idList, final Model model) {
 
         List result = null;

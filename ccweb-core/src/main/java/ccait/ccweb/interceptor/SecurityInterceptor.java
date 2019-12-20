@@ -462,6 +462,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 Pattern viewPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/view$", Pattern.CASE_INSENSITIVE);
                 Pattern uploadPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+)/upload(/[^/]+){2}$", Pattern.CASE_INSENSITIVE);
                 Pattern updatePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/update$", Pattern.CASE_INSENSITIVE);
+                Pattern deletePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/delete$", Pattern.CASE_INSENSITIVE);
+
                 if(tablePattern.matcher(request.getRequestURI()).find()) {
                     List<ColumnInfo> columns = FastJsonUtils.toList(postString, ColumnInfo.class);
                     TriggerContext.exec(table, EventType.BuildTable, columns, request);
@@ -483,6 +485,12 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 else if(updatePattern.matcher(request.getRequestURI()).find()) {
                     QueryInfo queryInfo = FastJsonUtils.convertJsonToObject(postString, QueryInfo.class);
                     TriggerContext.exec(table, EventType.Update, queryInfo, request);
+                    break;
+                }
+
+                else if(deletePattern.matcher(request.getRequestURI()).find()) {
+                    QueryInfo queryInfo = FastJsonUtils.convertJsonToObject(postString, QueryInfo.class);
+                    TriggerContext.exec(table, EventType.Delete, queryInfo, request);
                     break;
                 }
 

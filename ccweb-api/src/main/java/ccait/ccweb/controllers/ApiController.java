@@ -354,7 +354,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "{table}/list", method = RequestMethod.DELETE )
+    @RequestMapping( value = "{table}/delete", method = RequestMethod.POST )
     public ResponseData deleteByIds(@PathVariable String table, @RequestBody List<String> idList) {
 
         List result = null;

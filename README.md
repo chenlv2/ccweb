@@ -426,8 +426,8 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 ### 17. 批量删除
-* URL：/api/{datasource}/batch/{table} 
-* 请求方式：DELETE
+* URL：/api/{datasource}/{table}/delete 
+* 请求方式：POST
 * URL参数：{table}为数据库表名称
 * POST参数：
 ```javascript
