@@ -120,7 +120,7 @@ public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
     public static JavaFile getJavaFile(List<ColumnInfo> columns, String tablename, String primaryKey, String scope, String suffix, boolean isQueryable) {
 
         String packagePath = ApplicationConfig.getInstance().get("entity.package", DEFAULT_PACKAGE);
-        String className = String.format("%s%s", tablename.substring(0, 1).toUpperCase() + tablename.substring(1), suffix);
+        String className = String.format("%s%s", tablename.substring(0, 1).toUpperCase() + tablename.substring(1), suffix).replaceAll("\\s", "");
         TypeSpec.Builder builder = TypeSpec.classBuilder(className).addModifiers(getModifier(scope));
         builder.addAnnotation(Component.class);
 
