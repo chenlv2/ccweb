@@ -46,6 +46,7 @@ public class DynamicClassBuilder {
 
     public static Object create(String tablename, List<ColumnInfo> columns, boolean isQueryable) {
 
+        tablename = tablename.trim();
         String suffix = UUID.randomUUID().toString().replace("-", "");
         JavaFile javaFile = getJavaFile(columns, tablename, "id", "public", suffix, isQueryable);
 

@@ -7,9 +7,9 @@
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
                 <property name="driver" value="com.mysql.jdbc.Driver" />
-                <property name="url" value="jdbc:mysql://127.0.0.1:3306/workerlib2?useUnicode=true&amp;characterEncoding=UTF-8&amp;useSSL=false&amp;autoReconnect=true&amp;failOverReadOnly=false&amp;serverTimezone=CTT&amp;noAccessToProcedureBodies=true" />
-                <property name="username" value="admin" />
-                <property name="password" value="admin" />
+                <property name="url" value="jdbc:mysql://47.106.69.253:3306/workerlib2?useUnicode=true&amp;characterEncoding=UTF-8&amp;useSSL=false&amp;autoReconnect=true&amp;failOverReadOnly=false&amp;serverTimezone=CTT&amp;noAccessToProcedureBodies=true" />
+                <property name="username" value="root" />
+                <property name="password" value="Hujiang666" />
             </dataSource>
         </environment>
 <!--        <environment id="mssql" classScope="public">-->

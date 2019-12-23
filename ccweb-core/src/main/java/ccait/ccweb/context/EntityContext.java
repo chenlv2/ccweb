@@ -61,7 +61,8 @@ public final class EntityContext {
             for(String name : names) {
 
                 String key = name;
-                if(StringUtils.isNotEmpty(suffix) && name.length() > suffix.length()) {
+                if(StringUtils.isNotEmpty(suffix) && name.length() > suffix.length() &&
+                        name.substring(name.length() - suffix.length()).equals(suffix)) {
                     key = name.substring(0, name.length() - suffix.length());
                 }
 
@@ -138,6 +139,7 @@ public final class EntityContext {
     }
 
     private static Object getEntity(String tablename) {
+        tablename = tablename.trim();
         org.springframework.context.ApplicationContext app = ApplicationContext.getInstance();
         EntityContext entityContext = (EntityContext) app.getAutowireCapableBeanFactory().getBean("entityContext");
 
