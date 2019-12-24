@@ -285,8 +285,8 @@ public class ApplicationContext implements ApplicationContextAware {
 
     private void createUserGroupRoleTable(DataSource ds, List<ColumnInfo> columns) throws Exception {
 
-        if(allTables.stream().filter(a->a.toLowerCase().equals(groupTablename.toLowerCase())).findAny().isPresent()) {
-            log.info(String.format(LOG_PRE_SUFFIX + "数据源初始化：数据表[%s]已存在！", groupTablename));
+        if(allTables.stream().filter(a->a.toLowerCase().equals(userGroupRoleTablename.toLowerCase())).findAny().isPresent()) {
+            log.info(String.format(LOG_PRE_SUFFIX + "数据源初始化：数据表[%s]已存在！", userGroupRoleTablename));
             return;
         }
 
