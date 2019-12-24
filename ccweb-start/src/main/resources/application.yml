@@ -38,6 +38,10 @@ entity:
   formatter: #查询结果输出格式，createOn、modifyOn，也可以精确格式化:[表名].[字段名]
     createOn: yyyy-MM-dd HH:mm
     modifyOn: yyyy-MM-dd HH:mm
+    start_time: yyyy-MM-dd HH:mm
+    end_time: yyyy-MM-dd HH:mm
+    startTime: yyyy-MM-dd HH:mm
+    endTime: yyyy-MM-dd HH:mm
 
   table:
     reservedField: #系统保留字段(必填)

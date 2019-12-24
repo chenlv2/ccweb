@@ -36,7 +36,6 @@ public class FastJsonUtils {
             SerializerFeature.WriteNullStringAsEmpty // 字符类型字段如果为null，输出为""，而不是null
     };
 
-
     public static String convertObjectToJSON(Object object) {
 
         if(object == null) {
@@ -107,7 +106,7 @@ public class FastJsonUtils {
         }
 
         for (Object item : arr) {
-            list.add((T) item);
+            list.add(toBean(convertObjectToJSON(item), clazz));
         }
 
         return list;
