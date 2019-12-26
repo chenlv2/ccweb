@@ -52,9 +52,6 @@ public class UserModel extends Queryable<UserModel> {
   @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
   private Long modifyBy;
 
-  @Fieldname("${entity.table.reservedField.groupId:groupId}")
-  private String groupId;
-
   @Fieldname("status")
   private Integer status;
 
@@ -158,13 +155,5 @@ public class UserModel extends Queryable<UserModel> {
 
   public void setStatus(Integer status) {
     this.status = status;
-  }
-
-  public String getGroupId() {
-    return groupId;
-  }
-
-  public void setGroupId(String groupId) {
-    this.groupId = groupId;
   }
 }
