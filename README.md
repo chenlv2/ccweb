@@ -781,9 +781,9 @@ public final class DefaultTrigger {
 使用动态查询的表在设计阶段需要加上以下字段：
 ```yaml
   userPath: userPath #创建者所属路径，体现父子关系，用于like查询
-  createOn: createTime #数据创建时间
+  createOn: createOn #数据创建时间
   createBy: createBy #数据创建者
-  modifyOn: modifyTime #数据修改时间
+  modifyOn: modifyOn #数据修改时间
   groupId: groupId  #群组ID
   roleId: roleId #角色ID
 ```

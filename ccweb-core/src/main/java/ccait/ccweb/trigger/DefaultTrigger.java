@@ -57,10 +57,10 @@ public final class DefaultTrigger {
     @Value("${entity.table.reservedField.userPath:userPath}")
     private String userPathField;
 
-    @Value("${entity.table.reservedField.createOn:createTime}")
+    @Value("${entity.table.reservedField.createOn:createOn}")
     private String createOnField;
 
-    @Value("${entity.table.reservedField.modifyOn:modifyTime}")
+    @Value("${entity.table.reservedField.modifyOn:modifyOn}")
     private String modifyOnField;
 
     @Value("${entity.table.reservedField.createBy:createBy}")

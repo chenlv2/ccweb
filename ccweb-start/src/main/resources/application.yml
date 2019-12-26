@@ -20,6 +20,8 @@ entity:
       unit.unit_id: UUID_RANDOM
       archives.archives_id: UUID_RANDOM
       archives.eafId: UUID_RANDOM
+      alluser.eafId: UUID_RANDOM
+
   security: #安全配置选项
     encrypt:
       MD5: #MD5加密配置
@@ -42,6 +44,8 @@ entity:
     end_time: yyyy-MM-dd HH:mm
     startTime: yyyy-MM-dd HH:mm
     endTime: yyyy-MM-dd HH:mm
+    evaluateTime: yyyy-MM-dd HH:mm
+    appraise_time: yyyy-MM-dd HH:mm
 
   table:
     reservedField: #系统保留字段(必填)
@@ -71,6 +75,11 @@ entity:
 
   upload: #上传设置
     workerlib: #库名
+      appraise_photo: #表名
+        photo: #字段名
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
       archives: #表名
         photo: #字段名
           maxSize: 5 #上传文件最大尺寸，单位: MB
