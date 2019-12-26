@@ -421,7 +421,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         PrivilegeModel privilege = new PrivilegeModel();
         List<PrivilegeModel> privilegeList = privilege.where("[roleId]=#{RoleId}").and(privilegeWhere)
-                .and(String.format("aclId in ('%s')", String.join("','",
+                .and(String.format("(aclId in ('%s') OR aclId IS NULL OR aclId='')", String.join("','",
                         aclIds.stream().map(a->a.toString().replace("-", ""))
                         .collect(Collectors.toList())))).query();
 

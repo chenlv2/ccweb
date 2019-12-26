@@ -8,4 +8,5 @@ public final class StaticVars {
     public static final String CURRENT_TABLE = "_CURRENT_TABLE_";
     public static final String CURRENT_MAX_PRIVILEGE_SCOPE = "_CURRENT_MAX_PRIVILEGE_SCOPE_";
     public static final String NO_PRIVILEGE_MESSAGE = "没有足够的权限执行该操作(No Privilege)";
+    public static final String CURRENT_USERID_BY_GROUPS = "CURRENT_USERID_BY_GROUPS";
 }

@@ -74,6 +74,7 @@ import java.util.stream.Collectors;
 import static ccait.ccweb.dynamic.DynamicClassBuilder.smallHump;
 import static ccait.ccweb.utils.StaticVars.*;
 import static entity.tool.util.StringUtils.cast;
+import static entity.tool.util.StringUtils.join;
 import static org.springframework.web.reactive.function.server.ServerResponse.ok;
 
 public abstract class BaseController {
@@ -790,6 +791,16 @@ public abstract class BaseController {
 
         setLoginUser(user);
 
+        List<String> groupIdList = user.getUserGroupRoleModels().stream()
+                .map(a->a.getGroupId().toString().replace("-", ""))
+                .collect(Collectors.toList());
+
+        UserGroupRoleModel userGroupRoleModel = new UserGroupRoleModel();
+        List<Long> userIdListByGroups = userGroupRoleModel.where(String.format("groupId in ('%s')", join("', '", groupIdList)))
+                .select("userId").query(Long.class);
+
+        ApplicationContext.getThreadLocalMap().put(CURRENT_USERID_BY_GROUPS, userIdListByGroups);
+
         return user;
     }
 
@@ -1368,10 +1379,13 @@ public abstract class BaseController {
      * @return
      * @throws Exception
      */
-    public Integer insert(String table, Map<String, Object> postData) throws Exception {
+    public Object insert(String table, Map<String, Object> postData) throws Exception {
         String result = insert(table, postData, null);
+        if(Pattern.compile("^\\d+$").matcher(result).find()) {
+            Integer.parseInt(result);
+        }
 
-        return Integer.parseInt(result);
+        return result;
     }
 
     /***
@@ -1394,6 +1408,15 @@ public abstract class BaseController {
         ensureJsonData(postData);
 
         Queryable queryable = ((Queryable) entity);
+
+        if(StringUtils.isEmpty(idField)) {
+            ColumnInfo primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
+            if (primary != null) {
+                if (!"int".equals(primary.getDataType()) && !"bigint".equals(primary.getType())) {
+                    idField = primary.getColumnName();
+                }
+            }
+        }
 
         if(StringUtils.isEmpty(idField)) {
             Integer result = queryable.insert();

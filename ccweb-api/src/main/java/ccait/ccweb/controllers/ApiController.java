@@ -283,7 +283,7 @@ public class ApiController extends BaseController {
     public ResponseData doInsert(@PathVariable String table, @RequestBody List<Map<String, Object>> postData)
     {
         try {
-            List<Integer> result = new ArrayList<>();
+            List<Object> result = new ArrayList<>();
             for(int i=0; i < postData.size(); i++) {
                 Map data = (Map)postData.get(i);
                 result.add(super.insert(table, data));

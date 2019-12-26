@@ -112,6 +112,54 @@ public final class EntityContext {
         return bean;
     }
 
+    public static ColumnInfo getPrimaryKey(String datasourceId, String table) {
+        if(!tableColumnsMap.containsKey(datasourceId)) {
+            return null;
+        }
+
+        if(!tableColumnsMap.get(datasourceId).containsKey(table)) {
+            return null;
+        }
+
+        Optional<ColumnInfo> optional = tableColumnsMap.get(datasourceId).get(table).stream()
+                .filter(a->a.getPrimaryKey()==true).findAny();
+
+        if(optional.isPresent()) {
+            ColumnInfo info = optional.get();
+            if(info == null) {
+                return null;
+            }
+
+            return info;
+        }
+
+        return null;
+    }
+
+    public static boolean hasColumn(String datasourceId, String table, String columnName) {
+        if(!tableColumnsMap.containsKey(datasourceId)) {
+            return false;
+        }
+
+        if(!tableColumnsMap.get(datasourceId).containsKey(table)) {
+            return false;
+        }
+
+        Optional<ColumnInfo> optional = tableColumnsMap.get(datasourceId).get(table).stream()
+                .filter(a->a.getColumnName().equals(columnName)).findAny();
+
+        if(optional.isPresent()) {
+            ColumnInfo info = optional.get();
+            if(info == null) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
     private static void addColumnById(String datasourceId, String table, String id, List<ColumnInfo> columns) {
 
         String fieldname = "id";

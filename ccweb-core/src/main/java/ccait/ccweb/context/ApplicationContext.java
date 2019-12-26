@@ -387,7 +387,7 @@ public class ApplicationContext implements ApplicationContextAware {
 
         col = new ColumnInfo();
         col.setColumnName("aclId");
-        col.setCanNotNull(true);
+        col.setCanNotNull(false);
         col.setMaxLength(32);
         col.setType(String.class);
         columns.add(col);
@@ -657,7 +657,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName("groupName");
         col.setCanNotNull(true);
-        col.setMaxLength(32);
+        col.setMaxLength(255);
         col.setType(String.class);
         columns.add(col);
 

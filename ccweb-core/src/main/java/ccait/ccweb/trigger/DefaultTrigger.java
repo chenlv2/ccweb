@@ -13,6 +13,7 @@ package ccait.ccweb.trigger;
 
 
 import ccait.ccweb.annotation.*;
+import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.filter.RequestWrapper;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 
 import static ccait.ccweb.controllers.BaseController.getTablename;
 import static ccait.ccweb.controllers.BaseController.isPrimitive;
+import static ccait.ccweb.utils.StaticVars.CURRENT_DATASOURCE;
 import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
 
 
@@ -70,6 +72,10 @@ public final class DefaultTrigger {
     @Value("${entity.encoding:UTF-8}")
     private String encoding;
 
+    @Value("${entity.table.reservedField.groupId:groupId}")
+    private String groupIdField;
+
+
     @Autowired
     private QueryInfo queryInfo;
 
@@ -81,27 +87,39 @@ public final class DefaultTrigger {
         modifyByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.modifyBy}", modifyByField);
         userPathField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userPath}", userPathField);
         createByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createBy}", createByField);
+        groupIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.groupId}", groupIdField);
     }
 
     @OnInsert
     public void onInsert(List<Map<String, Object>> list, HttpServletRequest request) throws Exception {
 
+        String datasourceId = (String) ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE);
+        boolean hasUserPath = EntityContext.hasColumn(datasourceId, getTablename(), userPathField);
+        boolean hasCreateBy = EntityContext.hasColumn(datasourceId, getTablename(), createByField);
+        boolean hasCreateOn = EntityContext.hasColumn(datasourceId, getTablename(), createOnField);
+        UserModel user = (UserModel) request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
+
         for(Map item : list) {
 
             vaildPostData(item);
 
-            UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
             if(user != null) {
-                if(StringUtils.isEmpty(user.getPath())) {
-                    item.put(userPathField, user.getId() + "/" + user.getId());
+                if(hasUserPath) {
+                    if (StringUtils.isEmpty(user.getPath())) {
+                        item.put(userPathField, user.getId() + "/" + user.getId());
+                    } else {
+                        item.put(userPathField, user.getPath() + "/" + user.getId());
+                    }
                 }
-                else {
-                    item.put(userPathField, user.getPath() + "/" + user.getId());
+
+                if(hasCreateBy) {
+                    item.put(createByField, user.getId());
                 }
-                item.put(createByField, user.getId());
             }
 
-            item.put(createOnField, Datetime.now());
+            if(hasCreateOn) {
+                item.put(createOnField, Datetime.now());
+            }
         }
 
         RequestWrapper wrapper = (RequestWrapper) request;

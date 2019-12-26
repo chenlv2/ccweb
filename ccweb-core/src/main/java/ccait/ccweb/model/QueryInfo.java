@@ -41,8 +41,7 @@ import java.util.stream.Collectors;
 
 import static ccait.ccweb.dynamic.DynamicClassBuilder.ensureColumnName;
 import static ccait.ccweb.dynamic.DynamicClassBuilder.smallHump;
-import static ccait.ccweb.utils.StaticVars.CURRENT_DATASOURCE;
-import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
+import static ccait.ccweb.utils.StaticVars.*;
 import static entity.tool.util.StringUtils.cast;
 import static entity.tool.util.StringUtils.join;
 
@@ -511,17 +510,15 @@ public class QueryInfo implements Serializable {
                 break;
             case GROUP:
 
-                if(!EntitesGenerator.hasColumn(dataSource.getId(), tablename, context.groupIdField)) {
+                if(!EntityContext.hasColumn(dataSource.getId(), tablename, context.groupIdField)) {
                     break;
                 }
 
-                List<String> groupIdList = user.getUserGroupRoleModels().stream()
-                        .map(a->a.getGroupId().toString().replace("-", ""))
-                        .collect(Collectors.toList());
-
-                //查询非公开数据
-                where = where.and(String.format("%s is not null AND %s in ('%s')",
-                        groupIdFieldString, groupIdFieldString, join("', '", groupIdList)));
+                List<Long> userIdByGroups = (List<Long>)ApplicationContext.getThreadLocalMap().get(CURRENT_USERID_BY_GROUPS);
+                if(userIdByGroups.size() > 0) {
+                    //查询非公开数据
+                    where = where.and(String.format("%s in ('%s')", createByField, join("', '", userIdByGroups)));
+                }
                 break;
         }
 

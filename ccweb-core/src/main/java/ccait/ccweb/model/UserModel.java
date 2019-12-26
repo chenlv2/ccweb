@@ -13,6 +13,7 @@ package ccait.ccweb.model;
 
 import entity.query.Queryable;
 import entity.query.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +51,9 @@ public class UserModel extends Queryable<UserModel> {
 
   @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
   private Long modifyBy;
+
+  @Fieldname("${entity.table.reservedField.groupId:groupId}")
+  private String groupId;
 
   @Fieldname("status")
   private Integer status;
@@ -111,7 +115,7 @@ public class UserModel extends Queryable<UserModel> {
     UserGroupRoleModel model = new UserGroupRoleModel();
     model.setUserId(userId);
 
-    userGroupRoleModels = model.where("[userId]=#{userId}").query();
+    userGroupRoleModels = model.where("[userId]=#{userId}").orderby("createOn desc").query();
 
     return userGroupRoleModels;
   }
@@ -154,5 +158,13 @@ public class UserModel extends Queryable<UserModel> {
 
   public void setStatus(Integer status) {
     this.status = status;
+  }
+
+  public String getGroupId() {
+    return groupId;
+  }
+
+  public void setGroupId(String groupId) {
+    this.groupId = groupId;
   }
 }
