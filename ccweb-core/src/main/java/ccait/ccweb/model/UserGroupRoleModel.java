@@ -2,6 +2,7 @@ package ccait.ccweb.model;
 
 
 import entity.query.Queryable;
+import entity.query.annotation.Exclude;
 import entity.query.annotation.Fieldname;
 import entity.query.annotation.PrimaryKey;
 import entity.query.annotation.Tablename;
@@ -83,6 +84,7 @@ public class UserGroupRoleModel extends Queryable<UserGroupRoleModel> {
         this.modifyBy = modifyBy;
     }
 
+    @Exclude
     private GroupModel group;
     public GroupModel getGroup() {
 
@@ -106,6 +108,7 @@ public class UserGroupRoleModel extends Queryable<UserGroupRoleModel> {
         return group;
     }
 
+    @Exclude
     private RoleModel role;
     public RoleModel getRole() {
 
