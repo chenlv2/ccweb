@@ -78,9 +78,11 @@ public final class DefaultTrigger {
 
     @Autowired
     private QueryInfo queryInfo;
+    private String datasourceId;
 
     @PostConstruct
     private void construct() {
+        datasourceId = (String) ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE);
         encoding = ApplicationConfig.getInstance().get("${entity.encoding}", encoding);
         createOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createOn}", createOnField);
         modifyOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.modifyOn}", modifyOnField);
@@ -93,7 +95,6 @@ public final class DefaultTrigger {
     @OnInsert
     public void onInsert(List<Map<String, Object>> list, HttpServletRequest request) throws Exception {
 
-        String datasourceId = (String) ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE);
         boolean hasUserPath = EntityContext.hasColumn(datasourceId, getTablename(), userPathField);
         boolean hasCreateBy = EntityContext.hasColumn(datasourceId, getTablename(), createByField);
         boolean hasCreateOn = EntityContext.hasColumn(datasourceId, getTablename(), createOnField);
@@ -145,12 +146,17 @@ public final class DefaultTrigger {
             data.remove(createByField);
         }
 
+        boolean hasModifyByField = EntityContext.hasColumn(datasourceId, getTablename(), modifyByField);
+        boolean hasModifyOnField = EntityContext.hasColumn(datasourceId, getTablename(), modifyOnField);
+
         UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
-        if(user != null) {
+        if(user != null && hasModifyByField) {
             data.put(modifyByField, user.getId());
         }
 
-        data.put(modifyOnField, Datetime.now());
+        if(hasModifyOnField) {
+            data.put(modifyOnField, Datetime.now());
+        }
 
         RequestWrapper wrapper = (RequestWrapper) request;
         String[] arr = request.getRequestURI().split("/");
