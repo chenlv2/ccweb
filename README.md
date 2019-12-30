@@ -519,7 +519,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 ### 21. excel导入
 * URL：/api/{datasource}/{table}/import 
-* 请求方式：PUT or POST
+* 请求方式：POST
 * URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
 * POST参数：
 ```javascript

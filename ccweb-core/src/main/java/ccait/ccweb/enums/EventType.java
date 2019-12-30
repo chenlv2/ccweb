@@ -26,4 +26,6 @@ public enum EventType {
     Download,
     PreviewDoc,
     Upload,
+    Import,
+    Export,
 }

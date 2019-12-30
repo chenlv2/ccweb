@@ -34,7 +34,7 @@ import static ccait.ccweb.context.ApplicationContext.TABLE_ACL;
 import static ccait.ccweb.context.ApplicationContext.TABLE_PRIVILEGE;
 import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 
-@Order(-22222)
+@Order(-55555)
 public final class TriggerContext {
 
     private static final Logger log = LogManager.getLogger( TriggerContext.class );
@@ -169,6 +169,16 @@ public final class TriggerContext {
                     eventInfo.getOnUploadMethodSet().add(method);
                     continue;
                 }
+
+                if(m.getAnnotation(OnExport.class) != null) {
+                    eventInfo.getOnExportMethodSet().add(method);
+                    continue;
+                }
+
+                if(m.getAnnotation(OnImport.class) != null) {
+                    eventInfo.getOnImportMethodSet().add(method);
+                    continue;
+                }
             }
 
             eventList.add(eventInfo);
@@ -235,6 +245,12 @@ public final class TriggerContext {
                     break;
                 case Upload:
                     invoke(eventInfo.getOnUploadMethodSet(), obj, params, request);
+                    break;
+                case Import:
+                    invoke(eventInfo.getOnImportMethodSet(), obj, params, request);
+                    break;
+                case Export:
+                    invoke(eventInfo.getOnExportMethodSet(), obj, params, request);
                     break;
                 default:
                     throw new IllegalAccessException("Invalid event type!!!");

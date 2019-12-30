@@ -226,6 +226,9 @@ public final class EncryptionUtil {
 
     public static String md5(String str, String md5PublicKey, String encoding) throws UnsupportedEncodingException, NoSuchAlgorithmException {
 
+        if(StringUtils.isEmpty(str)) {
+            return "";
+        }
         if(StringUtils.isNotEmpty(md5PublicKey)) {
             str = md5PublicKey + str;
         }

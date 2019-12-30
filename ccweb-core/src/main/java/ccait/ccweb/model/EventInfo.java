@@ -55,6 +55,9 @@ public class EventInfo {
     private Set<Method> onDownloadMethodSet;
     private Set<Method> onPreviewDocMethodSet;
     private Set<Method> onUploadMethodSet;
+
+    private Set<Method> onImportMethodSet;
+    private Set<Method> onExportMethodSet;
     private String tablename;
     private Class<?> type;
     private int order;
@@ -73,6 +76,8 @@ public class EventInfo {
         onDownloadMethodSet = new TreeSet<Method>(new EventComparator());
         onPreviewDocMethodSet = new TreeSet<Method>(new EventComparator());
         onUploadMethodSet = new TreeSet<Method>(new EventComparator());
+        onImportMethodSet = new TreeSet<Method>(new EventComparator());
+        onExportMethodSet = new TreeSet<Method>(new EventComparator());
     }
 
     public Class<?> getType() {
@@ -190,4 +195,21 @@ public class EventInfo {
     public Set<Method> getOnUploadMethodSet() {
         return onUploadMethodSet;
     }
+
+    public Set<Method> getOnImportMethodSet() {
+        return onImportMethodSet;
+    }
+
+    public void setOnImportMethodSet(Set<Method> onImportMethodSet) {
+        this.onImportMethodSet = onImportMethodSet;
+    }
+
+    public Set<Method> getOnExportMethodSet() {
+        return onExportMethodSet;
+    }
+
+    public void setOnExportMethodSet(Set<Method> onExportMethodSet) {
+        this.onExportMethodSet = onExportMethodSet;
+    }
+
 }

@@ -763,14 +763,21 @@ public abstract class BaseController {
      */
     public UserModel logoin(UserModel user) throws Exception {
 
-        if(StringUtils.isEmpty(user.getUsername()) || StringUtils.isEmpty(user.getPassword())) {
+        return login(user.getUsername(), md5(user.getPassword()), request, response);
+    }
+
+    public static UserModel login(String username, String passwordEncode, HttpServletRequest request, HttpServletResponse response) throws Exception {
+        if(StringUtils.isEmpty(username) || StringUtils.isEmpty(passwordEncode)) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             throw new Exception("Username and password can not be empty!!!");
         }
 
-        user.setPassword(md5(user.getPassword()));
+        UserModel user = new UserModel();
 
-        entity.query.Where<UserModel> where = user.where("[username]=#{username}").and("[password]=#{password}");
+        user.setUsername(username);
+        user.setPassword(passwordEncode);
+
+        Where<UserModel> where = user.where("[username]=#{username}").and("[password]=#{password}");
 
         user = where.first();
 
@@ -789,7 +796,7 @@ public abstract class BaseController {
 
         user.setPassword("******");
 
-        setLoginUser(user);
+        request.getSession().setAttribute( request.getSession().getId() + LOGIN_KEY, user );
 
         List<String> groupIdList = user.getUserGroupRoleModels().stream()
                 .map(a->a.getGroupId().toString().replace("-", ""))
@@ -1763,14 +1770,16 @@ public abstract class BaseController {
             }
 
             if (!extName.equalsIgnoreCase("xls") &&
-                    extName.equalsIgnoreCase("xlsx")) {
+                    !extName.equalsIgnoreCase("xlsx")) {
                 throw new IOException("Can not supported file type!!!");
             }
+
+            UploadUtils.upload("C:\\temp\\imported", "testtt.xlsx", fileBytes);
 
             InputStream is = new ByteArrayInputStream(fileBytes);
 
             Map<String, Object> dataMap = new HashMap<String, Object>();
-            List<List<String>> headers = EasyExcel.readSheet().sheetName("schema").build().getHead();
+            List<List<String>> headers = EasyExcel.read(is).sheet("schema").build().getHead();
             int count = headers.get(0).size();
             List<SheetHeaderModel> headerList = new ArrayList<SheetHeaderModel>();
             for(int i=0; i<count; i++) {

@@ -14,10 +14,12 @@ package ccait.ccweb.interceptor;
 import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.TriggerContext;
+import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
 import ccait.ccweb.enums.PrivilegeScope;
 import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.*;
+import ccait.ccweb.utils.EncryptionUtil;
 import ccait.ccweb.utils.FastJsonUtils;
 import ccait.ccweb.utils.UploadUtils;
 import entity.query.ColumnInfo;
@@ -67,6 +69,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Value("${entity.datasource:}")
     private String datasourceString;
 
+    @Value("${entity.security.encrypt.AES.publicKey:ccait}")
+    private String aesPublicKey;
+
     private static final Logger log = LogManager.getLogger( SecurityInterceptor.class );
 
     private boolean hasUploadFile;
@@ -85,6 +90,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
         if("yes".equals(response.getHeader("finish"))) {
             return true;
         }
+
+        loginByToken(request, response);
 
         if(request instanceof RequestWrapper) {
 
@@ -113,6 +120,23 @@ public class SecurityInterceptor implements HandlerInterceptor {
         else {
             return true;
         }
+    }
+
+    private void loginByToken(HttpServletRequest request, HttpServletResponse response) throws Exception {
+        String token = request.getHeader("Authorization");
+        if(StringUtils.isEmpty(token)) {
+            return;
+        }
+
+        token = EncryptionUtil.decryptByAES(token, aesPublicKey);
+        if(StringUtils.isEmpty(token)) {
+            throw new Exception("fail to get the token!!!");
+        }
+
+        String username = token.substring(0, token.length() - 32);
+        String password = token.substring(token.length() - 32);
+
+        BaseController.login(username, password, request, response);
     }
 
     private boolean vaildForUploadFiles(RequestWrapper request, String table) throws Exception {
@@ -461,6 +485,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 Pattern tablePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/table$", Pattern.CASE_INSENSITIVE);
                 Pattern viewPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/view$", Pattern.CASE_INSENSITIVE);
                 Pattern uploadPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+)/upload(/[^/]+){2}$", Pattern.CASE_INSENSITIVE);
+                Pattern importPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/import$", Pattern.CASE_INSENSITIVE);
+                Pattern exportPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/export", Pattern.CASE_INSENSITIVE);
                 Pattern updatePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/update$", Pattern.CASE_INSENSITIVE);
                 Pattern deletePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/delete$", Pattern.CASE_INSENSITIVE);
 
@@ -479,6 +505,17 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 else if(uploadPattern.matcher(request.getRequestURI()).find()) {
                     QueryInfo queryInfo = FastJsonUtils.convertJsonToObject(postString, QueryInfo.class);
                     TriggerContext.exec(table, EventType.Upload, queryInfo, request);
+                    break;
+                }
+
+                else if(importPattern.matcher(request.getRequestURI()).find()) {
+                    TriggerContext.exec(table, EventType.Import, postString.getBytes("ISO-8859-1"), request);
+                    break;
+                }
+
+                else if(exportPattern.matcher(request.getRequestURI()).find()) {
+                    QueryInfo queryInfo = FastJsonUtils.convertJsonToObject(postString, QueryInfo.class);
+                    TriggerContext.exec(table, EventType.Export, queryInfo, request);
                     break;
                 }
 
@@ -522,7 +559,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 }
 
                 if(hasUploadFile) {
-                    TriggerContext.exec(table, EventType.Upload, ((RequestWrapper)request).getParameters(), request);
+                    TriggerContext.exec(table, EventType.Upload, postString.getBytes("ISO-8859-1"), request);
                 }
                 break;
             case "DELETE":
