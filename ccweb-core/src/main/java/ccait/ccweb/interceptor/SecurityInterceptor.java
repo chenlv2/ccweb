@@ -91,7 +91,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        loginByToken(request, response);
+        if(!request.getRequestURI().endsWith("/login")) {
+            loginByToken(request, response);
+        }
 
         if(request instanceof RequestWrapper) {
 

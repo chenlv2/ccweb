@@ -785,7 +785,7 @@ public abstract class BaseController {
             throw new Exception("Username or password is invalid!!!");
         }
 
-        if(!user.getStatus().equals(0)) {
+        if(user.getStatus() != null && !user.getStatus().equals(0)) {
             throw new Exception("user status has been frozen!!!");
         }
 
