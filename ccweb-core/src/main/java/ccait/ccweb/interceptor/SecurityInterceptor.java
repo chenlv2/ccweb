@@ -340,11 +340,13 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             if(method.equals("GET") || method.equals("POST") || (user != null && user.getUsername().equals(admin)) ) {
                 log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，允许查询！", table));
-                return true;
+                //return true;
             }
 
-            log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，不允许增删改！", table));
-            return false;
+            else {
+                log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，不允许增删改！", table));
+                return false;
+            }
         }
 
         List<UUID> groupIds = aclList.stream().map(a->a.getGroupId()).collect(Collectors.toList());
@@ -371,7 +373,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             }
         }
 
-        if( !hasGroup ) {
+        if( aclList.size() > 0 && !hasGroup ) {
             log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]的群组于表%s中不存在！", user.getUsername(), table));
             return false;
         }
@@ -446,11 +448,30 @@ public class SecurityInterceptor implements HandlerInterceptor {
         }
 
         PrivilegeModel privilege = new PrivilegeModel();
-        List<PrivilegeModel> privilegeList = privilege.where("[roleId]=#{RoleId}").and(privilegeWhere)
-                .and(String.format("(aclId in ('%s') OR aclId IS NULL OR aclId='')", String.join("','",
-                        aclIds.stream().map(a->a.toString().replace("-", ""))
-                        .collect(Collectors.toList())))).query();
+        List<String> roleIdList = user.getUserGroupRoleModels().stream()
+                .map(a->a.getRoleId().toString().replace("-","")).collect(Collectors.toList());
 
+        List<PrivilegeModel> privilegeList = new ArrayList<PrivilegeModel>();
+        if(roleIdList.size() > 0) {
+            String roleWhere = String.format("[roleId] in ('%s')", String.join("','", roleIdList));
+            privilegeList = aclIds.size() > 0 ? privilege.where(roleWhere).and(privilegeWhere)
+                    .and(String.format("(aclId in ('%s') OR aclId IS NULL OR aclId='')", String.join("','",
+                            aclIds.stream().map(a -> a.toString().replace("-", ""))
+                                    .collect(Collectors.toList()))))
+                    .query()
+                    : privilege.where(roleWhere).and(privilegeWhere)
+                    .query();
+        }
+
+        else {
+            privilegeList = aclIds.size() > 0 ? privilege.where(privilegeWhere)
+                    .and(String.format("(aclId in ('%s') OR aclId IS NULL OR aclId='')", String.join("','",
+                            aclIds.stream().map(a -> a.toString().replace("-", ""))
+                                    .collect(Collectors.toList()))))
+                    .query()
+                    : privilege.where(privilegeWhere)
+                    .query();
+        }
 
         boolean result = false;
         PrivilegeScope currentMaxScope = PrivilegeScope.DENIED;
@@ -471,6 +492,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
         ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, currentMaxScope);
 
         if(currentMaxScope.equals(PrivilegeScope.DENIED)) {
+            if(privilegeList.size() < 1) {
+                return true;
+            }
             return false;
         }
 
