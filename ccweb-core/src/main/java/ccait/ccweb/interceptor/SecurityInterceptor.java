@@ -110,7 +110,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             // 验证权限
             if (allowIp(request) &&
-                    this.hasPermission(handler, request.getMethod(), request, attrs, currentTable)) {
+                    this.hasPermission(handler, request.getMethod(), request, response, attrs, currentTable)) {
                 return true;
             }
 
@@ -276,7 +276,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
      * @param handler
      * @return
      */
-    private boolean hasPermission(Object handler, String method, HttpServletRequest request, Map<String, String> attrs, String table) throws Exception {
+    private boolean hasPermission(Object handler, String method, HttpServletRequest request, HttpServletResponse response, Map<String, String> attrs, String table) throws Exception {
         if (handler instanceof HandlerMethod) {
             HandlerMethod handlerMethod = (HandlerMethod) handler;
             // 获取方法上的注解
@@ -288,7 +288,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             boolean x = true;
             if(StringUtils.isNotEmpty(table)) {
-                x = canAccessTable(method, (RequestWrapper) request, requiredPermission, attrs, table);
+                x = canAccessTable(method, (RequestWrapper) request, response, requiredPermission, attrs, table);
             }
 
             else {
@@ -300,7 +300,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                         if(StringUtils.isEmpty(queryInfo.getJoinTables().get(i).getTablename())) {
                             continue;
                         }
-                        x = x && canAccessTable(method, (RequestWrapper) request, requiredPermission, attrs, queryInfo.getJoinTables().get(i).getTablename());
+                        x = x && canAccessTable(method, (RequestWrapper) request, response, requiredPermission, attrs, queryInfo.getJoinTables().get(i).getTablename());
                     }
                 }
             }
@@ -310,7 +310,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         return true;
     }
 
-    private Boolean canAccessTable(String method, RequestWrapper request, AccessCtrl requiredPermission, Map<String, String> attrs, String table) throws Exception {
+    private Boolean canAccessTable(String method, RequestWrapper request, HttpServletResponse response, AccessCtrl requiredPermission, Map<String, String> attrs, String table) throws Exception {
 
         if(requiredPermission == null) {
             ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, PrivilegeScope.ALL);
@@ -359,6 +359,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         if(user == null) {
             log.warn(LOG_PRE_SUFFIX + "用户未登录！！！");
+            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             return false;
         }
 
