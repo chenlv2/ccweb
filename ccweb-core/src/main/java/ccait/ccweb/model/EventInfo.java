@@ -54,6 +54,8 @@ public class EventInfo {
     private Set<Method> onBuildMethodSet;
     private Set<Method> onDownloadMethodSet;
     private Set<Method> onPreviewDocMethodSet;
+
+    private Set<Method> onPlayVideoMethodSet;
     private Set<Method> onUploadMethodSet;
 
     private Set<Method> onImportMethodSet;
@@ -75,6 +77,7 @@ public class EventInfo {
         onBuildMethodSet = new TreeSet<Method>(new EventComparator());
         onDownloadMethodSet = new TreeSet<Method>(new EventComparator());
         onPreviewDocMethodSet = new TreeSet<Method>(new EventComparator());
+        onPlayVideoMethodSet = new TreeSet<Method>(new EventComparator());
         onUploadMethodSet = new TreeSet<Method>(new EventComparator());
         onImportMethodSet = new TreeSet<Method>(new EventComparator());
         onExportMethodSet = new TreeSet<Method>(new EventComparator());
@@ -210,6 +213,14 @@ public class EventInfo {
 
     public void setOnExportMethodSet(Set<Method> onExportMethodSet) {
         this.onExportMethodSet = onExportMethodSet;
+    }
+
+    public Set<Method> getOnPlayVideoMethodSet() {
+        return onPlayVideoMethodSet;
+    }
+
+    public void setOnPlayVideoMethodSet(Set<Method> onPlayVideoMethodSet) {
+        this.onPlayVideoMethodSet = onPlayVideoMethodSet;
     }
 
 }

@@ -9,24 +9,17 @@
  */
 
 
-package ccait.ccweb.enums;
+package ccait.ccweb.annotation;
 
 
-public enum EventType {
-    Insert,
-    Update,
-    Delete,
-    List,
-    View,
-    Query,
-    Response,
-    Success,
-    Error,
-    BuildTable,
-    Download,
-    PreviewDoc,
-    PlayVideo,
-    Upload,
-    Import,
-    Export,
+import java.lang.annotation.*;
+
+/**
+ * @description 播放视频事件
+ */
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Documented
+public @interface OnPlayVideo {
 }

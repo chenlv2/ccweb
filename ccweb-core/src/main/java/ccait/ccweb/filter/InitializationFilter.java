@@ -83,9 +83,10 @@ public class InitializationFilter implements WebFilter, Filter {
 
                     if (req.getRequestURI().indexOf("/preview/") == -1 &&
                             req.getRequestURI().indexOf("/download/") == -1 &&
-                            req.getRequestURI().indexOf("/upload/") == -1 &&
-                            req.getRequestURI().indexOf("/import") == -1 &&
-                            req.getRequestURI().indexOf("/export") == -1) {
+                            !req.getRequestURI().endsWith("/upload") &&
+                            !req.getRequestURI().endsWith("/play") &&
+                            !req.getRequestURI().endsWith("/import") &&
+                            !req.getRequestURI().endsWith("/export")) {
                         String path = req.getRequestURI();
                         List<String> list = StringUtils.splitString2List(path, "/");
                         list.set(1, "asyncapi");

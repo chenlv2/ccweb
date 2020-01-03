@@ -143,4 +143,14 @@ public interface ITrigger {
     @OnPreviewDoc
     @Order(-55555)
     void onPreviewDoc(BaseController.DownloadData data, HttpServletRequest request) throws Exception;
+
+    /***
+     * 播放视频触发
+     * @param data （文件对象）
+     * @param request （当前请求）
+     * @throws Exception
+     */
+    @OnPlayVideo
+    @Order(-55555)
+    void onPlayVideo(BaseController.DownloadData data, HttpServletRequest request) throws Exception;
 }

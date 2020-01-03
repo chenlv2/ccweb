@@ -94,4 +94,9 @@ public final class RoleTableTrigger implements ITrigger {
     @Override
     public void onPreviewDoc(BaseController.DownloadData data, HttpServletRequest request) {
     }
+
+    @Override
+    public void onPlayVideo(BaseController.DownloadData data, HttpServletRequest request) {
+
+    }
 }

@@ -68,6 +68,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.*;
@@ -163,6 +164,9 @@ public abstract class BaseController {
 
     @Value("${entity.download.thumb.scalRatio:0}")
     private Integer scalRatio;
+
+    @Autowired
+    private NonStaticResourceHttpRequestHandler nonStaticResourceHttpRequestHandler;
 
     public BaseController() {
         RMessage = new ResponseData<Object>();
@@ -1842,6 +1846,45 @@ public abstract class BaseController {
         return headerList;
     }
 
+    protected void playVideo(String table, String field, String id) throws Exception {
+
+        String currentDatasource = getCurrentDatasourceId();
+        Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(
+                String.format("entity.upload.%s.%s.%s", currentDatasource, table, field)
+        );
+        if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
+            throw new IOException("can not find the upload config!!!");
+        }
+
+        if(uploadConfigMap.get("path") == null) {
+            throw new IOException("can not find the upload path on config!!!");
+        }
+
+        Map<String, Object> data = get(table, id);
+        if(!data.containsKey(field)) {
+            throw new Exception("wrong field name!!!");
+        }
+
+        decrypt(data);
+
+        String content = data.get(field).toString();
+        DownloadData downloadData = new DownloadData(table, field, id);
+        String filePath = downloadData.getFullPath(content, currentDatasource, uploadConfigMap);
+        if(!(new File(filePath)).exists()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
+            return;
+        }
+        
+        TriggerContext.exec(table, EventType.PlayVideo, downloadData, request);
+
+        if (!StringUtils.isEmpty(downloadData.getMediaType().getType())) {
+            response.setContentType(downloadData.getMediaType().getType());
+        }
+        request.setAttribute(NonStaticResourceHttpRequestHandler.ATTR_FILE, filePath);
+        nonStaticResourceHttpRequestHandler.handleRequest(request, response);
+    }
+
     public class DownloadData {
         private String table;
         private String field;
@@ -1896,26 +1939,7 @@ public abstract class BaseController {
             }
 
             if(uploadConfigMap.get("path") != null) {
-                arrMessage = new String[3];
-                String[] tmp = content.split("/");
-                String[] fileArr = tmp[tmp.length -1].split("\\.");
-                arrMessage[0] = UploadUtils.getMIMEType(fileArr[1]);
-                arrMessage[1] = fileArr[1];
-                arrMessage[2] = fileArr[0];
-                String[] arr = arrMessage[0].split("/");
-                mediaType = new MediaType(arr[0], arr[1]);
-
-                String root = uploadConfigMap.get("path").toString();
-                if(root.lastIndexOf("/") == root.length() - 1 ||
-                        root.lastIndexOf("\\") == root.length() - 1) {
-                    root = root.substring(0, root.length() - 2);
-                }
-                if("/".equals(content.substring(0,1))) {
-                    content = content.substring(1);
-                }
-                root = String.format("%s/%s/%s/%s", root, currentDatasource, table, field);
-
-                String fullpath = String.format("%s/%s", root, content);
+                String fullpath = getFullPath(content, currentDatasource, uploadConfigMap);
                 File file = new File(fullpath);
                 if("/".equals(fullpath.substring(0,1)) && !file.exists()) {
                     file = new File(String.format("%s/%s", System.getProperty("user.dir"), fullpath));
@@ -1937,6 +1961,29 @@ public abstract class BaseController {
 
 
             return this;
+        }
+
+        private String getFullPath(String content, String currentDatasource, Map<String, Object> uploadConfigMap) {
+            arrMessage = new String[3];
+            String[] tmp = content.split("/");
+            String[] fileArr = tmp[tmp.length -1].split("\\.");
+            arrMessage[0] = UploadUtils.getMIMEType(fileArr[1]);
+            arrMessage[1] = fileArr[1];
+            arrMessage[2] = fileArr[0];
+            String[] arr = arrMessage[0].split("/");
+            mediaType = new MediaType(arr[0], arr[1]);
+
+            String root = uploadConfigMap.get("path").toString();
+            if(root.lastIndexOf("/") == root.length() - 1 ||
+                    root.lastIndexOf("\\") == root.length() - 1) {
+                root = root.substring(0, root.length() - 2);
+            }
+            if("/".equals(content.substring(0,1))) {
+                content = content.substring(1);
+            }
+            root = String.format("%s/%s/%s/%s", root, currentDatasource, table, field);
+
+            return String.format("%s/%s", root, content);
         }
 
         public MediaType getMediaType() {

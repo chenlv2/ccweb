@@ -438,6 +438,18 @@ public class ApiController extends BaseController {
     }
 
     /***
+     * play video
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "play/{table}/{field}/{id}", method = RequestMethod.GET )
+    public void playVideo(@PathVariable String table, @PathVariable String field, @PathVariable String id) throws Exception {
+
+        super.playVideo(table, field, id);
+    }
+
+    /***
      * export select data
      * @param table
      * @param queryInfo

@@ -165,6 +165,11 @@ public final class TriggerContext {
                     continue;
                 }
 
+                if(m.getAnnotation(OnPlayVideo.class) != null) {
+                    eventInfo.getOnPlayVideoMethodSet().add(method);
+                    continue;
+                }
+
                 if(m.getAnnotation(OnUpload.class) != null) {
                     eventInfo.getOnUploadMethodSet().add(method);
                     continue;
@@ -242,6 +247,9 @@ public final class TriggerContext {
                     break;
                 case PreviewDoc:
                     invoke(eventInfo.getOnPreviewDocMethodSet(), obj, params, request);
+                    break;
+                case PlayVideo:
+                    invoke(eventInfo.getOnPlayVideoMethodSet(), obj, params, request);
                     break;
                 case Upload:
                     invoke(eventInfo.getOnUploadMethodSet(), obj, params, request);

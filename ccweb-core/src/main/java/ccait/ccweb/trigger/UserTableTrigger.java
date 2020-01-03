@@ -284,4 +284,9 @@ public final class UserTableTrigger implements ITrigger {
     public void onPreviewDoc(BaseController.DownloadData data, HttpServletRequest request) {
 
     }
+
+    @Override
+    public void onPlayVideo(BaseController.DownloadData data, HttpServletRequest request) {
+
+    }
 }
