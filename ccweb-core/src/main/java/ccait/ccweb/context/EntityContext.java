@@ -89,6 +89,34 @@ public final class EntityContext {
         return bean;
     }
 
+    public static Object getEntity(String tablename, List<String> fieldList) {
+
+        Object bean = getEntity(tablename);
+        if(bean == null) {
+            if(fieldList == null) {
+                return null;
+            }
+
+            List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
+            for(String item : fieldList) {
+
+                ColumnInfo col = new ColumnInfo();
+                col.setColumnName(item);
+                col.setType(String.class);
+
+                if("id".equals(item.toLowerCase())) {
+                    col.setPrimaryKey(true);
+                }
+
+                columns.add(col);
+            }
+
+            bean = DynamicClassBuilder.create(tablename, columns);
+        }
+
+        return bean;
+    }
+
     public static Object getEntity(String tablename, QueryInfo queryInfo) {
 
         Object bean = getEntity(tablename);

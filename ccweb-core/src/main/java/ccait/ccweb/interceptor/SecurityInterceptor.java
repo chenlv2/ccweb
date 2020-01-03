@@ -21,7 +21,10 @@ import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
 import ccait.ccweb.utils.FastJsonUtils;
+import ccait.ccweb.utils.JwtUtil;
 import ccait.ccweb.utils.UploadUtils;
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import entity.query.ColumnInfo;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.StringUtils;
@@ -71,6 +74,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
     @Value("${entity.security.encrypt.AES.publicKey:ccait}")
     private String aesPublicKey;
+
+    @Value("${entity.auth.jwt.enable:false}")
+    private static boolean jwtEnable;
 
     private static final Logger log = LogManager.getLogger( SecurityInterceptor.class );
 
@@ -125,8 +131,33 @@ public class SecurityInterceptor implements HandlerInterceptor {
     }
 
     private void loginByToken(HttpServletRequest request, HttpServletResponse response) throws Exception {
+
         String token = request.getHeader("Authorization");
         if(StringUtils.isEmpty(token)) {
+            return;
+        }
+
+        String userId = null;
+        if(jwtEnable) {
+            try {
+                userId = JWT.decode(token).getClaim("id").asString();
+            } catch (JWTDecodeException j) {
+                throw new RuntimeException("访问异常！");
+            }
+
+            UserModel user = new UserModel();
+            user.setId(Long.parseLong(userId));
+            user = user.where("id=#{id}").first();
+            if (user == null) {
+                throw new RuntimeException("非法用户！");
+            }
+
+            Boolean verify = JwtUtil.isVerify(token, user);
+            if (!verify) {
+                throw new RuntimeException("非法访问！");
+            }
+
+            BaseController.login(user.getUsername(), user.getPassword(), request, response);
             return;
         }
 
@@ -336,11 +367,22 @@ public class SecurityInterceptor implements HandlerInterceptor {
         AclModel acl = new AclModel();
         acl.setTableName(table);
         List<AclModel> aclList = acl.where("[tableName]=#{tableName}").query();
+        List<UUID> aclIds = aclList.stream().map(a->a.getAclId()).collect(Collectors.toList());
+
         if(aclList == null || aclList.size() < 1) {
 
-            if(method.equals("GET") || method.equals("POST") || (user != null && user.getUsername().equals(admin)) ) {
+            if(method.equals("GET") || (method.equals("POST") && !request.getRequestURI().endsWith("/delete") &&
+                    !request.getRequestURI().endsWith("/upload") && !request.getRequestURI().endsWith("/update") &&
+                    !request.getRequestURI().endsWith("/import"))) {
                 log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，允许查询！", table));
-                //return true;
+
+                if(user != null) {
+                    if (!checkPrivilege(table, user, aclIds, method, attrs, request.getRequestPostString(), request)) {
+                        log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]对表%s没有%s的操作权限！", user.getUsername(), table, method));
+                        return false;
+                    }
+                }
+                return true;
             }
 
             else {
@@ -379,7 +421,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        List<UUID> aclIds = aclList.stream().map(a->a.getAclId()).collect(Collectors.toList());
         if(!checkPrivilege(table, user, aclIds, method, attrs, request.getRequestPostString(), request)){
             log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]对表%s没有%s的操作权限！", user.getUsername(), table, method));
             return false;
@@ -478,7 +519,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
         PrivilegeScope currentMaxScope = PrivilegeScope.DENIED;
         for (UserGroupRoleModel groupRole : user.getUserGroupRoleModels()) {
             Optional<PrivilegeModel> opt = privilegeList.stream().filter(a -> a.getRoleId().equals(groupRole.getRoleId()) &&
-                    a.getGroupId().equals(groupRole.getGroupId())).max(Comparator.comparing(b->b.getScope().getCode()));
+                    (a.getGroupId()==null || a.getGroupId().equals(groupRole.getGroupId())))
+                    .max(Comparator.comparing(b->b.getScope().getCode()));
 
             if(opt != null && opt.isPresent()) {
 

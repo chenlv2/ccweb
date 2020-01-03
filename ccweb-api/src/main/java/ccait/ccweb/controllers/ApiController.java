@@ -420,7 +420,7 @@ public class ApiController extends BaseController {
      */
     @ResponseBody
     @AccessCtrl
-    @RequestMapping( value = "upload/{table}/{field}", method = RequestMethod.POST )
+    @RequestMapping( value = "{table}/{field}/upload", method = RequestMethod.POST )
     public Map<String, String> uploaded(@PathVariable String table, @PathVariable String field, @RequestBody Map<String, Object> uploadFiles) throws Exception {
         return super.upload(table, field, uploadFiles);
     }
@@ -484,7 +484,9 @@ public class ApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "{table}/import", method = {RequestMethod.POST, RequestMethod.PUT} )
-    public void doImport(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles) throws Exception {
+    public ResponseData doImport(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles) throws Exception {
         super.importData(table, uploadFiles);
+
+        return success();
     }
 }

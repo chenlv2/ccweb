@@ -10,6 +10,10 @@ entity:
   page: #分页配置选项
     maxSize: 50 #分页最大记录数默认值
   defaultDateByNow: false
+  auth:
+    jwt:
+      millis: 600000
+      enable: true
   defaultValue: #指定表字段为null时赋于默认值，UUID_RANDOM=UUID.randomUUID()，DATE_NOW=new Date()
       userGroupRoleId: UUID_RANDOM
       role.roleId: UUID_RANDOM
@@ -77,6 +81,18 @@ entity:
     workerlib: #库名
       appraise_photo: #表名
         photo: #字段名
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        id_card_front:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        id_card_reverse:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        certificate:
           maxSize: 5 #上传文件最大尺寸，单位: MB
           mimeType: gif, jpg, png, jpeg #允许上传的文件格式
           path: /home/workerlib-ui/upload #上传路径的绝对路径

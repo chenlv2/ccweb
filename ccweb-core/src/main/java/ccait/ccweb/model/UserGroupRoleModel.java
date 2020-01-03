@@ -124,7 +124,7 @@ public class UserGroupRoleModel extends Queryable<UserGroupRoleModel> {
         role.setRoleId(this.roleId);
 
         try {
-            role = role.where("[userId]=#{userId}").first();
+            role = role.where("[roleId]=#{roleId}").first();
         } catch (SQLException e) {
             log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
         }

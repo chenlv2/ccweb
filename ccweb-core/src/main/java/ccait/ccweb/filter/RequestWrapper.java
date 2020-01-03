@@ -27,10 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,8 +62,8 @@ public class RequestWrapper extends HttpServletRequestWrapper implements Multipa
             Map<String, Object> map = new HashMap<String, Object>();
             List<String> list = StringUtils.splitString2List(postString, "\\-{6}\\-*[\\d\\w]{6}[\\d\\w]*");
             Pattern regex = Pattern.compile("Content-Disposition:\\s*form-data;\\s*name=\"([^\"]+)\"(;\\s*filename=\"([^\"]+)\")?\\s*(Content-Type:\\s*([^/]+/[^\\s]+)\\s*)?", Pattern.CASE_INSENSITIVE);
-            if(list.size() == 1 && request.getRequestURI().indexOf("/upload/")>0) {
-                byte[] bytes = list.get(0).toString().getBytes("ISO-8859-1");
+            if(list.size() == 1 && (request.getRequestURI().endsWith("/upload") || request.getRequestURI().endsWith("/import"))) {
+                byte[] bytes = requestBody;
                 map.put("temp_upload_filename", "application/octet-stream"); //contentType
                 map.put("temp", bytes);
             }

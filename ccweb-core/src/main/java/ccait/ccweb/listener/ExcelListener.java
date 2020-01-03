@@ -16,9 +16,11 @@ import ccait.ccweb.enums.EncryptMode;
 import ccait.ccweb.model.ConditionInfo;
 import ccait.ccweb.model.SheetHeaderModel;
 import ccait.ccweb.utils.EncryptionUtil;
+import ccait.ccweb.utils.FastJsonUtils;
 import com.alibaba.excel.read.metadata.ReadSheet;
 import entity.query.Queryable;
 import entity.query.core.ApplicationConfig;
+import entity.tool.util.ReflectionUtils;
 import entity.tool.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +35,7 @@ import com.alibaba.fastjson.JSON;
  * @author Jiaju Zhuang
  */
 // 有个很重要的点 HashMapListener 不能被spring管理，要每次读取excel都要new,然后里面用到spring可以构造方法传进去
-public class ExcelListener extends AnalysisEventListener<HashMap> {
+public class ExcelListener extends AnalysisEventListener<Object> {
     private static final Logger logger = LoggerFactory.getLogger(ExcelListener.class);
     /**
      * 每隔500条存储数据库，然后清理list ，方便内存回收
@@ -51,7 +53,7 @@ public class ExcelListener extends AnalysisEventListener<HashMap> {
     private final String aesPublicKey;
     private final String encoding;
 
-    List<HashMap> list = new ArrayList<HashMap>();
+    List<Object> list = new ArrayList<Object>();
     String tablename;
 
     /**
@@ -80,7 +82,8 @@ public class ExcelListener extends AnalysisEventListener<HashMap> {
      * @param context
      */
     @Override
-    public void invoke(HashMap data, AnalysisContext context) {
+    public void invoke(Object data, AnalysisContext context) {
+
         ReadSheet readSheet = new ReadSheet();
         context.currentSheet(readSheet);
         if("schema".equals(readSheet.getSheetName())){
@@ -112,16 +115,12 @@ public class ExcelListener extends AnalysisEventListener<HashMap> {
      */
     private void saveData() {
         logger.info("easyexcel: {}条数据，开始导入数据库！", list.size());
-        for(Map item : list) {
+        for(Object obj : list) {
 
             try {
                 Map<String, Object> postData = new HashMap<String, Object>();
                 for(SheetHeaderModel headerModel : headerList) {
-                    if(!item.containsKey(headerModel.getField())) {
-                        continue;
-                    }
-
-                    Object value = item.get(headerModel.getField());
+                    Object value = ReflectionUtils.getFieldValue(obj, getFieldName(headerModel.getField()));
                     postData.put(headerModel.getField(), value);
                 }
 
@@ -129,15 +128,31 @@ public class ExcelListener extends AnalysisEventListener<HashMap> {
 
                 BaseController.fillData(postData, entity, true);
 
-                Integer result = ((Queryable) entity).insert();
+                ((Queryable) entity).insert();
 
-                logger.info("插入数据ID：" + result);
             } catch (Exception e) {
                 logger.error("插入数据失败：" + e.getMessage());
                 e.printStackTrace();
             }
         }
         logger.info("导入数据库成功！");
+    }
+
+    private String getFieldName(String field) {
+        List<String> list = StringUtils.splitString2List(field, "_");
+        for(int i=0; i<list.size(); i++) {
+            String value = list.get(i);
+            if(i==0) {
+                list.set(i, value.substring(0, 1).toLowerCase() + value.substring(1));
+                continue;
+            }
+
+            list.set(i, value.substring(0, 1).toUpperCase() + value.substring(1));
+        }
+
+        String result = StringUtils.join("", list);
+
+        return result;
     }
 
     protected void encrypt(Map<String, Object> data) {

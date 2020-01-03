@@ -20,10 +20,7 @@ import ccait.ccweb.dynamic.DynamicClassBuilder;
 import ccait.ccweb.enums.*;
 import ccait.ccweb.listener.ExcelListener;
 import ccait.ccweb.model.*;
-import ccait.ccweb.utils.EncryptionUtil;
-import ccait.ccweb.utils.FastJsonUtils;
-import ccait.ccweb.utils.ImageUtils;
-import ccait.ccweb.utils.UploadUtils;
+import ccait.ccweb.utils.*;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.support.ExcelTypeEnum;
@@ -39,6 +36,13 @@ import io.reactivex.Single;
 import org.apache.http.HttpException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.FileMagic;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -80,6 +84,12 @@ import static org.springframework.web.reactive.function.server.ServerResponse.ok
 public abstract class BaseController {
 
     private static final Logger log = LogManager.getLogger(BaseController.class);
+
+    @Value("${entity.auth.jwt.millis:600000}")
+    private static long jwtMillis;
+
+    @Value("${entity.auth.jwt.enable:false}")
+    private static boolean jwtEnable;
 
     public ResponseData<Object> RMessage;
 
@@ -799,14 +809,22 @@ public abstract class BaseController {
         request.getSession().setAttribute( request.getSession().getId() + LOGIN_KEY, user );
 
         List<String> groupIdList = user.getUserGroupRoleModels().stream()
+                .filter(a->a.getGroupId() != null)
                 .map(a->a.getGroupId().toString().replace("-", ""))
                 .collect(Collectors.toList());
 
         UserGroupRoleModel userGroupRoleModel = new UserGroupRoleModel();
-        List<Long> userIdListByGroups = userGroupRoleModel.where(String.format("groupId in ('%s')", join("', '", groupIdList)))
-                .select("userId").query(Long.class);
-
+        List<Long> userIdListByGroups = new ArrayList<Long>();
+        if(groupIdList.size() > 0) {
+            userIdListByGroups = userGroupRoleModel.where(String.format("groupId in ('%s')", join("', '", groupIdList)))
+                    .select("userId").query(Long.class);
+        }
         ApplicationContext.getThreadLocalMap().put(CURRENT_USERID_BY_GROUPS, userIdListByGroups);
+
+        if(jwtEnable) {
+            String token = JwtUtil.createJWT(jwtMillis, user);
+            user.setToken(token);
+        }
 
         return user;
     }
@@ -1769,32 +1787,59 @@ public abstract class BaseController {
                 continue;
             }
 
-            if (!extName.equalsIgnoreCase("xls") &&
-                    !extName.equalsIgnoreCase("xlsx")) {
-                throw new IOException("Can not supported file type!!!");
-            }
 
-            UploadUtils.upload("C:\\temp\\imported", "testtt.xlsx", fileBytes);
+            List<String> fieldList = new ArrayList<String>();
+            List<SheetHeaderModel> headerList = getHeadersByExcel(fileBytes, fieldList);
 
-            InputStream is = new ByteArrayInputStream(fileBytes);
+            Queryable entity = (Queryable) EntityContext.getEntity(table, fieldList);
 
-            Map<String, Object> dataMap = new HashMap<String, Object>();
-            List<List<String>> headers = EasyExcel.read(is).sheet("schema").build().getHead();
-            int count = headers.get(0).size();
-            List<SheetHeaderModel> headerList = new ArrayList<SheetHeaderModel>();
-            for(int i=0; i<count; i++) {
+            EasyExcel.read(new ByteArrayInputStream(fileBytes), entity.getClass(), new ExcelListener(table, entity, headerList)).sheet().doRead();
+        }
+    }
+
+    private List<SheetHeaderModel> getHeadersByExcel(byte[] fileBytes, List<String> fieldList) throws IOException {
+        InputStream is = new ByteArrayInputStream(fileBytes);
+        List<SheetHeaderModel> headerList = new ArrayList<SheetHeaderModel>();
+        if(FileMagic.valueOf(new ByteArrayInputStream(fileBytes)).name().equalsIgnoreCase("OOXML")) {
+            XSSFSheet sheet = new XSSFWorkbook(is).getSheet("schema");
+            XSSFRow titleRow = sheet.getRow(0);
+            XSSFRow fieldRow = sheet.getRow(1);
+            for(int i=0; i<titleRow.getLastCellNum(); i++) {
                 SheetHeaderModel headerModel = new SheetHeaderModel();
-                headerModel.setHeader(headers.get(0).get(i));
-                headerModel.setField(headers.get(1).get(i));
+                String title = titleRow.getCell(i).getStringCellValue();
+                String field = fieldRow.getCell(i).getStringCellValue();
+
+                headerModel.setHeader(title);
+                headerModel.setField(field);
                 headerModel.setIndex(i);
 
-                dataMap.put(headers.get(1).get(i), "");
+                fieldList.add(field);
                 headerList.add(headerModel);
             }
-            Queryable entity = (Queryable) EntityContext.getEntity(table, dataMap);
-
-            EasyExcel.read(is, Map.class, new ExcelListener(table, entity, headerList)).sheet().doRead();
         }
+
+        else if(FileMagic.valueOf(new ByteArrayInputStream(fileBytes)).name().equalsIgnoreCase("OLE2")) {
+            HSSFSheet sheet = new HSSFWorkbook(is).getSheet("schema");
+            HSSFRow titleRow = sheet.getRow(0);
+            HSSFRow fieldRow = sheet.getRow(1);
+            for(int i=0; i<titleRow.getLastCellNum(); i++) {
+                SheetHeaderModel headerModel = new SheetHeaderModel();
+                String title = titleRow.getCell(i).getStringCellValue();
+                String field = fieldRow.getCell(i).getStringCellValue();
+
+                headerModel.setHeader(title);
+                headerModel.setField(field);
+                headerModel.setIndex(i);
+
+                fieldList.add(field);
+                headerList.add(headerModel);
+            }
+        }
+
+        else {
+            throw new IOException("Can not supported file type!!!");
+        }
+        return headerList;
     }
 
     public class DownloadData {

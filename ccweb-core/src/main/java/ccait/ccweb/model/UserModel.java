@@ -55,6 +55,9 @@ public class UserModel extends Queryable<UserModel> {
   @Fieldname("status")
   private Integer status;
 
+  @Exclude
+  private String token;
+
   public Date getCreateOn() {
     return createOn;
   }
@@ -155,5 +158,13 @@ public class UserModel extends Queryable<UserModel> {
 
   public void setStatus(Integer status) {
     this.status = status;
+  }
+
+  public String getToken() {
+    return token;
+  }
+
+  public void setToken(String token) {
+    this.token = token;
   }
 }

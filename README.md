@@ -379,7 +379,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 ### 15. 上传
-* URL：/api/{datasource}/upload/{table}/{field} 
+* URL：/api/{datasource}/{table}/{field}/upload 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称，{field}为字段名
 * POST参数：
