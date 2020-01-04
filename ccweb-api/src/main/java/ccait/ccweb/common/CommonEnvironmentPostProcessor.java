@@ -8,6 +8,7 @@ import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.Yaml;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -48,6 +49,8 @@ public class CommonEnvironmentPostProcessor implements EnvironmentPostProcessor 
         else {
             file = new File(System.getProperty("user.dir") + "/src/main/resources/application.properties");
         }
+
+        Yaml yml = new Yaml();
 
         if(file.exists()) {
             setPropertys(configurableEnvironment, file);
