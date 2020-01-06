@@ -13,7 +13,6 @@ package ccait.ccweb.trigger;
 
 
 import ccait.ccweb.annotation.*;
-import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.filter.RequestWrapper;
@@ -43,7 +42,6 @@ import java.util.stream.Collectors;
 
 import static ccait.ccweb.controllers.BaseController.getTablename;
 import static ccait.ccweb.controllers.BaseController.isPrimitive;
-import static ccait.ccweb.utils.StaticVars.CURRENT_DATASOURCE;
 import static ccait.ccweb.utils.StaticVars.LOGIN_KEY;
 
 

@@ -108,7 +108,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             String currentTable = initLocalMap.getCurrentTable();
 
-            if (!vaildForUploadFiles((RequestWrapper) request, currentTable)) {
+            if (!vaildUploadFilesByInsert((RequestWrapper) request, currentTable)) {
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
                 response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "无效的上传文件格式!!!");
                 return false;
@@ -179,7 +179,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         }
     }
 
-    private boolean vaildForUploadFiles(RequestWrapper request, String table) throws Exception {
+    private boolean vaildUploadFilesByInsert(RequestWrapper request, String table) throws Exception {
 
         if(request.getParameters() == null) {
             return true;
@@ -198,8 +198,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         hasUploadFile = true;
 
-        List<String> urlList = StringUtils.splitString2List(request.getRequestURI(), "/");
-        if(urlList.get(urlList.size() - 1).toLowerCase() == "import") {
+        if(request.getRequestURI().toLowerCase().endsWith("/import") ||
+                request.getRequestURI().toLowerCase().endsWith("/upload")) { //上传和导入接口不校验
+
             return true;
         }
 
