@@ -109,6 +109,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             String currentTable = initLocalMap.getCurrentTable();
 
             if (!vaildForUploadFiles((RequestWrapper) request, currentTable)) {
+                response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
                 response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "无效的上传文件格式!!!");
                 return false;
             }
