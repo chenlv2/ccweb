@@ -61,9 +61,6 @@ public final class UserTableTrigger implements ITrigger {
 
     @PostConstruct
     private void construct() {
-        admin = ApplicationConfig.getInstance().get("${entity.encoding}", admin);
-        encoding = ApplicationConfig.getInstance().get("${entity.security.admin.password}", encoding);
-        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
     }
 
     @Override

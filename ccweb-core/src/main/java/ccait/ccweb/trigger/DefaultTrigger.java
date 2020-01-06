@@ -82,14 +82,6 @@ public final class DefaultTrigger {
 
     @PostConstruct
     private void construct() {
-        datasourceId = (String) ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE);
-        encoding = ApplicationConfig.getInstance().get("${entity.encoding}", encoding);
-        createOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createOn}", createOnField);
-        modifyOnField = ApplicationConfig.getInstance().get("${entity.table.reservedField.modifyOn}", modifyOnField);
-        modifyByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.modifyBy}", modifyByField);
-        userPathField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userPath}", userPathField);
-        createByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createBy}", createByField);
-        groupIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.groupId}", groupIdField);
     }
 
     @OnInsert

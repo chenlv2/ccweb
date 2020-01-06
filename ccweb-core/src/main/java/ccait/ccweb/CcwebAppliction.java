@@ -83,7 +83,6 @@ public class CcwebAppliction {
 
         if(!file.exists()) {
             String property = System.getProperty("catalina.home");
-            System.out.println("catalina home: " + property);
             path =property+ File.separator + "conf" + File.separator + "log4j2.xml";
             file = new File(path);
         }

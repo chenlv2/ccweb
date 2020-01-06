@@ -168,6 +168,9 @@ public abstract class BaseController {
     @Autowired
     private NonStaticResourceHttpRequestHandler nonStaticResourceHttpRequestHandler;
 
+    @Value("${entity.upload.watermark:}")
+    private String watermark;
+
     public BaseController() {
         RMessage = new ResponseData<Object>();
     }
@@ -175,22 +178,6 @@ public abstract class BaseController {
 
     @PostConstruct
     private void construct() {
-        admin = ApplicationConfig.getInstance().get("${entity.security.admin.username}", admin);
-        fixedWidth = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.download.thumb.fixedWidth}", fixedWidth.toString()));
-        scalRatio = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.download.thumb.scalRatio}", scalRatio.toString()));
-        md5Fields = ApplicationConfig.getInstance().get("${entity.security.encrypt.MD5.fields}", md5Fields);
-        md5PublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.MD5.publicKey}", md5PublicKey);
-        base64Fields = ApplicationConfig.getInstance().get("${entity.security.encrypt.BASE64.fields}", base64Fields);
-        macFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.MAC.fields}", macFields);
-        shaFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.SHA.fields}", shaFields);
-        macPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.MAC.publicKey}", macPublicKey);
-        aesFields = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.fields}", aesFields);
-        aesPublicKey = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.publicKey}", aesPublicKey);
-        encoding = ApplicationConfig.getInstance().get("${entity.encoding}", encoding);
-        userPathField = ApplicationConfig.getInstance().get("${entity.table.reservedField.userPath}", userPathField);
-        groupIdField = ApplicationConfig.getInstance().get("${entity.table.reservedField.groupId}", groupIdField);
-        createByField = ApplicationConfig.getInstance().get("${entity.table.reservedField.createBy}", createByField);
-
     }
 
     protected Logger getLogger()
@@ -1648,7 +1635,7 @@ public abstract class BaseController {
             if(isPreview) {
                 image = previewProcess(image);
             }
-            String watermark = ApplicationConfig.getInstance().get("${entity.upload.watermark}", "");
+
             if(StringUtils.isNotEmpty(watermark)) {
                 image = ImageUtils.watermark(image, watermark, new Color(41, 35, 255, 33), new Font("微软雅黑", Font.PLAIN, 35));
             }
@@ -1875,7 +1862,7 @@ public abstract class BaseController {
             response.setCharacterEncoding(StandardCharsets.UTF_8.toString());
             return;
         }
-        
+
         TriggerContext.exec(table, EventType.PlayVideo, downloadData, request);
 
         if (!StringUtils.isEmpty(downloadData.getMediaType().getType())) {

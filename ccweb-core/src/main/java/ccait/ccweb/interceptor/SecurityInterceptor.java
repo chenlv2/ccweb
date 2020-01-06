@@ -87,10 +87,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
     @PostConstruct
     private void construct() {
-        admin = ApplicationConfig.getInstance().get("${entity.security.admin.username}", admin);
-        password = ApplicationConfig.getInstance().get("${entity.security.admin.password}", password);
-        maxJoin = Integer.parseInt(ApplicationConfig.getInstance().get("${entity.table.maxJoin}", maxJoin.toString()));
-        datasourceString = ApplicationConfig.getInstance().get("${entity.datasource}", datasourceString);
     }
 
     @Override
@@ -276,9 +272,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
     }
 
     private boolean allowIp(HttpServletRequest request) {
-
-        whiteListText = ApplicationConfig.getInstance().get("${entity.ip.whiteList}", whiteListText);
-        blackListText = ApplicationConfig.getInstance().get("${entity.ip.blackList}", blackListText);
 
         log.info("whiteList: " + whiteListText);
         log.info("blackList: " + blackListText);

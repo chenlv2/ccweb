@@ -22,11 +22,6 @@ entity:
       group.groupId: UUID_RANDOM
       privilegeId: UUID_RANDOM
       acl.aclId: UUID_RANDOM
-      project.project_id: UUID_RANDOM
-      unit.unit_id: UUID_RANDOM
-      archives.archives_id: UUID_RANDOM
-      archives.eafId: UUID_RANDOM
-      alluser.eafId: UUID_RANDOM
 
   security: #安全配置选项
     encrypt:
@@ -80,12 +75,17 @@ entity:
         password: hidden
 
   upload: #上传设置
-    db1: #库名
-      lecturer: #表名
-        photo:
+    workerlib: #库名
+      alluser: #表名
+        qr_code: #字段名
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload/qrcode
+        photo: #字段名
           maxSize: 5 #上传文件最大尺寸，单位: MB
           mimeType: gif, jpg, png, jpeg #允许上传的文件格式
           path: /home/workerlib-ui/upload #上传路径的绝对路径
+
 
   download: #下载设置
     thumb:  #预览的缩略图

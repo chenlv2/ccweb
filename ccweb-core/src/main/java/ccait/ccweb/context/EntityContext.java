@@ -293,7 +293,6 @@ public final class EntityContext {
             if(dsList == null || dsList.size() < 1) {
                 //tomcat路径
                 String property = System.getProperty("catalina.home");
-                System.out.println("catalina home: " + property);
                 String path =property+ File.separator + "conf" + File.separator + "db-config.xml";
                 dsList = DataSourceFactory.getInstance().getAllDataSource(path);
             }
