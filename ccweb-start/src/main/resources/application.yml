@@ -80,11 +80,11 @@ entity:
         qr_code: #字段名
           maxSize: 5 #上传文件最大尺寸，单位: MB
           mimeType: gif, jpg, png, jpeg #允许上传的文件格式
-          path: /home/workerlib-ui/upload/qrcode
+          path: /home/upload/qrcode
         photo: #字段名
           maxSize: 5 #上传文件最大尺寸，单位: MB
           mimeType: gif, jpg, png, jpeg #允许上传的文件格式
-          path: /home/workerlib-ui/upload #上传路径的绝对路径
+          path: /home/upload #上传路径的绝对路径
 
 
   download: #下载设置
@@ -96,7 +96,7 @@ entity:
   enableFlux: true   #是否开启web异步响应流
 
   #设置开放的数据源，对应db-config.xml的environment id
-  datasource: workerlib #可通过url的{datasource}参数访问到该数据库，没有在此设置的environment不能通过url访问到
+  datasource: mysql #可通过url的{datasource}参数访问到该数据库，没有在此设置的environment不能通过url访问到
 
 #  ip:
 #    whiteList:  #IP白名单
