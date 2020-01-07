@@ -274,6 +274,13 @@ public final class TriggerContext {
                 continue;
             }
 
+            if(method.getParameterTypes()[0].equals(QueryInfo.class) && params instanceof Map) {
+                QueryInfo queryInfo = new QueryInfo();
+                queryInfo.setData((Map) params);
+                method.invoke(instance, queryInfo, request);
+                continue;
+            }
+
             method.invoke(instance, params, request);
         }
     }
