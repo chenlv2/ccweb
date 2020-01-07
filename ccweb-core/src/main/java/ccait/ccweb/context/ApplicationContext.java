@@ -329,8 +329,13 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setType(Long.class);
         columns.add(col);
 
-        Queryable.createTable(ds.getId(), userGroupRoleTablename, columns);
-        log.info(String.format(LOG_PRE_SUFFIX + "用户群组角色表[%s]创建成功！", groupTablename));
+        try {
+            Queryable.createTable(ds.getId(), userGroupRoleTablename, columns);
+            log.info(String.format(LOG_PRE_SUFFIX + "用户群组角色表[%s]创建成功！", userGroupRoleTablename));
+        }
+        catch (Exception e) {
+            log.info(String.format(LOG_PRE_SUFFIX + "用户群组角色表[%s]没有创建！", userGroupRoleTablename));
+        }
     }
 
     private void createPrivilegeTable(DataSource ds, List<ColumnInfo> columns) throws Exception {
@@ -487,8 +492,13 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setType(Long.class);
         columns.add(col);
 
-        Queryable.createTable(ds.getId(), privilegeTablename, columns);
-        log.info(String.format(LOG_PRE_SUFFIX + "权限表[%s]创建成功！", privilegeTablename));
+        try {
+            Queryable.createTable(ds.getId(), privilegeTablename, columns);
+            log.info(String.format(LOG_PRE_SUFFIX + "权限表[%s]创建成功！", privilegeTablename));
+        }
+        catch (Exception e) {
+            log.info(String.format(LOG_PRE_SUFFIX + "权限表[%s]没有创建！", privilegeTablename));
+        }
     }
 
     private void createAclTable(DataSource ds, List<ColumnInfo> columns) throws Exception {
@@ -553,8 +563,13 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setType(Long.class);
         columns.add(col);
 
-        Queryable.createTable(ds.getId(), aclTablename, columns);
-        log.info(String.format(LOG_PRE_SUFFIX + "访问控制表[%s]创建成功！", aclTablename));
+        try {
+            Queryable.createTable(ds.getId(), aclTablename, columns);
+            log.info(String.format(LOG_PRE_SUFFIX + "访问控制表[%s]创建成功！", aclTablename));
+        }
+        catch (Exception e) {
+            log.info(String.format(LOG_PRE_SUFFIX + "访问控制表[%s]没有创建！", aclTablename));
+        }
     }
 
     private void createRoleTable(DataSource ds, List<ColumnInfo> columns) throws Exception {
@@ -618,8 +633,13 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setType(Long.class);
         columns.add(col);
 
-        Queryable.createTable(ds.getId(), roleTablename, columns);
-        log.info(String.format(LOG_PRE_SUFFIX + "角色表[%s]创建成功！", roleTablename));
+        try {
+            Queryable.createTable(ds.getId(), roleTablename, columns);
+            log.info(String.format(LOG_PRE_SUFFIX + "角色表[%s]创建成功！", roleTablename));
+        }
+        catch (Exception e) {
+            log.info(String.format(LOG_PRE_SUFFIX + "角色表[%s]没有创建！", roleTablename));
+        }
     }
 
     private void createGroupTable(DataSource ds, List<ColumnInfo> columns) throws Exception {
@@ -683,8 +703,13 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setType(Long.class);
         columns.add(col);
 
-        Queryable.createTable(ds.getId(), groupTablename, columns);
-        log.info(String.format(LOG_PRE_SUFFIX + "群组表[%s]创建成功！", groupTablename));
+        try {
+            Queryable.createTable(ds.getId(), groupTablename, columns);
+            log.info(String.format(LOG_PRE_SUFFIX + "群组表[%s]创建成功！", groupTablename));
+        }
+        catch (Exception e) {
+            log.info(String.format(LOG_PRE_SUFFIX + "群组表[%s]没有创建！", groupTablename));
+        }
     }
 
     public void createUserTable(DataSource ds, List<ColumnInfo> columns) throws Exception {
@@ -770,11 +795,16 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setType(Integer.class);
         columns.add(col);
 
-        Queryable.createTable(ds.getId(), userTablename, columns);
+        try {
+            Queryable.createTable(ds.getId(), userTablename, columns);
 
-        user.insert();
+            user.insert();
 
-        log.info(String.format(LOG_PRE_SUFFIX + "用户表[%s]创建成功！", userTablename));
+            log.info(String.format(LOG_PRE_SUFFIX + "用户表[%s]创建成功！", userTablename));
+        }
+        catch (Exception e) {
+            log.info(String.format(LOG_PRE_SUFFIX + "用户表[%s]没有创建！", userTablename));
+        }
     }
 
     public String getEncryptPassword() throws Exception {
