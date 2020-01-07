@@ -1505,7 +1505,7 @@ public abstract class BaseController {
     }
 
     protected void download(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(table, field, id).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
 
         TriggerContext.exec(table, EventType.Download, downloadData, request);
 
@@ -1543,7 +1543,7 @@ public abstract class BaseController {
     }
 
     protected Mono downloadAs(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(table, field, id).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
 
         TriggerContext.exec(table, EventType.Download, downloadData, request);
 
@@ -1583,7 +1583,7 @@ public abstract class BaseController {
     }
 
     protected void preview(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(table, field, id).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
 
         TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
 
@@ -1602,7 +1602,7 @@ public abstract class BaseController {
     }
 
     protected Mono previewAs(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(table, field, id).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
         if(downloadData.getMimeType().indexOf("image") != 0) {
             throw new  Exception("不支持预览的文件格式");
         }
@@ -1855,7 +1855,7 @@ public abstract class BaseController {
         decrypt(data);
 
         String content = data.get(field).toString();
-        DownloadData downloadData = new DownloadData(table, field, id);
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id);
         String filePath = downloadData.getFullPath(content, currentDatasource, uploadConfigMap);
         if(!(new File(filePath)).exists()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -1873,17 +1873,19 @@ public abstract class BaseController {
     }
 
     public class DownloadData {
-        private String table;
-        private String field;
-        private String id;
+        private final String datasourceId;
+        private final String table;
+        private final String field;
+        private final String id;
         private String[] arrMessage;
         private byte[] buffer;
         private MediaType mediaType;
 
-        public DownloadData(String table, String field, String id) {
+        public DownloadData(String datasourceId, String table, String field, String id) {
             this.table = table;
             this.field = field;
             this.id = id;
+            this.datasourceId = datasourceId;
         }
 
         public String getFilename() {
@@ -1916,17 +1918,15 @@ public abstract class BaseController {
                 throw new Exception("can not find image in the field!");
             }
 
-
-            String currentDatasource = getCurrentDatasourceId();
             Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(
-                    String.format("entity.upload.%s.%s.%s", currentDatasource, table, field)
+                    String.format("entity.upload.%s.%s.%s", datasourceId, table, field)
             );
             if(uploadConfigMap == null || uploadConfigMap.size() < 1) {
                 throw new IOException("can not find the upload config!!!");
             }
 
             if(uploadConfigMap.get("path") != null) {
-                String fullpath = getFullPath(content, currentDatasource, uploadConfigMap);
+                String fullpath = getFullPath(content, datasourceId, uploadConfigMap);
                 File file = new File(fullpath);
                 if("/".equals(fullpath.substring(0,1)) && !file.exists()) {
                     file = new File(String.format("%s/%s", System.getProperty("user.dir"), fullpath));
@@ -1970,7 +1970,13 @@ public abstract class BaseController {
             }
             root = String.format("%s/%s/%s/%s", root, currentDatasource, table, field);
 
-            return String.format("%s/%s", root, content);
+            String filePath = String.format("%s/%s", root, content);
+
+            if((new File(System.getProperty("user.dir")+filePath)).exists()) {
+                filePath = System.getProperty("user.dir") + filePath;
+            }
+
+            return filePath;
         }
 
         public MediaType getMediaType() {
