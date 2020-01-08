@@ -41,7 +41,7 @@ import static ccait.ccweb.utils.StaticVars.CURRENT_DATASOURCE;
 /**
  * In-memory java file manager.
  *
- * @author michael
+ * @author linlurui
  */
 public class MemoryJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
 

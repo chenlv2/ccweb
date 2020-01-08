@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class JwtUtil {
+public class JwtUtils {
 
     /**
      * 用户登录成功后生成Jwt

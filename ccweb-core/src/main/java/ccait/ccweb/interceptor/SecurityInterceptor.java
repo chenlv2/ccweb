@@ -21,7 +21,7 @@ import ccait.ccweb.filter.RequestWrapper;
 import ccait.ccweb.model.*;
 import ccait.ccweb.utils.EncryptionUtil;
 import ccait.ccweb.utils.FastJsonUtils;
-import ccait.ccweb.utils.JwtUtil;
+import ccait.ccweb.utils.JwtUtils;
 import ccait.ccweb.utils.UploadUtils;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.exceptions.JWTDecodeException;
@@ -76,10 +76,10 @@ public class SecurityInterceptor implements HandlerInterceptor {
     private String aesPublicKey;
 
     @Value("${entity.auth.jwt.enable:false}")
-    private static boolean jwtEnable;
+    private boolean jwtEnable;
 
     @Value("${entity.auth.aes.enable:false}")
-    private static boolean aesEnable;
+    private boolean aesEnable;
 
     private static final Logger log = LogManager.getLogger( SecurityInterceptor.class );
 
@@ -156,7 +156,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 throw new RuntimeException("非法用户！");
             }
 
-            Boolean verify = JwtUtil.isVerify(token, user);
+            Boolean verify = JwtUtils.isVerify(token, user);
             if (!verify) {
                 throw new RuntimeException("非法访问！");
             }
@@ -441,11 +441,15 @@ public class SecurityInterceptor implements HandlerInterceptor {
         switch (method.toUpperCase()) {
             case "GET":
                 if(Pattern.matches("^/(?i)(as)?(?i)api/(?i)download/[^/]+/[^/]+/[^/]+$", request.getRequestURI())) {
-                    privilegeWhere = "canDownload=1 AND (canQuery=1 OR canList=1 OR canView=1 OR canDecrypt=1)";
+                    privilegeWhere = "canDownload=1";
                 }
 
                 else if(Pattern.matches("^/(?i)(as)?(?i)api/(?i)preview/[^/]+/[^/]+/[^/]+$", request.getRequestURI())) {
-                    privilegeWhere = "canPreview=1 AND (canQuery=1 OR canList=1 OR canView=1 OR canDecrypt=1)";
+                    privilegeWhere = "canPreview=1";
+                }
+
+                else if(Pattern.matches("^/(?i)(as)?(?i)api/(?i)play/[^/]+/[^/]+/[^/]+$", request.getRequestURI())) {
+                    privilegeWhere = "canPlayVideo=1";
                 }
 
                 else {

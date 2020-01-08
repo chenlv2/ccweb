@@ -408,7 +408,7 @@ public class ApplicationContext implements ApplicationContextAware {
         columns.add(col);
 
         col = new ColumnInfo();
-        col.setColumnName("canPreviewDoc");
+        col.setColumnName("canPreview");
         col.setCanNotNull(true);
         col.setType(Integer.class);
         columns.add(col);

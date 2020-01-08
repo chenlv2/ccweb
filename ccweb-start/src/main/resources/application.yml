@@ -179,3 +179,27 @@ log4j:
 websocket:
   url: ws://127.0.0.1:8777/websocket
   enable: false
+
+
+# 5.微信授权配置
+weixin:
+  mp:
+    endpoint:
+      # 微信回调地址，默认为 /weixin/callback，如需自定义，请修改以下配置项
+      callback-url: /wechat/callback
+    security:
+      # 微信后台配置的 token
+      token: 1234567890
+      # 微信后台配置的消息加解密 aeskey
+      encodingAesKey: abcdefghijklmnopqrstuvwxyz0123456789ABCDEFG
+      # #############################################################
+      # 微信 access token 过期刷新阈值，计算方法：
+      # 当前时间 - (获得token时间 + token 有效期 + 阈值) < 0 则刷新 token
+      # 默认为 token 失效前 5 分钟刷新
+      # #############################################################
+      refresh-token-threshold: 300
+    auth:
+      # APPID
+      appid: appid
+      # APP secret
+      secret: secret

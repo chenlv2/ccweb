@@ -31,8 +31,6 @@ import com.alibaba.fastjson.JSON;
 
 /**
  * 模板的读取类
- *
- * @author Jiaju Zhuang
  */
 // 有个很重要的点 HashMapListener 不能被spring管理，要每次读取excel都要new,然后里面用到spring可以构造方法传进去
 public class ExcelListener extends AnalysisEventListener<Object> {

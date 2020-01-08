@@ -43,6 +43,7 @@ import org.apache.poi.poifs.filesystem.FileMagic;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.jcodec.api.JCodecException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
@@ -813,7 +814,7 @@ public abstract class BaseController {
         ApplicationContext.getThreadLocalMap().put(CURRENT_USERID_BY_GROUPS, userIdListByGroups);
 
         if(jwtEnable) {
-            String token = JwtUtil.createJWT(jwtMillis, user);
+            String token = JwtUtils.createJWT(jwtMillis, user);
             user.setToken(token);
         }
 
@@ -1627,7 +1628,7 @@ public abstract class BaseController {
             })));
     }
 
-    private byte[] preDownloadProcess(DownloadData downloadData, MediaType mediaType, boolean isPreview) throws IOException {
+    private byte[] preDownloadProcess(DownloadData downloadData, MediaType mediaType, boolean isPreview) throws IOException, JCodecException {
 
         if(mediaType.getType().equalsIgnoreCase("image")) {
             BufferedImage image = ImageUtils.getImage(downloadData.getBuffer());
@@ -1640,6 +1641,15 @@ public abstract class BaseController {
                 image = ImageUtils.watermark(image, watermark, new Color(41, 35, 255, 33), new Font("微软雅黑", Font.PLAIN, 35));
             }
             return ImageUtils.toBytes(image, downloadData.getExtension());
+        }
+
+        if(mediaType.getType().equalsIgnoreCase("video")) {
+
+            downloadData.setMimeType("image/jpeg");
+            byte[] bytes = VideoUtils.getThumbnail(new File(downloadData.path), scalRatio);
+            downloadData.cleanTempFile();
+
+            return bytes;
         }
 
         return downloadData.getBuffer();
@@ -1880,12 +1890,15 @@ public abstract class BaseController {
         private String[] arrMessage;
         private byte[] buffer;
         private MediaType mediaType;
+        private String path;
+        private boolean hasTempFile;
 
         public DownloadData(String datasourceId, String table, String field, String id) {
             this.table = table;
             this.field = field;
             this.id = id;
             this.datasourceId = datasourceId;
+            hasTempFile = false;
         }
 
         public String getFilename() {
@@ -1898,6 +1911,10 @@ public abstract class BaseController {
 
         public String getMimeType() {
             return arrMessage[0];
+        }
+
+        public void setMimeType(String mimeType) {
+            arrMessage[0] = mimeType;
         }
 
         public byte[] getBuffer() {
@@ -1926,15 +1943,17 @@ public abstract class BaseController {
             }
 
             if(uploadConfigMap.get("path") != null) {
-                String fullpath = getFullPath(content, datasourceId, uploadConfigMap);
-                File file = new File(fullpath);
-                if("/".equals(fullpath.substring(0,1)) && !file.exists()) {
-                    file = new File(String.format("%s/%s", System.getProperty("user.dir"), fullpath));
+                this.path = getFullPath(content, datasourceId, uploadConfigMap);
+                File file = new File(this.path);
+                if("/".equals(this.path.substring(0,1)) && !file.exists()) {
+                    this.path = String.format("%s%s", System.getProperty("user.dir"), this.path);
+                    file = new File(this.path);
                 }
                 buffer = UploadUtils.getFileByteArray(file);
             }
 
             else {
+                hasTempFile = true;
                 int splitPoint = content.indexOf("|::|");
                 String fileString = content.substring(splitPoint + 4);
                 String messageBody = content.substring(0, splitPoint);
@@ -1944,6 +1963,10 @@ public abstract class BaseController {
                 mediaType = new MediaType(arr[0], arr[1]);
 
                 buffer = new BASE64Decoder().decodeBuffer(fileString);
+                String filename = UUID.randomUUID().toString().replace("-", "");
+                String dir = String.format("%s/temp", System.getProperty("user.dir"));
+                this.path = dir + "/" + filename;
+                FileUtils.save(buffer, dir, filename);
             }
 
 
@@ -1977,6 +2000,14 @@ public abstract class BaseController {
             }
 
             return filePath;
+        }
+
+        public void cleanTempFile() {
+
+            if(!this.hasTempFile) {
+                return;
+            }
+            FileUtils.delete(this.path);
         }
 
         public MediaType getMediaType() {

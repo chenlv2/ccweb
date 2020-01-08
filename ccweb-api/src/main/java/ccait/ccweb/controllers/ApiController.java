@@ -30,7 +30,6 @@ import static ccait.ccweb.utils.StaticVars.LOG_PRE_SUFFIX;
 @RequestMapping( value = {"api/{datasource}"} )
 public class ApiController extends BaseController {
 
-
     /***
      * join query count
      * @return

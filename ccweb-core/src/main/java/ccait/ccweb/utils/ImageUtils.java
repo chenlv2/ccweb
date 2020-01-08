@@ -6,7 +6,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sun.misc.BASE64Decoder;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -15,6 +18,7 @@ import java.math.BigDecimal;
 public final class ImageUtils {
 
     private static final Logger log = LogManager.getLogger(ImageUtils.class);
+    private static final int THUMBNAIL_DEFAULT_LIMIT = 400;
 
     /**
      * @param im            原始图像
@@ -71,6 +75,12 @@ public final class ImageUtils {
 
         InputStream input = new ByteArrayInputStream(data);
         return ImageIO.read(input);
+    }
+
+
+    public static byte[] toBytes(BufferedImage image) throws IOException {
+
+        return toBytes(image, "png");
     }
 
     public static byte[] toBytes(BufferedImage image, String format) throws IOException {
@@ -133,4 +143,12 @@ public final class ImageUtils {
         return bytes;
     }
 
+    public static byte[] toBytes(ByteArrayOutputStream image) {
+
+        if(image == null) {
+            return new byte[0];
+        }
+
+        return image.toByteArray();
+    }
 }
