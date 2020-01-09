@@ -17,6 +17,11 @@ entity:
       enable: true
     aes:
       enable: true
+    wechat:
+      token: tokenfd53sa411f32sd1f1sa
+      openid: openid4sa411f32sd1f1sa
+      enable: true
+
   defaultValue: #指定表字段为null时赋于默认值，UUID_RANDOM=UUID.randomUUID()，DATE_NOW=new Date()
       userGroupRoleId: UUID_RANDOM
       role.roleId: UUID_RANDOM

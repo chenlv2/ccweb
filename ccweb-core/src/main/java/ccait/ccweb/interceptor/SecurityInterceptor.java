@@ -81,6 +81,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Value("${entity.auth.aes.enable:false}")
     private boolean aesEnable;
 
+    @Value("${entity.auth.wechat.enable:false}")
+    private boolean wechatEnable;
+
     private static final Logger log = LogManager.getLogger( SecurityInterceptor.class );
 
     private boolean hasUploadFile;
@@ -141,41 +144,51 @@ public class SecurityInterceptor implements HandlerInterceptor {
             return;
         }
 
+        if(wechatEnable) {
+            /*** TODO ***/
+        }
+
         String userId = null;
         if(jwtEnable) {
             try {
                 userId = JWT.decode(token).getClaim("id").asString();
-            } catch (JWTDecodeException j) {
-                throw new RuntimeException("访问异常！");
-            }
 
-            UserModel user = new UserModel();
-            user.setId(Long.parseLong(userId));
-            user = user.where("id=#{id}").first();
-            if (user == null) {
-                throw new RuntimeException("非法用户！");
-            }
+                UserModel user = new UserModel();
+                user.setId(Long.parseLong(userId));
+                user = user.where("id=#{id}").first();
+                if (user == null) {
+                    throw new RuntimeException("非法用户！");
+                }
+                Boolean verify = JwtUtils.isVerify(token, user);
+                if (!verify) {
+                    throw new RuntimeException("非法访问！");
+                }
 
-            Boolean verify = JwtUtils.isVerify(token, user);
-            if (!verify) {
-                throw new RuntimeException("非法访问！");
-            }
+                BaseController.login(user.getUsername(), user.getPassword(), request, response);
 
-            BaseController.login(user.getUsername(), user.getPassword(), request, response);
-            return;
+                return;
+            } catch (JWTDecodeException e) {
+                log.error(e);
+            }
         }
 
         if(aesEnable) {
-            token = EncryptionUtil.decryptByAES(token, aesPublicKey);
-            if (StringUtils.isEmpty(token)) {
-                throw new Exception("fail to get the token!!!");
+            try {
+                token = EncryptionUtil.decryptByAES(token, aesPublicKey);
+                if (StringUtils.isEmpty(token)) {
+                    throw new RuntimeException("fail to get the token!!!");
+                }
+
+                String username = token.substring(0, token.length() - 32);
+                String password = token.substring(token.length() - 32);
+
+                BaseController.login(username, password, request, response);
+                return;
             }
 
-            String username = token.substring(0, token.length() - 32);
-            String password = token.substring(token.length() - 32);
-
-            BaseController.login(username, password, request, response);
-            return;
+            catch (Exception e) {
+                log.error(e);
+            }
         }
     }
 

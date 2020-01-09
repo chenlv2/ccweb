@@ -1995,11 +1995,11 @@ public abstract class BaseController {
 
             String filePath = String.format("%s/%s", root, content);
 
-            if((new File(System.getProperty("user.dir")+filePath)).exists()) {
-                filePath = System.getProperty("user.dir") + filePath;
+            if((new File(filePath)).exists()) {
+                return filePath;
             }
 
-            return filePath;
+            return System.getProperty("user.dir") + filePath;
         }
 
         public void cleanTempFile() {
