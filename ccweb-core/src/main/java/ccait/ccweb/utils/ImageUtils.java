@@ -56,6 +56,19 @@ public final class ImageUtils {
      * @return              返回处理后的图像
      */
     public static BufferedImage zoomImage(BufferedImage im, Integer resizeTimes) {
+
+        if(resizeTimes == null) {
+            return im;
+        }
+
+        if(resizeTimes <= 0) {
+            return im;
+        }
+
+        if(resizeTimes >= 100) {
+            return im;
+        }
+
         /*原始图像的宽度和高度*/
         int width = im.getWidth();
         int height = im.getHeight();

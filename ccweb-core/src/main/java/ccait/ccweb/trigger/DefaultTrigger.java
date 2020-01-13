@@ -233,8 +233,18 @@ public final class DefaultTrigger {
                                 String.format("%s.%s", BaseController.getTablename(), key).equals(a))
                         .findAny();
 
-                if(opt.isPresent() && !Pattern.matches(opt.get().toString(), data.get(key).toString())){
-                    throw new Exception("无效的参数(" + key + " field has invalid parameter value!!!)");
+                if(!opt.isPresent()){
+                    continue;
+                }
+
+                Map vaildation = (Map) opt.get();
+                if(vaildation.containsKey("match")) {
+                    if(!Pattern.matches(vaildation.get("match").toString(), data.get(key).toString())){
+                        if(vaildation.containsKey("message")) {
+                            throw new Exception(vaildation.get("message").toString());
+                        }
+                        throw new Exception("无效的参数(" + key + " field has invalid parameter value!!!)");
+                    }
                 }
             }
         }

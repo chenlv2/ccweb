@@ -28,9 +28,7 @@ import com.alibaba.fastjson.JSONObject;
 import entity.query.*;
 import entity.query.annotation.PrimaryKey;
 import entity.query.core.ApplicationConfig;
-import entity.tool.util.DBUtils;
-import entity.tool.util.ReflectionUtils;
-import entity.tool.util.StringUtils;
+import entity.tool.util.*;
 import io.reactivex.Maybe;
 import io.reactivex.Single;
 import org.apache.http.HttpException;
@@ -165,6 +163,15 @@ public abstract class BaseController {
 
     @Value("${entity.download.thumb.scalRatio:0}")
     private Integer scalRatio;
+
+    @Value("${entity.auth.wechat.secret:}")
+    private String secret;
+
+    @Value("${entity.auth.wechat.appid:}")
+    private String appid;
+
+    @Value("${entity.auth.wechat.enable:false}")
+    private boolean wechatEnable;
 
     @Autowired
     private NonStaticResourceHttpRequestHandler nonStaticResourceHttpRequestHandler;
@@ -783,6 +790,10 @@ public abstract class BaseController {
 
         user = where.first();
 
+        return login(request, user);
+    }
+
+    public static UserModel login(HttpServletRequest request, UserModel user) throws Exception {
         if(user == null) {
             throw new Exception("Username or password is invalid!!!");
         }
@@ -1994,12 +2005,12 @@ public abstract class BaseController {
             root = String.format("%s/%s/%s/%s", root, currentDatasource, table, field);
 
             String filePath = String.format("%s/%s", root, content);
-
-            if((new File(filePath)).exists()) {
-                return filePath;
+// /root/workerlib/root/workerlib/home/workerlib-ui/upload/qrcode/workerlib/alluser/qr_code/2020/01/580/87738a1469f148c5b820a7414fffe876/430703198112170471.png
+            if((new File(System.getProperty("user.dir")+filePath)).exists()) {
+                filePath = System.getProperty("user.dir") + filePath;
             }
 
-            return System.getProperty("user.dir") + filePath;
+            return filePath;
         }
 
         public void cleanTempFile() {
@@ -2130,5 +2141,21 @@ public abstract class BaseController {
         encrypt(queryInfo.getConditionList());
 
         return indexingContext.search(table, queryInfo, Map.class);
+    }
+
+    public boolean wechatLogin(String code) throws IOException {
+        if(!wechatEnable) {
+            throw new RuntimeException("Can not support wechat!!!");
+        }
+
+        String url = String.format(
+                "https://api.weixin.qq.com/sns/jscode2session?appid=%s&secret=%s&js_code=%s&grant_type=authorization_code",
+                appid, secret, code);
+
+        String result = RequestUtils.get(url);
+
+        Map<String, String> map = JsonUtils.parse(result, Map.class);
+
+        return false;
     }
 }

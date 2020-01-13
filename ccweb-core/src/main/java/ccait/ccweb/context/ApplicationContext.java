@@ -315,7 +315,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyOnField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Date.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -472,7 +472,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyOnField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Date.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -543,7 +543,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyOnField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Date.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -613,7 +613,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyOnField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Date.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -683,7 +683,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyOnField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Date.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -770,7 +770,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyOnField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Date.class);
         columns.add(col);
 
         col = new ColumnInfo();

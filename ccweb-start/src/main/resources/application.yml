@@ -18,8 +18,8 @@ entity:
     aes:
       enable: true
     wechat:
-      token: tokenfd53sa411f32sd1f1sa
-      openid: openid4sa411f32sd1f1sa
+      appid: openid4sa411f32sd1f1sa
+      secret: tokenfd53sa411f32sd1f1sa
       enable: true
 
   defaultValue: #指定表字段为null时赋于默认值，UUID_RANDOM=UUID.randomUUID()，DATE_NOW=new Date()
@@ -41,8 +41,12 @@ entity:
       password: admin
 
   validation: #数据提交字段校验器，以下email、mobile为字段名，也可以精确校验:[表名].[字段名]
-    email: ^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$
-    mobile: ^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$
+    email:
+      match: ^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$
+      message: 请输入正确的电子邮箱格式
+    mobile:
+      match: ^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$
+      message: 请输入正确的手机号码
 
   formatter: #查询结果输出格式，createOn、modifyOn，也可以精确格式化:[表名].[字段名]
     createOn: yyyy-MM-dd HH:mm

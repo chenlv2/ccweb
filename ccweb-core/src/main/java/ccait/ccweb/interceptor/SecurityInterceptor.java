@@ -180,9 +180,20 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 }
 
                 String username = token.substring(0, token.length() - 32);
-                String password = token.substring(token.length() - 32);
+                String vaildCode = token.substring(token.length() - 32);
 
-                BaseController.login(username, password, request, response);
+                UserModel user = new UserModel();
+                user = user.where("username=#{username}").first();
+                if(user == null) {
+                    throw new RuntimeException("fail to get the token!!!");
+                }
+
+                String vaildCode2 = EncryptionUtil.md5(EncryptionUtil.encryptByAES(user.getId().toString(), user.getUsername() + aesPublicKey), "UTF-8");
+                if(!vaildCode2.equals(vaildCode)) {
+                    throw new RuntimeException("fail to get the token!!!");
+                }
+
+                BaseController.login(request, user);
                 return;
             }
 
