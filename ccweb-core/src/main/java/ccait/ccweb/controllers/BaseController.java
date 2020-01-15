@@ -1517,11 +1517,11 @@ public abstract class BaseController {
     }
 
     protected void download(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, false).invoke();
 
         TriggerContext.exec(table, EventType.Download, downloadData, request);
 
-        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType(), false);
+        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
         download(downloadData.getFilename(), downloadData.getMimeType(), downloadData.getBuffer());
     }
@@ -1555,11 +1555,11 @@ public abstract class BaseController {
     }
 
     protected Mono downloadAs(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, false).invoke();
 
         TriggerContext.exec(table, EventType.Download, downloadData, request);
 
-        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType(), false);
+        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
         return downloadAs(downloadData.getFilename(), downloadData.getBuffer());
     }
@@ -1595,11 +1595,11 @@ public abstract class BaseController {
     }
 
     protected void preview(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, true).invoke();
 
         TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
 
-        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType(), true);
+        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
         preview(downloadData.getMimeType(), buffer);
     }
@@ -1614,14 +1614,14 @@ public abstract class BaseController {
     }
 
     protected Mono previewAs(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, true).invoke();
         if(downloadData.getMimeType().indexOf("image") != 0) {
             throw new  Exception("不支持预览的文件格式");
         }
 
         TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
 
-        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType(), true);
+        byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
         return previewAs(downloadData.getMimeType(), buffer);
     }
@@ -1639,12 +1639,12 @@ public abstract class BaseController {
             })));
     }
 
-    private byte[] preDownloadProcess(DownloadData downloadData, MediaType mediaType, boolean isPreview) throws IOException, JCodecException {
+    private byte[] preDownloadProcess(DownloadData downloadData, MediaType mediaType) throws IOException, JCodecException {
 
         if(mediaType.getType().equalsIgnoreCase("image")) {
             BufferedImage image = ImageUtils.getImage(downloadData.getBuffer());
 
-            if(isPreview) {
+            if(downloadData.isPreview) {
                 image = previewProcess(image);
             }
 
@@ -1876,7 +1876,7 @@ public abstract class BaseController {
         decrypt(data);
 
         String content = data.get(field).toString();
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id);
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, false);
         String filePath = downloadData.getFullPath(content, currentDatasource, uploadConfigMap);
         if(!(new File(filePath)).exists()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -1902,14 +1902,15 @@ public abstract class BaseController {
         private byte[] buffer;
         private MediaType mediaType;
         private String path;
-        private boolean hasTempFile;
+        private String tempFilePath;
+        private boolean isPreview;
 
-        public DownloadData(String datasourceId, String table, String field, String id) {
+        public DownloadData(String datasourceId, String table, String field, String id, boolean isPreview) {
             this.table = table;
             this.field = field;
             this.id = id;
             this.datasourceId = datasourceId;
-            hasTempFile = false;
+            this.isPreview = isPreview;
         }
 
         public String getFilename() {
@@ -1964,7 +1965,6 @@ public abstract class BaseController {
             }
 
             else {
-                hasTempFile = true;
                 int splitPoint = content.indexOf("|::|");
                 String fileString = content.substring(splitPoint + 4);
                 String messageBody = content.substring(0, splitPoint);
@@ -1974,14 +1974,21 @@ public abstract class BaseController {
                 mediaType = new MediaType(arr[0], arr[1]);
 
                 buffer = new BASE64Decoder().decodeBuffer(fileString);
-                String filename = UUID.randomUUID().toString().replace("-", "");
-                String dir = String.format("%s/temp", System.getProperty("user.dir"));
-                this.path = dir + "/" + filename;
-                FileUtils.save(buffer, dir, filename);
+
+                saveTempFile(buffer);
             }
 
 
             return this;
+        }
+
+        public void saveTempFile(byte[] buffer) {
+            if(this.isPreview && mediaType.getType().equalsIgnoreCase("video")){
+                String filename = UUID.randomUUID().toString().replace("-", "");
+                String dir = String.format("%s/temp", System.getProperty("user.dir"));
+                this.tempFilePath = dir + "/" + filename;
+                FileUtils.save(buffer, dir, filename);
+            }
         }
 
         private String getFullPath(String content, String currentDatasource, Map<String, Object> uploadConfigMap) {
@@ -2005,7 +2012,6 @@ public abstract class BaseController {
             root = String.format("%s/%s/%s/%s", root, currentDatasource, table, field);
 
             String filePath = String.format("%s/%s", root, content);
-// /root/workerlib/root/workerlib/home/workerlib-ui/upload/qrcode/workerlib/alluser/qr_code/2020/01/580/87738a1469f148c5b820a7414fffe876/430703198112170471.png
             if((new File(System.getProperty("user.dir")+filePath)).exists()) {
                 filePath = System.getProperty("user.dir") + filePath;
             }
@@ -2015,10 +2021,10 @@ public abstract class BaseController {
 
         public void cleanTempFile() {
 
-            if(!this.hasTempFile) {
+            if(StringUtils.isEmpty(this.tempFilePath)) {
                 return;
             }
-            FileUtils.delete(this.path);
+            FileUtils.delete(this.tempFilePath);
         }
 
         public MediaType getMediaType() {

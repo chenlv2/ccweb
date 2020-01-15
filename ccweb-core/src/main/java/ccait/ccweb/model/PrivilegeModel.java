@@ -61,7 +61,7 @@ public class PrivilegeModel extends Queryable<PrivilegeModel> {
   private Date createOn;
 
   @Fieldname("${entity.table.reservedField.createBy:createBy}")
-  private Long createBy;
+  private Integer createBy;
 
   public String getPath() {
     return path;
@@ -79,11 +79,11 @@ public class PrivilegeModel extends Queryable<PrivilegeModel> {
     this.createOn = createOn;
   }
 
-  public Long getCreateBy() {
+  public Integer getCreateBy() {
     return createBy;
   }
 
-  public void setCreateBy(Long createBy) {
+  public void setCreateBy(Integer createBy) {
     this.createBy = createBy;
   }
 

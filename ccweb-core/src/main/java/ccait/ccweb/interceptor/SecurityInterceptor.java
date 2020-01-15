@@ -183,6 +183,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 String vaildCode = token.substring(token.length() - 32);
 
                 UserModel user = new UserModel();
+                user.setUsername(username);
                 user = user.where("username=#{username}").first();
                 if(user == null) {
                     throw new RuntimeException("fail to get the token!!!");

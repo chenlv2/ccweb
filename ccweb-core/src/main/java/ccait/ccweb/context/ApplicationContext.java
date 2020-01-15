@@ -240,7 +240,7 @@ public class ApplicationContext implements ApplicationContextAware {
 
             String pwd = getEncryptPassword();
             UserModel user = new UserModel();
-            user.setCreateBy(Long.valueOf(0));
+            user.setCreateBy(Integer.valueOf(0));
             user.setStatus(0);
             user.setCreateOn(Datetime.getTime());
             user.setUsername(admin);
@@ -284,7 +284,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName("userId");
         col.setCanNotNull(true);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -309,7 +309,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyByField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -326,7 +326,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(createByField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         try {
@@ -358,14 +358,14 @@ public class ApplicationContext implements ApplicationContextAware {
 
         col = new ColumnInfo();
         col.setColumnName(groupIdField);
-        col.setCanNotNull(true);
+        col.setCanNotNull(false);
         col.setMaxLength(32);
         col.setType(String.class);
         columns.add(col);
 
         col = new ColumnInfo();
         col.setColumnName(roleIdField);
-        col.setCanNotNull(true);
+        col.setCanNotNull(false);
         col.setMaxLength(32);
         col.setType(String.class);
         columns.add(col);
@@ -478,7 +478,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyByField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -489,7 +489,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(createByField);
         col.setCanNotNull(true);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         try {
@@ -549,7 +549,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyByField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -560,7 +560,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(createByField);
         col.setCanNotNull(true);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         try {
@@ -619,7 +619,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyByField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -630,7 +630,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(createByField);
         col.setCanNotNull(true);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         try {
@@ -689,7 +689,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyByField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -700,7 +700,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(createByField);
         col.setCanNotNull(true);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         try {
@@ -722,7 +722,7 @@ public class ApplicationContext implements ApplicationContextAware {
         user.setPath("0");
         user.setCreateOn(new Date());
         user.setStatus(0);
-        user.setCreateBy(Long.valueOf(0));
+        user.setCreateBy(Integer.valueOf(0));
 
         if(allTables.stream().filter(a->a.toLowerCase().equals(userTablename.toLowerCase())).findAny().isPresent()) {
             log.info(String.format(LOG_PRE_SUFFIX + "数据源初始化：数据表[%s]已存在！", userTablename));
@@ -742,7 +742,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col.setIsAutoIncrement(true);
         col.setCanNotNull(true);
         col.setMaxLength(16);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         col.setPrimaryKey(true);
         columns.add(col);
 
@@ -776,7 +776,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(modifyByField);
         col.setCanNotNull(false);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         col = new ColumnInfo();
@@ -787,7 +787,7 @@ public class ApplicationContext implements ApplicationContextAware {
         col = new ColumnInfo();
         col.setColumnName(createByField);
         col.setCanNotNull(true);
-        col.setType(Long.class);
+        col.setType(Integer.class);
         columns.add(col);
 
         col = new ColumnInfo();

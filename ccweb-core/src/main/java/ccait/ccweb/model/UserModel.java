@@ -44,7 +44,7 @@ public class UserModel extends Queryable<UserModel> {
   private Date createOn;
 
   @Fieldname("${entity.table.reservedField.createBy:createBy}")
-  private Long createBy;
+  private Integer createBy;
 
   @Fieldname("${entity.table.reservedField.modifyOn:modifyOn}")
   private Date modifyOn;
@@ -66,11 +66,11 @@ public class UserModel extends Queryable<UserModel> {
     this.createOn = createOn;
   }
 
-  public Long getCreateBy() {
+  public Integer getCreateBy() {
     return createBy;
   }
 
-  public void setCreateBy(Long createBy) {
+  public void setCreateBy(Integer createBy) {
     this.createBy = createBy;
   }
 
