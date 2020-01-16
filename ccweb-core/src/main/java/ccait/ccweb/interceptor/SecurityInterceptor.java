@@ -57,9 +57,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
     @Value("${entity.security.admin.username:admin}")
     private String admin;
 
-    @Value("${entity.security.admin.password:}")
-    private String password;
-
     @Value("${entity.ip.whiteList:}")
     private String whiteListText;
 
