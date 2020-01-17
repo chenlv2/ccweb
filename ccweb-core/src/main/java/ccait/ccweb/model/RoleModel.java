@@ -48,7 +48,7 @@ public class RoleModel extends Queryable<RoleModel> {
   private Date modifyOn;
 
   @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
-  private Long modifyBy;
+  private Integer modifyBy;
 
   public String getPath() {
     return path;
@@ -82,11 +82,11 @@ public class RoleModel extends Queryable<RoleModel> {
     this.modifyOn = modifyOn;
   }
 
-  public Long getModifyBy() {
+  public Integer getModifyBy() {
     return modifyBy;
   }
 
-  public void setModifyBy(Long modifyBy) {
+  public void setModifyBy(Integer modifyBy) {
     this.modifyBy = modifyBy;
   }
 

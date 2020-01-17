@@ -13,6 +13,7 @@ package ccait.ccweb.trigger;
 
 
 import ccait.ccweb.annotation.Trigger;
+import ccait.ccweb.config.LangConfig;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EncryptMode;
 import ccait.ccweb.filter.RequestWrapper;
@@ -81,13 +82,13 @@ public final class UserTableTrigger implements ITrigger {
 
                 if ("username".equals(lowerKey) || data.get(key) == null) {
                     if (data.get(key) == null) {
-                        throw new Exception("username can not be empty!!!");
+                        throw new Exception(LangConfig.getInstance().get("username_can_not_be_empty"));
                     }
 
                     UserModel user = new UserModel();
                     user.setUsername(data.get(key).toString());
                     if (user.where("[username]=#{username}").exist()) {
-                        throw new Exception(String.format("username %s already exist!!!", data.get(key)));
+                        throw new Exception(String.format(LangConfig.getInstance().get("username_already_exist"), data.get(key)));
                     }
                 }
             }
@@ -109,7 +110,7 @@ public final class UserTableTrigger implements ITrigger {
         for (String key : keys) {
             String lowerKey = key.toLowerCase();
             if("username".equals(lowerKey)) {
-                throw new Exception("username can not be modify!!!");
+                throw new Exception(LangConfig.getInstance().get("username_can_not_be_modify"));
             }
 
             if(userIdField.toLowerCase().equals(lowerKey)) {
@@ -149,15 +150,15 @@ public final class UserTableTrigger implements ITrigger {
 
         if(admin.equals(user.getUsername())) {
             UserModel currentUser = new UserModel();
-            currentUser.setId(Long.parseLong(attrs.get(userIdField)));
+            currentUser.setId(Integer.parseInt(attrs.get(userIdField)));
             currentUser = currentUser.where("[id]=#{id}").first();
             if(currentUser != null && currentUser.getUsername().equals(admin)) {
-                throw new Exception("admin can not be removed!!!");
+                throw new Exception(LangConfig.getInstance().get("admin_can_not_be_removed"));
             }
         }
 
         if(attrs.get(userIdField).equals(user.getId().toString())) {
-            throw new Exception("can not delete self!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_delete_self"));
         }
 
         request.setAttribute(VARS_PATH, attrs);

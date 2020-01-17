@@ -12,6 +12,7 @@
 package ccait.ccweb.model;
 
 
+import ccait.ccweb.config.LangConfig;
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.enums.Algorithm;
@@ -479,9 +480,9 @@ public class QueryInfo implements Serializable {
         switch(privilegeScope) {
             case DENIED:
                 if(user == null) {
-                    throw new HttpException("Session maybe to timeout!!!");
+                    throw new HttpException(LangConfig.getInstance().get("session_maybe_to_timeout"));
                 }
-                throw new Exception("Data access denied!!!");
+                throw new Exception(LangConfig.getInstance().get("data_access_denied"));
             case SELF:
                 if(!EntitesGenerator.hasColumn(dataSource.getId(), tablename, createByFieldString)) {
                     where = where.and(String.format("%s=%s", createByFieldString, user.getId()));
@@ -510,13 +511,9 @@ public class QueryInfo implements Serializable {
                 break;
             case GROUP:
 
-                if(!EntityContext.hasColumn(dataSource.getId(), tablename, context.groupIdField)) {
-                    break;
-                }
-
-                List<Long> userIdByGroups = (List<Long>)ApplicationContext.getThreadLocalMap().get(CURRENT_USERID_BY_GROUPS);
+                List<Integer> userIdByGroups = (List<Integer>)ApplicationContext.getThreadLocalMap().get(CURRENT_USERID_BY_GROUPS);
                 if(userIdByGroups.size() > 0) {
-                    //查询非公开数据
+                    //查询同组数据
                     where = where.and(String.format("%s in ('%s')", createByField, join("', '", userIdByGroups)));
                 }
                 break;
@@ -552,7 +549,7 @@ public class QueryInfo implements Serializable {
         }
         catch (Exception e) {
             if(info.getAlgorithm() == null) {
-                throw new Exception("Algorithm can not be empty!!!");
+                throw new Exception(LangConfig.getInstance().get("algorithm_can_not_be_empty"));
             }
 
             throw e;
@@ -569,7 +566,7 @@ public class QueryInfo implements Serializable {
     public Where getWhereQueryableById(Object entity, String id) throws Exception {
         PrimaryKeyInfo pk = EntityContext.getPrimaryKeyInfo(entity);
         if(pk == null) {
-            throw new Exception("Can not find primary key!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_primary_key"));
         }
 
         ReflectionUtils.invoke(entity.getClass(), entity, pk.getSetter(), cast(pk.getField().getType(), id));

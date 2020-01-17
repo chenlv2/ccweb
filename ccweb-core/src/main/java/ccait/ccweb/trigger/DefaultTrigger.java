@@ -13,6 +13,7 @@ package ccait.ccweb.trigger;
 
 
 import ccait.ccweb.annotation.*;
+import ccait.ccweb.config.LangConfig;
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.controllers.BaseController;
@@ -68,13 +69,6 @@ public final class DefaultTrigger {
 
     @Value("${entity.table.reservedField.modifyBy:modifyBy}")
     private String modifyByField;
-
-    @Value("${entity.encoding:UTF-8}")
-    private String encoding;
-
-    @Value("${entity.table.reservedField.groupId:groupId}")
-    private String groupIdField;
-
 
     @Autowired
     private QueryInfo queryInfo;
@@ -168,7 +162,7 @@ public final class DefaultTrigger {
 
         Object entity = EntityContext.getEntity(BaseController.getTablename(), queryInfo);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         Queryable query = (Queryable)entity;
@@ -243,7 +237,7 @@ public final class DefaultTrigger {
                         if(vaildation.containsKey("message")) {
                             throw new Exception(vaildation.get("message").toString());
                         }
-                        throw new Exception("无效的参数(" + key + " field has invalid parameter value!!!)");
+                        throw new Exception(key + LangConfig.getInstance().get("field_has_invalid_parameter_value"));
                     }
                 }
             }
@@ -272,7 +266,7 @@ public final class DefaultTrigger {
                         .findAny();
 
                 if(opt.isPresent() && !Pattern.matches(opt.get().toString(), condition.getValue().toString())){
-                    throw new Exception("无效的参数(" + condition.getName() + " field has invalid parameter value!!!)");
+                    throw new Exception(condition.getName() + LangConfig.getInstance().get("field_has_invalid_parameter_value"));
                 }
             }
         }

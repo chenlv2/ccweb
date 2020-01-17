@@ -12,6 +12,7 @@
 package ccait.ccweb.controllers;
 
 
+import ccait.ccweb.config.LangConfig;
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.EntityContext;
 import ccait.ccweb.context.IndexingContext;
@@ -738,16 +739,14 @@ public abstract class BaseController {
                 break;
             case GROUP:
 
-                if(!data.containsKey(groupIdField)) { //公开数据
+                if(!data.containsKey(createByField)) { //公开数据
                     return true;
                 }
 
-                if(data.get(groupIdField) != null) {
+                if(data.get(createByField) != null && data.get(createByField) != null) {
 
-                    Optional<UserGroupRoleModel> opt = getLoginUser().getUserGroupRoleModels().stream()
-                            .filter(a -> a.getGroupId().equals(data.get(groupIdField))).findAny();
-
-                    if(opt!= null && opt.isPresent()) { //存在相同的组
+                    List<Integer> userIdByGroups = (List<Integer>)ApplicationContext.getThreadLocalMap().get(CURRENT_USERID_BY_GROUPS);
+                    if(userIdByGroups.contains((Integer) data.get(createByField))) {
                         return true;
                     }
                 }
@@ -778,7 +777,7 @@ public abstract class BaseController {
     public static UserModel login(String username, String passwordEncode, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if(StringUtils.isEmpty(username) || StringUtils.isEmpty(passwordEncode)) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            throw new Exception("Username and password can not be empty!!!");
+            throw new Exception(LangConfig.getInstance().get("username_and_password_can_not_be_empty"));
         }
 
         UserModel user = new UserModel();
@@ -795,11 +794,11 @@ public abstract class BaseController {
 
     public static UserModel login(HttpServletRequest request, UserModel user) throws Exception {
         if(user == null) {
-            throw new Exception("Username or password is invalid!!!");
+            throw new Exception(LangConfig.getInstance().get("username_or_password_is_invalid"));
         }
 
         if(user.getStatus() != null && !user.getStatus().equals(0)) {
-            throw new Exception("user status has been frozen!!!");
+            throw new Exception(LangConfig.getInstance().get("user_status_has_been_frozen"));
         }
 
         user.getUserGroupRoleModels().stream().forEach((item)->{
@@ -817,10 +816,10 @@ public abstract class BaseController {
                 .collect(Collectors.toList());
 
         UserGroupRoleModel userGroupRoleModel = new UserGroupRoleModel();
-        List<Long> userIdListByGroups = new ArrayList<Long>();
+        List<Integer> userIdListByGroups = new ArrayList<Integer>();
         if(groupIdList.size() > 0) {
             userIdListByGroups = userGroupRoleModel.where(String.format("groupId in ('%s')", join("', '", groupIdList)))
-                    .select("userId").query(Long.class);
+                    .select("userId").query(Integer.class);
         }
         ApplicationContext.getThreadLocalMap().put(CURRENT_USERID_BY_GROUPS, userIdListByGroups);
 
@@ -850,7 +849,7 @@ public abstract class BaseController {
         }
         Object entity = EntityContext.getEntityId(getCurrentDatasourceId(), table, strid);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         Where where = null;
@@ -859,7 +858,7 @@ public abstract class BaseController {
             Maybe<Map> flow = where.asyncFirst(Map.class);
             Map data = flow.blockingGet();
             if(data == null) {
-                throw new Exception("Can not find data for delete!!!");
+                throw new Exception(LangConfig.getInstance().get("can_not_find_data_for_delete"));
             }
 
             if(!checkDataPrivilege(table, data)) {
@@ -886,13 +885,13 @@ public abstract class BaseController {
     public Integer delete(String table, String id) throws Exception {
         Object entity = EntityContext.getEntityId(getCurrentDatasourceId(), table, id);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         Where where = queryInfo.getWhereQueryableById(entity, id);
         Map<String, Object> data = (Map<String, Object>) where.first(Map.class);
         if(data == null) {
-            throw new Exception("Can not find data for delete!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_data_for_delete"));
         }
 
         if(!checkDataPrivilege(table, data)) {
@@ -998,16 +997,16 @@ public abstract class BaseController {
 
     private Where getWhereQueryableByJoin(QueryInfo queryInfo) throws Exception {
         if(queryInfo.getJoinTables() == null || queryInfo.getJoinTables().size() < 1) {
-            throw new Exception("join tables can not be empty!!!");
+            throw new Exception(LangConfig.getInstance().get("join_tables_can_not_be_empty"));
         }
 
         if(queryInfo.getJoinTables().size() < 2) {
-            throw new Exception("join tables can not be less tow!!!");
+            throw new Exception(LangConfig.getInstance().get("join_tables_can_not_be_less_tow"));
         }
 
         if(queryInfo.getJoinTables().stream().filter(a->a.getOnList() == null ||
                 a.getOnList().size() < 1).count() == queryInfo.getJoinTables().size()) {
-            throw new Exception("onList can not be empty!!!");
+            throw new Exception(LangConfig.getInstance().get("onlist_can_not_be_empty"));
         }
 
         encrypt(queryInfo.getConditionList());
@@ -1101,7 +1100,7 @@ public abstract class BaseController {
     public List query(String table, QueryInfo queryInfo, boolean byExport) throws Exception {
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         encrypt(queryInfo.getConditionList());
@@ -1140,11 +1139,11 @@ public abstract class BaseController {
 
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         if(queryInfo == null) {
-            throw new Exception("Invalid post data!!!");
+            throw new Exception(LangConfig.getInstance().get("invalid_post_data"));
         }
 
         Map<String, Object> postData = queryInfo.getData();
@@ -1241,12 +1240,12 @@ public abstract class BaseController {
 
         UserModel user = getLoginUser();
         if(user == null || !admin.equals(user.getUsername())) {
-            throw new Exception("You are not administrator!!!");
+            throw new Exception(LangConfig.getInstance().get("you_are_not_administrator"));
         }
 
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         Queryable query = (Queryable)entity;
@@ -1270,15 +1269,15 @@ public abstract class BaseController {
 
         UserModel user = getLoginUser();
         if(user == null || !admin.equals(user.getUsername())) {
-            throw new Exception("You are not administrator!!!");
+            throw new Exception(LangConfig.getInstance().get("you_are_not_administrator"));
         }
 
         if(queryInfo.getJoinTables() == null || queryInfo.getJoinTables().size() < 1) {
-            throw new Exception("join tables can not be empty!!!");
+            throw new Exception(LangConfig.getInstance().get("join_tables_can_not_be_empty"));
         }
 
         if(queryInfo.getJoinTables().size() < 2) {
-            throw new Exception("join tables can not be less tow!!!");
+            throw new Exception(LangConfig.getInstance().get("join_tables_can_not_be_less_tow"));
         }
 
         encrypt(queryInfo.getConditionList());
@@ -1367,7 +1366,7 @@ public abstract class BaseController {
         Object entity = EntityContext.getEntity(table, postData, id);
 
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         encrypt(postData);
@@ -1380,7 +1379,7 @@ public abstract class BaseController {
 
         Map data = (Map) where.first(Map.class);
         if(data == null) {
-            throw new Exception("Can not find data for update!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_data_for_update"));
         }
 
         if(!checkDataPrivilege(table, data)) {
@@ -1426,7 +1425,7 @@ public abstract class BaseController {
     public String insert(String table, Map<String, Object> postData, String idField) throws Exception {
         Object entity = EntityContext.getEntity(table, postData);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         encrypt(postData);
@@ -1482,7 +1481,7 @@ public abstract class BaseController {
     public Long count(String table, QueryInfo queryInfo) throws Exception {
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         encrypt(queryInfo.getConditionList());
@@ -1501,7 +1500,7 @@ public abstract class BaseController {
     public Boolean exist(String table, QueryInfo queryInfo) throws Exception {
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         encrypt(queryInfo.getConditionList());
@@ -1523,7 +1522,7 @@ public abstract class BaseController {
 
         byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
-        download(downloadData.getFilename(), downloadData.getMimeType(), downloadData.getBuffer());
+        download(downloadData.getFilename(), downloadData.getMimeType(), buffer);
     }
 
     protected void download(String filename, String mimeType, byte[] data) throws IOException {
@@ -1561,7 +1560,7 @@ public abstract class BaseController {
 
         byte[] buffer = preDownloadProcess(downloadData, downloadData.getMediaType());
 
-        return downloadAs(downloadData.getFilename(), downloadData.getBuffer());
+        return downloadAs(downloadData.getFilename(), buffer);
     }
 
     protected Mono downloadAs(String filename, byte[] data) throws IOException {
@@ -1616,7 +1615,7 @@ public abstract class BaseController {
     protected Mono previewAs(String table, String field, String id) throws Exception {
         DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, true).invoke();
         if(downloadData.getMimeType().indexOf("image") != 0) {
-            throw new  Exception("不支持预览的文件格式");
+            throw new  Exception(LangConfig.getInstance().get("not_support_file_format"));
         }
 
         TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
@@ -1640,6 +1639,10 @@ public abstract class BaseController {
     }
 
     private byte[] preDownloadProcess(DownloadData downloadData, MediaType mediaType) throws IOException, JCodecException {
+
+        if(downloadData.getBuffer() == null) {
+            return null;
+        }
 
         if(mediaType.getType().equalsIgnoreCase("image")) {
             BufferedImage image = ImageUtils.getImage(downloadData.getBuffer());
@@ -1737,13 +1740,13 @@ public abstract class BaseController {
                 if (!StringUtils.splitString2List(configMap.get("mimeType").toString(), ",").stream()
                         .filter(a -> extName.equalsIgnoreCase(a.toString().trim()))
                         .findAny().isPresent()) {
-                    throw new IOException("Can not supported file type!!!");
+                    throw new IOException(LangConfig.getInstance().get("can_not_supported_file_type"));
                 }
             }
 
             if (configMap.get("maxSize") != null) {
                 if (fileBytes.length > 1024 * 1024 * Integer.parseInt(configMap.get("maxSize").toString())) {
-                    throw new IOException("Upload field to be long!!!");
+                    throw new IOException(LangConfig.getInstance().get("can_not_supported_file_type"));
                 }
             }
 
@@ -1849,7 +1852,7 @@ public abstract class BaseController {
         }
 
         else {
-            throw new IOException("Can not supported file type!!!");
+            throw new IOException(LangConfig.getInstance().get("can_not_supported_file_type"));
         }
         return headerList;
     }
@@ -1870,7 +1873,7 @@ public abstract class BaseController {
 
         Map<String, Object> data = get(table, id);
         if(!data.containsKey(field)) {
-            throw new Exception("wrong field name!!!");
+            throw new Exception(LangConfig.getInstance().get("wrong_field_name"));
         }
 
         decrypt(data);
@@ -1936,7 +1939,7 @@ public abstract class BaseController {
         public DownloadData invoke() throws Exception {
             Map<String, Object> data = get(table, id);
             if(!data.containsKey(field)) {
-                throw new Exception("wrong field name!!!");
+                throw new Exception(LangConfig.getInstance().get("wrong_field_name"));
             }
 
             decrypt(data);
@@ -1944,7 +1947,7 @@ public abstract class BaseController {
             String content = data.get(field).toString();
 
             if(StringUtils.isEmpty(content)) {
-                throw new Exception("can not find image in the field!");
+                throw new Exception(LangConfig.getInstance().get("image_field_is_empty"));
             }
 
             Map<String, Object> uploadConfigMap = ApplicationConfig.getInstance().getMap(
@@ -2141,7 +2144,7 @@ public abstract class BaseController {
     public SearchData search(String table, QueryInfo queryInfo) throws Exception {
         Object entity = EntityContext.getEntity(table, queryInfo);
         if(entity == null) {
-            throw new Exception("Can not find entity!!!");
+            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
         encrypt(queryInfo.getConditionList());

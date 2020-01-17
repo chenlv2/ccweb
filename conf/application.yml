@@ -1,0 +1,265 @@
+
+# 1.ccweb配置
+
+entity:
+  lang: cn
+  datasource: workerlib #可通过url的{datasource}参数访问到该数据库，没有在此设置的environment不能通过url访问到
+  queryable:
+    configFile: db-config.xml #数据库配置路径
+  ignoreTotalCount: true #忽略查询总数
+  package: ccait.ccweb.entites #实体类生成包路径
+  suffix: Entity #实体类生成类名后辍
+
+  page: #分页配置选项
+    maxSize: 50 #分页最大记录数默认值
+  defaultDateByNow: false
+
+  auth:
+    jwt:
+      millis: 600000
+      enable: true
+    aes:
+      enable: true
+    wechat:
+      appid: openid4sa411f32sd1f1sa
+      secret: tokenfd53sa411f32sd1f1sa
+      enable: true
+
+  defaultValue: #指定表字段为null时赋于默认值，UUID_RANDOM=UUID.randomUUID()，DATE_NOW=new Date()
+      userGroupRoleId: UUID_RANDOM
+      role.roleId: UUID_RANDOM
+      group.groupId: UUID_RANDOM
+      privilegeId: UUID_RANDOM
+      acl.aclId: UUID_RANDOM
+      project.project_id: UUID_RANDOM
+      unit.unit_id: UUID_RANDOM
+      archives.archives_id: UUID_RANDOM
+      archives.eafId: UUID_RANDOM
+      alluser.eafId: UUID_RANDOM
+
+  security:
+    encrypt:
+      MD5: #MD5加密配置
+        fields: user.password #需要使用MD5加密的字段，逗号分隔
+        publicKey: ccait@2019 #MD5加密公钥
+      AES: #AES加密配置
+        publicKey: ccait@2019 #AES加密公钥
+    admin:
+      username: admin
+      password: admin
+
+  validation:
+    email:
+      match: ^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$
+      message: 请输入正确的电子邮箱格式
+    mobile:
+      match: ^((13[0-9])|(14[5,7])|(15[0-3,5-9])|(17[0,3,5-8])|(18[0-9])|166|198|199|(147))\\d{8}$
+      message: 请输入正确的手机号码
+
+  formatter:
+    createOn: yyyy-MM-dd HH:mm
+    modifyOn: yyyy-MM-dd HH:mm
+    start_time: yyyy-MM-dd HH:mm
+    end_time: yyyy-MM-dd HH:mm
+    startTime: yyyy-MM-dd HH:mm
+    endTime: yyyy-MM-dd HH:mm
+    evaluateTime: yyyy-MM-dd HH:mm
+    appraise_time: yyyy-MM-dd HH:mm
+
+  table:
+    reservedField:
+      userPath: userPath #创建者所属路径，体现父子关系，用于like查询
+      createOn: createOn #数据创建时间
+      createBy: createBy #数据创建者
+      modifyOn: modifyOn #数据修改时间
+      groupId: groupId  #群组ID
+      roleId: roleId #角色ID
+      aclId: roleId #访问控制ID
+      privilegeId: privilegeId #权限ID
+      userGroupRoleId: userGroupRoleId #用户组角色关联ID
+      userId: id #用户ID(整型，会被计算到userPath中)
+      id: id #系统默认id字段名
+
+    #系统保留表(必填)
+    user: user #用户表
+    group: group #分组表
+    role: role #角色表
+    acl: acl #访问控制表
+    privilege: privilege #操作权限表
+    userGroupRole: userGroupRole #用户/组/角色关联关系
+
+    display: #需要隐藏的字段，设为hidden的字段不会在查询结果中显示
+      user:
+        password: hidden
+
+  upload:
+    workerlib:
+      cultivate_video:
+        file:
+          maxSize: 200 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg, mp4, ogg, webm #允许上传的文件格式
+          path: /home/workerlib-ui/upload/cultivate
+      indexVideo:
+        file:
+          maxSize: 200 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg, mp4, ogg, webm #允许上传的文件格式
+          path: /home/workerlib-ui/upload/cultivate
+      people: #表名
+        code: #字段名
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload/qrcode
+      alluser:
+        qr_code:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload/qrcode
+        photo:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        id_card_front:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        id_card_reverse:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        certificate:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+      worktype:
+        certificate:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+      appraise_photo:
+        photo:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+      archives:
+        photo:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        id_card_front:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        id_card_reverse:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        certificate:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+      courseware:
+        cover_picture:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+        video:
+          maxSize: 200 #上传文件最大尺寸，单位: MB
+          mimeType: mp4, ogg, webm #允许上传的文件格式
+          path: /home/workerlib-ui/upload/courseware/video #上传路径的绝对路径
+      lecturer:
+        photo:
+          maxSize: 5 #上传文件最大尺寸，单位: MB
+          mimeType: gif, jpg, png, jpeg #允许上传的文件格式
+          path: /home/workerlib-ui/upload #上传路径的绝对路径
+
+  download:
+    thumb:
+      fixedWidth: 200 #固定宽度
+      scalRatio: 0 #缩放比率(百分比)
+      watermark: watermark.png #水印
+
+  enableFlux: true   #是否开启web异步响应流
+
+#  ip:
+#    whiteList:  #IP白名单
+#    blackList:  #IP黑名单
+
+  elasticSearch:
+    enable: false
+    defaultMatch: match_all
+    timeout: 10000
+    url: 127.0.0.1:9200;127.0.0.1:9500 #分号分隔
+    indexs:
+      user_username: user.username #key＝indexname, value=[{tablename}].{fieldname}
+    highlight:
+      user:
+        fields: username ，逗号分隔
+        fragmentSize: 200
+        preTags: <em>
+        postTags: </em>
+        script: painless
+        painless:
+          password: "doc['password']=\"*****\"; return doc['password'];"
+
+
+
+# 2.SpringCloud配置
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/ #注册中心
+server:
+  port: 8080 #端口号
+
+feign:
+  hystrix:
+    enabled: true
+
+spring:
+  application:
+    name: ccait.ccweb #服务名
+  datasource:
+    druid:
+      test-on-borrow: true
+      test-while-idle: true
+  zipkin:
+    base-url: http://localhost:9411
+  thymeleaf:
+    cache: false
+  devtools:
+    livereload:
+      enabled: true
+  session:
+    store-type: none #none, redis, mongo
+    cookie:
+      max-age: 43200000
+    persistent: false
+
+  mvc:
+    async:
+      request-timeout: 5000
+    static-path-pattern: /** #静态文件请求匹配方式
+  resources:
+    static-locations: classpath:/templates/,classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/
+
+  redis:
+    host: 127.0.0.1
+    port: 6667
+    database: 0
+    timeout: 6000000
+
+
+# 3.log4j配置
+log4j:
+  config:
+    path: log4j2.xml #日志配置路径，可选
+  logger:
+    org:
+      springframework:
+        cloud: OFF
+
+
+# 4.websocket配置
+websocket:
+  url: ws://127.0.0.1:8777/websocket
+  enable: false

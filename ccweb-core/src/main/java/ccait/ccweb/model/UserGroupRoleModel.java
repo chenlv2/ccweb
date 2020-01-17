@@ -50,7 +50,7 @@ public class UserGroupRoleModel extends Queryable<UserGroupRoleModel> {
     private Date modifyOn;
 
     @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
-    private Long modifyBy;
+    private Integer modifyBy;
 
     public Date getCreateOn() {
         return createOn;
@@ -76,11 +76,11 @@ public class UserGroupRoleModel extends Queryable<UserGroupRoleModel> {
         this.modifyOn = modifyOn;
     }
 
-    public Long getModifyBy() {
+    public Integer getModifyBy() {
         return modifyBy;
     }
 
-    public void setModifyBy(Long modifyBy) {
+    public void setModifyBy(Integer modifyBy) {
         this.modifyBy = modifyBy;
     }
 

@@ -28,7 +28,7 @@ public class UserModel extends Queryable<UserModel> {
 
   @AutoIncrement
   @Fieldname("id")
-  private Long id;
+  private Integer id;
 
   @PrimaryKey
   @Fieldname("username")
@@ -50,7 +50,7 @@ public class UserModel extends Queryable<UserModel> {
   private Date modifyOn;
 
   @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
-  private Long modifyBy;
+  private Integer modifyBy;
 
   @Fieldname("status")
   private Integer status;
@@ -82,11 +82,11 @@ public class UserModel extends Queryable<UserModel> {
     this.modifyOn = modifyOn;
   }
 
-  public Long getModifyBy() {
+  public Integer getModifyBy() {
     return modifyBy;
   }
 
-  public void setModifyBy(Long modifyBy) {
+  public void setModifyBy(Integer modifyBy) {
     this.modifyBy = modifyBy;
   }
 
@@ -103,7 +103,7 @@ public class UserModel extends Queryable<UserModel> {
       return userGroupRoleModels;
     }
 
-    if(getId().compareTo(Long.valueOf(0)) < 1) {
+    if(getId().compareTo(Integer.valueOf(0)) < 1) {
       return userGroupRoleModels;
     }
 
@@ -120,11 +120,11 @@ public class UserModel extends Queryable<UserModel> {
     return userGroupRoleModels;
   }
 
-  public Long getId() {
+  public Integer getId() {
     return this.id;
   }
 
-  public void setId(Long id) {
+  public void setId(Integer id) {
     this.id = id;
   }
 

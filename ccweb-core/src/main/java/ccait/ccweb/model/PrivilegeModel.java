@@ -95,11 +95,11 @@ public class PrivilegeModel extends Queryable<PrivilegeModel> {
     this.modifyOn = modifyOn;
   }
 
-  public Long getModifyBy() {
+  public Integer getModifyBy() {
     return modifyBy;
   }
 
-  public void setModifyBy(Long modifyBy) {
+  public void setModifyBy(Integer modifyBy) {
     this.modifyBy = modifyBy;
   }
 
@@ -107,7 +107,7 @@ public class PrivilegeModel extends Queryable<PrivilegeModel> {
   private Date modifyOn;
 
   @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
-  private Long modifyBy;
+  private Integer modifyBy;
 
   public UUID getPrivilegeId() {
     return this.privilegeId;

@@ -54,11 +54,11 @@ public class GroupModel extends Queryable<GroupModel> {
     this.modifyOn = modifyOn;
   }
 
-  public Long getModifyBy() {
+  public Integer getModifyBy() {
     return modifyBy;
   }
 
-  public void setModifyBy(Long modifyBy) {
+  public void setModifyBy(Integer modifyBy) {
     this.modifyBy = modifyBy;
   }
 
@@ -72,7 +72,7 @@ public class GroupModel extends Queryable<GroupModel> {
   private Date modifyOn;
 
   @Fieldname("${entity.table.reservedField.modifyBy:modifyBy}")
-  private Long modifyBy;
+  private Integer modifyBy;
 
   public UUID getGroupId() {
     return this.groupId;

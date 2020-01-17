@@ -12,6 +12,7 @@
 package ccait.ccweb.interceptor;
 
 import ccait.ccweb.annotation.AccessCtrl;
+import ccait.ccweb.config.LangConfig;
 import ccait.ccweb.context.ApplicationContext;
 import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.controllers.BaseController;
@@ -122,8 +123,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             //  null == request.getHeader("x-requested-with") TODO 暂时用这个来判断是否为ajax请求
             // 如果没有权限 则抛403异常 springboot会处理，跳转到 /error/403 页面
-            // response.sendError(HttpStatus.FORBIDDEN.value(), "没有足够的权限访问请求的内容");
-            throw new Exception("没有足够的权限访问请求的内容");
+            // response.sendError(HttpStatus.FORBIDDEN.value(), LangConfig.getInstance().get("has_not_privilege"));
+            throw new Exception(LangConfig.getInstance().get("has_not_privilege"));
         }
         else {
             return true;
@@ -151,7 +152,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 userId = JWT.decode(token).getClaim("id").asString();
 
                 UserModel user = new UserModel();
-                user.setId(Long.parseLong(userId));
+                user.setId(Integer.parseInt(userId));
                 user = user.where("id=#{id}").first();
                 if (user == null) {
                     throw new RuntimeException("非法用户！");
@@ -257,13 +258,13 @@ public class SecurityInterceptor implements HandlerInterceptor {
                     if (!StringUtils.splitString2List(configMap.get("mimeType").toString(), ",").stream()
                             .filter(a -> extName.equalsIgnoreCase(a.toString().trim()))
                             .findAny().isPresent()) {
-                        throw new Exception("Can not supported file type!!!");
+                        throw new IOException(LangConfig.getInstance().get("can_not_supported_file_type"));
                     }
                 }
 
                 if (configMap.get("maxSize") != null) {
                     if (fileBytes.length > 1024 * 1024 * Integer.parseInt(configMap.get("maxSize").toString())) {
-                        throw new Exception("Upload field to be long!!!");
+                        throw new IOException(LangConfig.getInstance().get("upload_field_to_be_long"));
                     }
                 }
 
@@ -523,6 +524,10 @@ public class SecurityInterceptor implements HandlerInterceptor {
         PrivilegeModel privilege = new PrivilegeModel();
         List<String> roleIdList = user.getUserGroupRoleModels().stream()
                 .map(a->a.getRoleId().toString().replace("-","")).collect(Collectors.toList());
+
+        roleIdList = roleIdList.stream().collect(
+                Collectors.collectingAndThen(Collectors.toCollection(() ->
+                        new TreeSet<>(Comparator.comparing(o -> o))), ArrayList::new));
 
         List<PrivilegeModel> privilegeList = new ArrayList<PrivilegeModel>();
         if(roleIdList.size() > 0) {
