@@ -27,31 +27,31 @@ en:
     username_or_password_is_invalid: Username or password is invalid
     username_and_password_can_not_be_empty: Username and password can not be empty
 cn: 
-    can_not_delete_self: can not delete self
-    admin_can_not_be_removed: admin can not be removed
-    username_can_not_be_modify: username can not be modify
-    username_already_exist: username %s already exist
-    username_can_not_be_empty: username can not be empty
-    field_has_invalid_parameter_value: field has invalid parameter value
-    can_not_find_entity: Can not find entity
-    can_not_find_primary_key: Can not find primary key
-    algorithm_can_not_be_empty: Algorithm can not be empty
-    data_access_denied: Data access denied
-    session_maybe_to_timeout: Session maybe to timeout
-    upload_field_to_be_long: Upload field to be long
-    can_not_supported_file_type: Can not supported file type
+    can_not_delete_self: 不能删除本账号
+    admin_can_not_be_removed: 不能删除超级管理员
+    username_can_not_be_modify: 不能修改用户名
+    username_already_exist: 用户名【%s】已经存在
+    username_can_not_be_empty: 用户名不能为空
+    field_has_invalid_parameter_value: 字段存在无效的参数值
+    can_not_find_entity: 无法查找到关系映射的实体
+    can_not_find_primary_key: 实体类找不到主键
+    algorithm_can_not_be_empty: 查询条件不能为空
+    data_access_denied: 数据访问被拒绝
+    session_maybe_to_timeout: 用户登陆超时
+    upload_field_to_be_long: 上传文件超出长度
+    can_not_supported_file_type: 不支持的文件类型
     has_not_privilege: 没有足够的权限访问请求的内容
-    image_field_is_empty: can not find image in the field
-    wrong_field_name: wrong field name
+    image_field_is_empty: 找不到图片，可能数据字段为空
+    wrong_field_name: 输入了错误的字段名
     not_support_file_format: 不支持预览的文件格式
-    can_not_find_data_for_update: Can not find data for update
-    join_tables_can_not_be_less_tow: join tables can not be less tow
-    join_tables_can_not_be_empty: join tables can not be empty
-    you_are_not_administrator: You are not administrator
-    invalid_post_data: Invalid post data
-    onlist_can_not_be_empty: onList can not be empty
-    can_not_find_data_for_delete: Can not find data for delete
-    user_status_has_been_frozen: User status has been frozen
-    username_or_password_is_invalid: Username or password is invalid
-    username_and_password_can_not_be_empty: Username and password can not be empty
+    can_not_find_data_for_update: 更新失败，找不到要更新的数据
+    join_tables_can_not_be_less_tow: 联表查询至少需要两张表
+    join_tables_can_not_be_empty: 联表查询必需提交tables参数
+    you_are_not_administrator: 您不是超级管理员，不能执行该操作
+    invalid_post_data: 提交了无效的参数
+    onlist_can_not_be_empty: on条件不能为空
+    can_not_find_data_for_delete: 删除失败，找不到要删除的数据
+    user_status_has_been_frozen: 用户已经被冻结
+    username_or_password_is_invalid: 无效的用户名或密码
+    username_and_password_can_not_be_empty: 用户名和密码不能为空
     
