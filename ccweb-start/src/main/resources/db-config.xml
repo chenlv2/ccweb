@@ -2,14 +2,23 @@
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-    <environments default="mysql">
-        <environment id="mysql" classScope="public" >
+    <environments default="workerlib">
+        <environment id="workerlib" classScope="public" >
             <transactionManager type="JDBC"/>
             <dataSource type="POOLED">
                 <property name="driver" value="com.mysql.jdbc.Driver" />
-                <property name="url" value="jdbc:mysql://localhost:3306/workerlib?useUnicode=true&amp;characterEncoding=UTF-8&amp;useSSL=false&amp;autoReconnect=true&amp;failOverReadOnly=false&amp;serverTimezone=CTT" />
-                <property name="username" value="ccati" />
-                <property name="password" value="123456" />
+                <property name="url" value="jdbc:mysql://rm-wz9b0hz7c6y891f98no.mysql.rds.aliyuncs.com:3306/workerlib?useUnicode=true&amp;characterEncoding=UTF-8&amp;useSSL=false&amp;autoReconnect=true&amp;failOverReadOnly=false&amp;serverTimezone=CTT" />
+                <property name="username" value="workerlib" />
+                <property name="password" value="WorkerLib_NoBug" />
+            </dataSource>
+        </environment>
+        <environment id="workerlib2" classScope="public" >
+            <transactionManager type="JDBC"/>
+            <dataSource type="POOLED">
+                <property name="driver" value="com.mysql.jdbc.Driver" />
+                <property name="url" value="jdbc:mysql://rm-wz9b0hz7c6y891f98no.mysql.rds.aliyuncs.com:3306/workerlib?useUnicode=true&amp;characterEncoding=UTF-8&amp;useSSL=false&amp;autoReconnect=true&amp;failOverReadOnly=false&amp;serverTimezone=CTT" />
+                <property name="username" value="workerlib" />
+                <property name="password" value="WorkerLib_NoBug" />
             </dataSource>
         </environment>
 <!--        <environment id="mssql" classScope="public">-->

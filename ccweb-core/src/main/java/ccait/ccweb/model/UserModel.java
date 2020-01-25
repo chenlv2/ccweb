@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Scope("prototype")
@@ -97,6 +98,9 @@ public class UserModel extends Queryable<UserModel> {
   @Exclude
   private List<UserGroupRoleModel> userGroupRoleModels;
 
+  @Exclude
+  private List<RoleModel> roleModels;
+
   public List<UserGroupRoleModel> getUserGroupRoleModels() throws SQLException {
 
     if(userGroupRoleModels != null) {
@@ -116,6 +120,13 @@ public class UserModel extends Queryable<UserModel> {
     model.setUserId(userId);
 
     userGroupRoleModels = model.where("[userId]=#{userId}").orderby("createOn desc").query();
+
+    List<String> roleIdList = userGroupRoleModels.stream().map(a-> a.getRoleId().toString().replace("-", ""))
+            .collect(Collectors.toList());
+
+    RoleModel roleModel = new RoleModel();
+
+    roleModels = roleModel.where("id in (%s)", roleIdList).query();
 
     return userGroupRoleModels;
   }
