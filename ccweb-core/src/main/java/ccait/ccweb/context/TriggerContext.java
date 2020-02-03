@@ -281,7 +281,16 @@ public final class TriggerContext {
                 continue;
             }
 
-            method.invoke(instance, params, request);
+            try {
+                method.invoke(instance, params, request);
+            } catch(Exception e) {
+
+                if(e.getCause() != null) {
+                    throw new IllegalAccessException(e.getCause().getMessage());
+                }
+
+                throw e;
+            }
         }
     }
 

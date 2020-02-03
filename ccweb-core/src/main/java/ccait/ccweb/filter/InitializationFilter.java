@@ -176,9 +176,14 @@ public class InitializationFilter implements WebFilter, Filter {
 
     private String getErrorMessage(Exception e) {
         String message = e.getMessage();
-        if(e.getCause() != null &&
-                (e.getCause() instanceof InvocationTargetException && ((InvocationTargetException)e.getCause()).getTargetException() != null)) {
-            message = ((InvocationTargetException)e.getCause()).getTargetException().getMessage();
+        if(e.getCause() != null) {
+            if(e.getCause() instanceof InvocationTargetException && ((InvocationTargetException)e.getCause()).getTargetException() != null) {
+                message = ((InvocationTargetException) e.getCause()).getTargetException().getMessage();
+            }
+
+            else if(StringUtils.isNotEmpty(e.getCause().getMessage())) {
+                message = e.getCause().getMessage();
+            }
         }
 
         return message;
