@@ -395,8 +395,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
         AclModel acl = new AclModel();
         acl.setTableName(table);
         List<AclModel> aclList = acl.where("[tableName]=#{tableName}").query();
-        List<UUID> aclIds = aclList.stream().map(a->a.getAclId()).collect(Collectors.toList());
 
+        String message = null;
         if(aclList == null || aclList.size() < 1) {
 
             if(method.equals("GET") || (method.equals("POST") && !request.getRequestURI().endsWith("/delete") &&
@@ -405,26 +405,33 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，允许查询！", table));
 
                 if(user != null) {
-                    if (!checkPrivilege(table, user, aclIds, method, attrs, request.getRequestPostString(), request)) {
-                        log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]对表%s没有%s的操作权限！", user.getUsername(), table, method));
-                        return false;
+                    if (!checkPrivilege(table, user, aclList, method, attrs, request.getRequestPostString(), request)) {
+                        message = String.format(LangConfig.getInstance().get("has_not_privilege_for_this_table"), user.getUsername(), table, method);
+                        log.warn(LOG_PRE_SUFFIX + message);
+                        throw new Exception(message);
                     }
                 }
                 return true;
             }
 
             else {
-                log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，不允许增删改！", table));
-                return false;
+                message = String.format(LangConfig.getInstance().get("table_no_set_acl_can_not_be_edit"), table);
+                log.warn(LOG_PRE_SUFFIX + message);
+                throw new Exception(message);
             }
         }
 
         List<UUID> groupIds = aclList.stream().map(a->a.getGroupId()).collect(Collectors.toList());
 
-        if(StringUtils.isNotEmpty(requiredPermission.groupName()) &&
-                !groupIds.contains(requiredPermission.groupName()) ) { //不属于指定组
-            log.warn(String.format(LOG_PRE_SUFFIX + "表[%s]的群组不属于%s！", table, requiredPermission.groupName()));
-            return false;
+        GroupModel requiredPermissionGroup = new GroupModel();
+        requiredPermissionGroup.setGroupName(requiredPermission.groupName());
+        requiredPermissionGroup = requiredPermissionGroup.where("[groupName]=#{groupName}").first();
+
+        if(requiredPermissionGroup != null && requiredPermissionGroup.getGroupId() != null &&
+                !groupIds.contains(requiredPermissionGroup.getGroupId()) ) { //不属于指定组
+            message = String.format(LangConfig.getInstance().get("this_group_can_not_edit_table"), requiredPermission.groupName(), table);
+            log.warn(LOG_PRE_SUFFIX + message);
+            throw new Exception(message);
         }
 
         if(user == null) {
@@ -436,7 +443,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         boolean hasGroup = false;
         for (UUID groupId : groupIds) {
             Optional<UserGroupRoleModel> opt = user.getUserGroupRoleModels().stream()
-                    .filter(a -> a.getGroup().getGroupId().equals(groupId)).findAny();
+                    .filter(a -> a.getGroup() == null || a.getGroup().getGroupId().equals(groupId)).findAny();
 
             if(opt != null && opt.isPresent()) {
                 hasGroup = true;
@@ -445,19 +452,21 @@ public class SecurityInterceptor implements HandlerInterceptor {
         }
 
         if( aclList.size() > 0 && !hasGroup ) {
-            log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]的群组于表%s中不存在！", user.getUsername(), table));
-            return false;
+            message = String.format(LangConfig.getInstance().get("user_has_not_group_for_acl_table"), user.getUsername(), table);
+            log.warn(LOG_PRE_SUFFIX + message);
+            throw new Exception(message);
         }
 
-        if(!checkPrivilege(table, user, aclIds, method, attrs, request.getRequestPostString(), request)){
-            log.warn(String.format(LOG_PRE_SUFFIX + "用户[%s]对表%s没有%s的操作权限！", user.getUsername(), table, method));
-            return false;
+        if(!checkPrivilege(table, user, aclList, method, attrs, request.getRequestPostString(), request)){
+            message = String.format(LangConfig.getInstance().get("has_not_privilege_for_this_table"), user.getUsername(), table, method);
+            log.warn(LOG_PRE_SUFFIX + message);
+            throw new Exception(message);
         }
 
-        return null;
+        return true;
     }
 
-    private boolean checkPrivilege(String table, UserModel user, List<UUID> aclIds, String method, Map<String, String > attrs,
+    private boolean checkPrivilege(String table, UserModel user, List<AclModel> aclList, String method, Map<String, String > attrs,
                                    String postString, HttpServletRequest request) throws Exception {
 
         String privilegeWhere = null;
@@ -529,12 +538,17 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 Collectors.collectingAndThen(Collectors.toCollection(() ->
                         new TreeSet<>(Comparator.comparing(o -> o))), ArrayList::new));
 
+        List<UUID> groupIds = aclList.stream().filter(o-> o.getGroupId() != null).map(b->b.getGroupId()).collect(Collectors.toList());
+        groupIds = groupIds.stream().collect(
+                Collectors.collectingAndThen(Collectors.toCollection(() ->
+                        new TreeSet<>(Comparator.comparing(o -> o))), ArrayList::new));
+
         List<PrivilegeModel> privilegeList = new ArrayList<PrivilegeModel>();
         if(roleIdList.size() > 0) {
             String roleWhere = String.format("[roleId] in ('%s')", String.join("','", roleIdList));
-            privilegeList = aclIds.size() > 0 ? privilege.where(roleWhere).and(privilegeWhere)
-                    .and(String.format("(aclId in ('%s') OR aclId IS NULL OR aclId='')", String.join("','",
-                            aclIds.stream().map(a -> a.toString().replace("-", ""))
+            privilegeList = aclList.size() > 0 ? privilege.where(roleWhere).and(privilegeWhere)
+                    .and(String.format("(groupId in ('%s') OR groupId IS NULL OR groupId='')", String.join("','",
+                            groupIds.stream().filter(o->o != null).map(a -> a.toString().replace("-", ""))
                                     .collect(Collectors.toList()))))
                     .query()
                     : privilege.where(roleWhere).and(privilegeWhere)
@@ -542,9 +556,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
         }
 
         else {
-            privilegeList = aclIds.size() > 0 ? privilege.where(privilegeWhere)
-                    .and(String.format("(aclId in ('%s') OR aclId IS NULL OR aclId='')", String.join("','",
-                            aclIds.stream().map(a -> a.toString().replace("-", ""))
+            privilegeList = aclList.size() > 0 ? privilege.where(privilegeWhere)
+                    .and(String.format("(groupId in ('%s') OR groupId IS NULL OR groupId='')", String.join("','",
+                            groupIds.stream().filter(o->o != null).map(a -> a.toString().replace("-", ""))
                                     .collect(Collectors.toList()))))
                     .query()
                     : privilege.where(privilegeWhere)

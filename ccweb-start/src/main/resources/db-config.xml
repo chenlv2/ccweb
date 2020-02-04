@@ -2,7 +2,7 @@
 <!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-config.dtd">
 <configuration>
-    <environments default="test">
+    <environments default="mssql">
 <!--        <environment id="mssql" classScope="public">-->
 <!--            <transactionManager type="JDBC" />-->
 <!--            <dataSource type="POOLED">-->

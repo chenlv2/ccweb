@@ -521,7 +521,7 @@ public class ApplicationContext implements ApplicationContextAware {
 
         col = new ColumnInfo();
         col.setColumnName(groupIdField);
-        col.setCanNotNull(true);
+        col.setCanNotNull(false);
         col.setMaxLength(32);
         col.setType(String.class);
         columns.add(col);
