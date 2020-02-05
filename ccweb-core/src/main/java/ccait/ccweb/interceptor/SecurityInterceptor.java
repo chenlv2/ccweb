@@ -584,13 +584,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
         ApplicationContext.getThreadLocalMap().put(CURRENT_MAX_PRIVILEGE_SCOPE + table, currentMaxScope);
 
-        if(currentMaxScope.equals(PrivilegeScope.DENIED)) {
-            if(privilegeList.size() < 1) {
-                return true;
-            }
-            return false;
-        }
-
         return  result;
     }
 
