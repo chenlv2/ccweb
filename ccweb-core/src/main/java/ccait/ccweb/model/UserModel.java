@@ -126,7 +126,7 @@ public class UserModel extends Queryable<UserModel> {
 
     RoleModel roleModel = new RoleModel();
 
-    roleModels = roleModel.where("id in (%s)", roleIdList).query();
+    roleModels = roleModel.where("roleId in (%s)", roleIdList).query();
 
     return userGroupRoleModels;
   }
