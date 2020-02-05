@@ -1,4 +1,4 @@
-en: 
+en:
     can_not_delete_self: can not delete self
     admin_can_not_be_removed: admin can not be removed
     username_can_not_be_modify: username can not be modify
@@ -26,7 +26,11 @@ en:
     user_status_has_been_frozen: User status has been frozen
     username_or_password_is_invalid: Username or password is invalid
     username_and_password_can_not_be_empty: Username and password can not be empty
-cn: 
+    table_no_set_acl_can_not_be_edit: table[%s] has not set acl，so can not be edit
+    has_not_privilege_for_this_table: user [%s] can not operation table %s for %s
+    this_group_can_not_edit_table: group [%s] can not edit table [%s]
+    user_has_not_group_for_acl_table: user [%s] has not group for acl table [%s]
+cn:
     can_not_delete_self: 不能删除本账号
     admin_can_not_be_removed: 不能删除超级管理员
     username_can_not_be_modify: 不能修改用户名
@@ -54,4 +58,7 @@ cn:
     user_status_has_been_frozen: 用户已经被冻结
     username_or_password_is_invalid: 无效的用户名或密码
     username_and_password_can_not_be_empty: 用户名和密码不能为空
-    
+    table_no_set_acl_can_not_be_edit: 表[%s]没有设置权限，不允许增删改
+    has_not_privilege_for_this_table: 用户[%s]对表%s没有%s的操作权限
+    this_group_can_not_edit_table: 群组[%s]没有对[%s]表的操作权限
+    user_has_not_group_for_acl_table: 用户[%s]所属的的群组没有对表%s的操作权限
