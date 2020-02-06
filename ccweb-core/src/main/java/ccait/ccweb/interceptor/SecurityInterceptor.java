@@ -451,10 +451,14 @@ public class SecurityInterceptor implements HandlerInterceptor {
             }
         }
 
-        if( aclList.size() > 0 && !hasGroup ) {
-            message = String.format(LangConfig.getInstance().get("user_has_not_group_for_acl_table"), user.getUsername(), table);
-            log.warn(LOG_PRE_SUFFIX + message);
-            throw new Exception(message);
+        Optional<AclModel> optional = aclList.stream().filter(a->a.getGroupId() == null).findAny();
+        boolean canAllAccess = (optional == null ? false : optional.isPresent());
+        if( aclList.size() > 0 && !canAllAccess) {
+            if(!hasGroup) {
+                message = String.format(LangConfig.getInstance().get("user_has_not_group_for_acl_table"), user.getUsername(), table);
+                log.warn(LOG_PRE_SUFFIX + message);
+                throw new Exception(message);
+            }
         }
 
         if(!checkPrivilege(table, user, aclList, method, attrs, request.getRequestPostString(), request)){

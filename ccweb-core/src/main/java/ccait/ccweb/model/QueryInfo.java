@@ -484,12 +484,12 @@ public class QueryInfo implements Serializable {
                 }
                 throw new Exception(LangConfig.getInstance().get("data_access_denied"));
             case SELF:
-                if(!EntitesGenerator.hasColumn(dataSource.getId(), tablename, createByFieldString)) {
+                if(!EntityContext.hasColumn(dataSource.getId(), tablename, createByFieldString)) {
                     where = where.and(String.format("%s=%s", createByFieldString, user.getId()));
                     break;
                 }
 
-                if(!EntitesGenerator.hasColumn(dataSource.getId(), tablename, userPathFieldString)) {
+                if(!EntityContext.hasColumn(dataSource.getId(), tablename, userPathFieldString)) {
                     where = where.and(String.format("%s='%s'", userPathFieldString, user.getPath()));
                     break;
                 }
@@ -497,24 +497,25 @@ public class QueryInfo implements Serializable {
                 break;
             case CHILD:
 
-                if(!EntitesGenerator.hasColumn(dataSource.getId(), tablename, userPathFieldString)) {
+                if(!EntityContext.hasColumn(dataSource.getId(), tablename, userPathFieldString)) {
                     where = where.and(String.format("%s LIKE '%s'", userPathFieldString, user.getPath() + "%"));
                     break;
                 }
 
                 break;
             case PARENT_AND_CHILD:
-                if(!EntitesGenerator.hasColumn(dataSource.getId(), tablename, userPathFieldString)) {
+                if(!EntityContext.hasColumn(dataSource.getId(), tablename, userPathFieldString)) {
                     String parentPath = user.getPath().substring(0, user.getPath().lastIndexOf("/"));
                     where = where.and(String.format("%s LIKE '%s'", userPathFieldString, parentPath + "%"));
                 }
                 break;
             case GROUP:
-
-                List<Integer> userIdByGroups = (List<Integer>)ApplicationContext.getThreadLocalMap().get(CURRENT_USERID_BY_GROUPS);
-                if(userIdByGroups.size() > 0) {
-                    //查询同组数据
-                    where = where.and(String.format("%s in ('%s')", createByField, join("', '", userIdByGroups)));
+                if(EntityContext.hasColumn(dataSource.getId(), tablename, context.createByField)) { //被访问的表有创建人ID时才需要检查分组权限
+                    List<Integer> userIdByGroups = (List<Integer>) ApplicationContext.getThreadLocalMap().get(CURRENT_USERID_BY_GROUPS);
+                    if (userIdByGroups.size() > 0) {
+                        //查询同组数据
+                        where = where.and(String.format("([%s] in ('%s') or [%s] is null)", context.createByField, join("', '", userIdByGroups), context.createByField));
+                    }
                 }
                 break;
         }

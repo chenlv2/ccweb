@@ -100,7 +100,7 @@ public class UserGroupRoleModel extends Queryable<UserGroupRoleModel> {
         group.setGroupId(this.groupId);
 
         try {
-            group = group.where("[userId]=#{userId}").first();
+            group = group.where("[groupId]=#{groupId}").first();
         } catch (SQLException e) {
             log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
         }
