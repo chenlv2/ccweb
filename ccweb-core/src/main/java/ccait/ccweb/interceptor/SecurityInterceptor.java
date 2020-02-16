@@ -85,9 +85,23 @@ public class SecurityInterceptor implements HandlerInterceptor {
     private static final Logger log = LogManager.getLogger( SecurityInterceptor.class );
 
     private boolean hasUploadFile;
+    private Pattern tablePattern;
+    private Pattern viewPattern;
+    private Pattern uploadPattern;
+    private Pattern importPattern;
+    private Pattern exportPattern;
+    private Pattern updatePattern;
+    private Pattern deletePattern;
 
     @PostConstruct
     private void construct() {
+        tablePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/table$", Pattern.CASE_INSENSITIVE);
+        viewPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/view$", Pattern.CASE_INSENSITIVE);
+        uploadPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,3}/upload$", Pattern.CASE_INSENSITIVE);
+        importPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/import$", Pattern.CASE_INSENSITIVE);
+        exportPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/export", Pattern.CASE_INSENSITIVE);
+        updatePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/update$", Pattern.CASE_INSENSITIVE);
+        deletePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/delete$", Pattern.CASE_INSENSITIVE);
     }
 
     @Override
@@ -493,13 +507,31 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 }
                 break;
             case "POST":
-                if(Pattern.matches("^/(?i)(as)?(?i)api/[^/]+(/[^/]+)?/(?i)build$", request.getRequestURI())) {
+
+                if(tablePattern.matcher(request.getRequestURI()).find()) {
                     break;
                 }
 
-                if(Pattern.matches("^/(?i)(as)?(?i)api/[^/]+(/[^/]+)?/(?i)update$", request.getRequestURI())) {
+                else if(updatePattern.matcher(request.getRequestURI()).find()) {
                     privilegeWhere = "canUpdate=1";
+                }
+
+                else if(deletePattern.matcher(request.getRequestURI()).find()) {
+                    privilegeWhere = "canDelete=1";
+                }
+
+                else if(uploadPattern.matcher(request.getRequestURI()).find()) {
+                    privilegeWhere = "canUpload=1";
                     break;
+                }
+
+                else if(importPattern.matcher(request.getRequestURI()).find()) {
+                    privilegeWhere = "canImport=1";
+                    break;
+                }
+
+                else if(exportPattern.matcher(request.getRequestURI()).find()) {
+                    privilegeWhere = "canExport=1";
                 }
 
                 QueryInfo queryInfo = FastJsonUtils.convert(postString, QueryInfo.class);
@@ -598,13 +630,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 TriggerContext.exec(table, EventType.View, attrs.get("id"), request);
                 break;
             case "POST":
-                Pattern tablePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/table$", Pattern.CASE_INSENSITIVE);
-                Pattern viewPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/build/view$", Pattern.CASE_INSENSITIVE);
-                Pattern uploadPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+)/upload(/[^/]+){2}$", Pattern.CASE_INSENSITIVE);
-                Pattern importPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/import$", Pattern.CASE_INSENSITIVE);
-                Pattern exportPattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/export", Pattern.CASE_INSENSITIVE);
-                Pattern updatePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/update$", Pattern.CASE_INSENSITIVE);
-                Pattern deletePattern = Pattern.compile("^/(api|asyncapi)(/[^/]+){1,2}/delete$", Pattern.CASE_INSENSITIVE);
 
                 if(tablePattern.matcher(request.getRequestURI()).find()) {
                     List<ColumnInfo> columns = FastJsonUtils.toList(postString, ColumnInfo.class);
