@@ -745,8 +745,9 @@ public abstract class BaseController {
 
                 if(data.get(createByField) != null && data.get(createByField) != null) {
 
+                    String createBy = data.get(createByField).toString();
                     List<Integer> userIdByGroups = (List<Integer>)ApplicationContext.getThreadLocalMap().get(CURRENT_USERID_BY_GROUPS);
-                    if(userIdByGroups.contains((Integer) data.get(createByField))) {
+                    if(userIdByGroups.contains(Integer.parseInt(createBy))) {
                         return true;
                     }
                 }
