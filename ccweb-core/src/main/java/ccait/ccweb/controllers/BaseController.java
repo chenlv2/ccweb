@@ -35,13 +35,7 @@ import io.reactivex.Single;
 import org.apache.http.HttpException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.FileMagic;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xslf.usermodel.*;
 import org.jcodec.api.JCodecException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,6 +56,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Field;
@@ -1767,7 +1762,7 @@ public abstract class BaseController {
         return result;
     }
 
-    protected void importData(String table, Map<String, Object> uploadFiles) throws Exception {
+    protected void importExcel(String table, Map<String, Object> uploadFiles) throws Exception {
 
         if(uploadFiles == null) {
             throw new IOException("request error!!!");
@@ -1805,7 +1800,7 @@ public abstract class BaseController {
 
 
             List<String> fieldList = new ArrayList<String>();
-            List<SheetHeaderModel> headerList = getHeadersByExcel(fileBytes, fieldList);
+            List<SheetHeaderModel> headerList = OfficeUtils.getHeadersByExcel(fileBytes, fieldList);
 
             Queryable entity = (Queryable) EntityContext.getEntity(table, fieldList);
 
@@ -1813,49 +1808,113 @@ public abstract class BaseController {
         }
     }
 
-    private List<SheetHeaderModel> getHeadersByExcel(byte[] fileBytes, List<String> fieldList) throws IOException {
-        InputStream is = new ByteArrayInputStream(fileBytes);
-        List<SheetHeaderModel> headerList = new ArrayList<SheetHeaderModel>();
-        if(FileMagic.valueOf(new ByteArrayInputStream(fileBytes)).name().equalsIgnoreCase("OOXML")) {
-            XSSFSheet sheet = new XSSFWorkbook(is).getSheet("schema");
-            XSSFRow titleRow = sheet.getRow(0);
-            XSSFRow fieldRow = sheet.getRow(1);
-            for(int i=0; i<titleRow.getLastCellNum(); i++) {
-                SheetHeaderModel headerModel = new SheetHeaderModel();
-                String title = titleRow.getCell(i).getStringCellValue();
-                String field = fieldRow.getCell(i).getStringCellValue();
+    protected void importPPT(String table, Map<String, Object> uploadFiles) throws Exception {
 
-                headerModel.setHeader(title);
-                headerModel.setField(field);
-                headerModel.setIndex(i);
+        if(uploadFiles == null) {
+            throw new IOException("request error!!!");
+        }
 
-                fieldList.add(field);
-                headerList.add(headerModel);
+        if(getLoginUser() == null) {
+            throw new IOException("login please!!!");
+        }
+
+        List<Map.Entry<String, Object>> data = uploadFiles.entrySet().stream()
+                .filter(a -> a.getKey().indexOf("_upload_filename") == -1 &&
+                        !a.getKey().equals("save_full_text") &&
+                        !a.getKey().equals("save_source_ppt")).collect(Collectors.toList());
+        if(data == null || data.size() < 1) {
+            throw new IOException("Post data can not be empty!!!");
+        }
+
+        Boolean save_full_text = uploadFiles.entrySet().stream()
+                .filter(a-> a.getKey().equals("save_full_text") && Boolean.TRUE.equals(a.getValue()))
+                .isParallel();
+
+        Boolean save_source_ppt = uploadFiles.entrySet().stream()
+                .filter(a-> a.getKey().equals("save_full_text") && Boolean.TRUE.equals(a.getValue()))
+                .isParallel();
+
+        String currentDatasource = "default";
+        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
+            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
+        }
+
+        Map<String, Object> fieldSet = new HashMap<String, Object>();
+        Map<String, Object> pptSet = new HashMap<String, Object>();
+        for(Map.Entry<String, Object> entry : data) {
+            String tempKey = String.format("%s_upload_filename", entry.getKey());
+            if (!uploadFiles.containsKey(tempKey)) { //没有文件名的不是文件
+                fieldSet.put(entry.getKey(), entry.getValue());
+            }
+            else {
+                pptSet.put(entry.getKey(), entry.getValue());
             }
         }
 
-        else if(FileMagic.valueOf(new ByteArrayInputStream(fileBytes)).name().equalsIgnoreCase("OLE2")) {
-            HSSFSheet sheet = new HSSFWorkbook(is).getSheet("schema");
-            HSSFRow titleRow = sheet.getRow(0);
-            HSSFRow fieldRow = sheet.getRow(1);
-            for(int i=0; i<titleRow.getLastCellNum(); i++) {
-                SheetHeaderModel headerModel = new SheetHeaderModel();
-                String title = titleRow.getCell(i).getStringCellValue();
-                String field = fieldRow.getCell(i).getStringCellValue();
+        List<Map<String, Object>> resultSet = new ArrayList<Map<String, Object>>();
+        for(Map.Entry<String, Object> entry : pptSet.entrySet()) {
 
-                headerModel.setHeader(title);
-                headerModel.setField(field);
-                headerModel.setIndex(i);
+            String tempKey = String.format("%s_upload_filename", entry.getKey());
+            String filename = uploadFiles.get(tempKey).toString();
+            String[] arr = filename.split("\\.");
+            String extName = arr[arr.length - 1];
 
-                fieldList.add(field);
-                headerList.add(headerModel);
+            byte[] fileBytes = ImageUtils.getBytesForBase64(entry.getValue().toString());
+
+            //转换成图片
+            OfficeUtils.saveImageByPPT(table, currentDatasource, resultSet, entry, filename, fileBytes);
+
+            //保存ppt源文件
+            if(save_source_ppt) {
+                String pprSourcePath = String.format("/preview/ppt/%s/%s/%s/source", currentDatasource, table, entry.getKey());
+                String value = UploadUtils.upload(pprSourcePath, filename, fileBytes);
+                Map<String, Object> result = new HashMap<String, Object>();
+                result.put(entry.getKey(), value);
+                result.put("page_number", 0);
+                resultSet.add(result);
+            }
+
+            //创建全文索引
+            if(save_full_text) {
+                String value = OfficeUtils.getTextByPPT(fileBytes);
+                Map<String, Object> result = new HashMap<String, Object>();
+                result.put(entry.getKey(), value);
+                result.put("page_number", 0);
+                resultSet.add(result);
             }
         }
 
-        else {
-            throw new IOException(LangConfig.getInstance().get("can_not_supported_file_type"));
+        //准备实体所需的字段
+        List<String> fields = new ArrayList<String>();
+        for(String field : fieldSet.keySet()) {
+            fields.add(field);
         }
-        return headerList;
+        for(Map<String, Object> item : resultSet) {
+            for(String field : item.keySet()) {
+                if(fields.contains(field)) {
+                    continue;
+                }
+                fields.add(field);
+            }
+        }
+
+        //保存到数据库
+        Queryable query = (Queryable)EntityContext.getEntity(table, fields);
+        for(Map<String, Object> item : resultSet) {
+            for(String field : item.keySet()) {
+                if(item.get(field) == null) {
+                    continue;
+                }
+                ReflectionUtils.setFieldValue(query, field, item.get(field));
+            }
+            for(String field : fieldSet.keySet()) {
+                if(fieldSet.get(field) == null) {
+                    continue;
+                }
+                ReflectionUtils.setFieldValue(query, field, fieldSet.get(field));
+            }
+            query.insert();
+        }
     }
 
     protected void playVideo(String table, String field, String id) throws Exception {

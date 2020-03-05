@@ -517,24 +517,37 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ]
 ```
 
-### 21. excel导入
+### 21. 视频播放
+* URL：/api/{datasource}/play/{table}/{field}/{id} 
+* 请求方式：GET
+* URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
+* POST参数：无
+
+### 22. 导入excel
 * URL：/api/{datasource}/{table}/import 
 * 请求方式：POST
 * URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
 * POST参数：
 ```javascript
 表单：
-    name1: 文件1
-    name2: 文件2
-    name3: 文件3
+    字段名: 文件
+    字段名: 文件
+    字段名: 文件
     ...
 ```
 
-### 22. 视频播放
-* URL：/api/{datasource}/play/{table}/{field}/{id} 
-* 请求方式：GET
-* URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
-* POST参数：无
+### 23. 导入ppt
+* URL：/api/{datasource}/{table}/import/ppt 
+* 请求方式：POST
+* URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
+* POST参数：
+```javascript
+表单：
+    字段名: 文件/字符串/数值
+    字段名: 文件/字符串/数值
+    字段名: 文件/字符串/数值
+    ...
+```
 
 
 ## 系统用户/权限表结构说明

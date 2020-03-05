@@ -489,15 +489,26 @@ public class ApiController extends BaseController {
     }
 
     /***
-     * import
+     * import excel
      * @return
      */
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "{table}/import", method = {RequestMethod.POST, RequestMethod.PUT} )
-    public ResponseData doImport(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles) throws Exception {
-        super.importData(table, uploadFiles);
+    public ResponseData doImportExcel(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles) throws Exception {
+        super.importExcel(table, uploadFiles);
+        return success();
+    }
 
+    /***
+     * import ppt
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "{table}/import/ppt", method = {RequestMethod.POST, RequestMethod.PUT} )
+    public ResponseData doImportPPT(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles) throws Exception {
+        super.importPPT(table, uploadFiles);
         return success();
     }
 }
