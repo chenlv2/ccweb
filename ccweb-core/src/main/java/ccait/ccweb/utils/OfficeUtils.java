@@ -85,6 +85,13 @@ public class OfficeUtils {
         return text;
     }
 
+    public static Integer getPageCountByPPT(String suffix, byte[] fileBytes) throws IOException {
+
+        SlideShow ppt = getSildeShow(suffix, fileBytes);
+
+        return ppt.getSlides().size();
+    }
+
     public static void saveImageByPPT(String table, String currentDatasource, List<Map<String, Object>> resultSet, Map.Entry<String, Object> entry, String filename, byte[] fileBytes) throws IOException {
 
         String[] arr = filename.split("\\.");

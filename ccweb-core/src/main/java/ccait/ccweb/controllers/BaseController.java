@@ -1681,9 +1681,9 @@ public abstract class BaseController {
         return image;
     }
 
-    protected Map<String, String> upload(String table, String field, Map<String, Object> uploadFiles) throws Exception {
+    protected Map<String, Object> upload(String table, String field, Map<String, Object> uploadFiles) throws Exception {
 
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, Object> result = new HashMap<String, Object>();
         if(uploadFiles == null) {
             throw new IOException("request error!!!");
         }
@@ -1721,7 +1721,7 @@ public abstract class BaseController {
 
             String filename = uploadFiles.get(tempKey).toString();
             String[] arr = filename.split("\\.");
-            String extName = arr[arr.length - 1];
+            String extName = arr[arr.length - 1].toLowerCase();
 
             byte[] fileBytes = ImageUtils.getBytesForBase64(fileEntry.getValue().toString());
 
@@ -1742,7 +1742,7 @@ public abstract class BaseController {
 
             if (configMap.get("maxSize") != null) {
                 if (fileBytes.length > 1024 * 1024 * Integer.parseInt(configMap.get("maxSize").toString())) {
-                    throw new IOException(LangConfig.getInstance().get("can_not_supported_file_type"));
+                    throw new IOException(LangConfig.getInstance().get("upload_field_to_be_long"));
                 }
             }
 
@@ -1757,6 +1757,10 @@ public abstract class BaseController {
             value = UploadUtils.upload(root, filename, fileBytes);
 
             result.put(fileEntry.getKey(), value);
+
+            if("ppt".equals(extName) || "pptx".equals(extName)) {
+                result.put("pageCount", OfficeUtils.getPageCountByPPT(extName, fileBytes));
+            }
         }
 
         return result;

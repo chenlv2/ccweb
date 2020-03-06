@@ -420,7 +420,7 @@ public class ApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "{table}/{field}/upload", method = RequestMethod.POST )
-    public Map<String, String> uploaded(@PathVariable String table, @PathVariable String field, @RequestBody Map<String, Object> uploadFiles) throws Exception {
+    public Map<String, Object> uploaded(@PathVariable String table, @PathVariable String field, @RequestBody Map<String, Object> uploadFiles) throws Exception {
         return super.upload(table, field, uploadFiles);
     }
 
