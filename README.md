@@ -332,9 +332,9 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 ### 13. 文件预览
-* URL：/api/{datasource}/preview/{table}/{field}/{id} 
+* URL：/api/{datasource}/preview/{table}/{field}/{id}/{page} 
 * 请求方式：GET
-* URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
+* URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键，{page}为可选入参，可指定页码
 * POST参数：无
 
 
@@ -541,6 +541,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * 请求方式：POST
 * URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
 * POST参数：
+* 注意：table必须要有number字段存放页码
 ```javascript
 表单：
     字段名: 文件/字符串/数值

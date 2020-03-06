@@ -395,7 +395,19 @@ public class AsyncApiController extends BaseController {
     @RequestMapping( value = "preview/{table}/{field}/{id}", method = RequestMethod.GET  )
     public Mono previewed(@PathVariable String table, @PathVariable String field, @PathVariable String id) throws Exception {
 
-        return super.previewAs(table, field, id);
+        return super.previewAs(table, field, id, 0);
+    }
+
+    /***
+     * preview
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "preview/{table}/{field}/{id}/{page}", method = RequestMethod.GET  )
+    public Mono previewedPage(@PathVariable String table, @PathVariable String field, @PathVariable String id, @PathVariable Integer page) throws Exception {
+
+        return super.previewAs(table, field, id, page);
     }
 
     /***

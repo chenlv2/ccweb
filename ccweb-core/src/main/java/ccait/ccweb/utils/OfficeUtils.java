@@ -201,4 +201,33 @@ public class OfficeUtils {
                 return null;
         }
     }
+
+    public static BufferedImage getPageImageByPPT(byte[] fileBytes, int page, String filename) throws IOException {
+        String[] arr = filename.split("\\.");
+
+        String suffix = arr[arr.length - 1];
+
+        SlideShow ppt = getSildeShow(suffix, fileBytes);
+        Dimension pgsize = ppt.getPageSize();
+
+        try {
+            //防止中文乱码
+            setPPTFont(suffix, (Slide) ppt.getSlides().get(page), "宋体");
+            BufferedImage img = new BufferedImage(pgsize.width, pgsize.height, BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = img.createGraphics();
+            // clear the drawing area
+            graphics.setPaint(Color.white);
+            graphics.fill(new Rectangle2D.Float(0, 0, pgsize.width, pgsize.height));
+
+            // render
+            drawPPT(suffix, graphics, (Slide) ppt.getSlides().get(page));
+
+            return img;
+
+        } catch (Exception e) {
+            logger.error("第"+page+"张ppt转换出错");
+        }
+
+        return null;
+    }
 }

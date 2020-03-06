@@ -1512,7 +1512,7 @@ public abstract class BaseController {
     }
 
     protected void download(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, false).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
 
         TriggerContext.exec(table, EventType.Download, downloadData, request);
 
@@ -1550,7 +1550,7 @@ public abstract class BaseController {
     }
 
     protected Mono downloadAs(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, false).invoke();
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id).invoke();
 
         TriggerContext.exec(table, EventType.Download, downloadData, request);
 
@@ -1589,8 +1589,8 @@ public abstract class BaseController {
                 .body(BodyInserters.fromResource(resource)).switchIfEmpty(Mono.empty());
     }
 
-    protected void preview(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, true).invoke();
+    protected void preview(String table, String field, String id, Integer page) throws Exception {
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, page).invoke();
 
         TriggerContext.exec(table, EventType.PreviewDoc, downloadData, request);
 
@@ -1608,8 +1608,8 @@ public abstract class BaseController {
         output.write(data);
     }
 
-    protected Mono previewAs(String table, String field, String id) throws Exception {
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, true).invoke();
+    protected Mono previewAs(String table, String field, String id, Integer page) throws Exception {
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, page).invoke();
         if(downloadData.getMimeType().indexOf("image") != 0) {
             throw new  Exception(LangConfig.getInstance().get("not_support_file_format"));
         }
@@ -1658,6 +1658,18 @@ public abstract class BaseController {
             downloadData.setMimeType("image/jpeg");
             byte[] bytes = VideoUtils.getThumbnail(new File(downloadData.path), scalRatio);
             downloadData.cleanTempFile();
+
+            return bytes;
+        }
+
+        if(mediaType.getType().equalsIgnoreCase("ppt") || mediaType.getType().equalsIgnoreCase("pptx")) {
+
+            downloadData.setMimeType("image/jpeg");
+            BufferedImage image = OfficeUtils.getPageImageByPPT(downloadData.getBuffer(), downloadData.page, downloadData.getFilename());
+            if(image == null) {
+                return null;
+            }
+            byte[] bytes = ImageUtils.toBytes(image);
 
             return bytes;
         }
@@ -1874,7 +1886,7 @@ public abstract class BaseController {
                 String value = UploadUtils.upload(pprSourcePath, filename, fileBytes);
                 Map<String, Object> result = new HashMap<String, Object>();
                 result.put(entry.getKey(), value);
-                result.put("page_number", 0);
+                result.put("number", 0);
                 resultSet.add(result);
             }
 
@@ -1883,7 +1895,7 @@ public abstract class BaseController {
                 String value = OfficeUtils.getTextByPPT(fileBytes);
                 Map<String, Object> result = new HashMap<String, Object>();
                 result.put(entry.getKey(), value);
-                result.put("page_number", 0);
+                result.put("number", 0);
                 resultSet.add(result);
             }
         }
@@ -1943,7 +1955,7 @@ public abstract class BaseController {
         decrypt(data);
 
         String content = data.get(field).toString();
-        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id, false);
+        DownloadData downloadData = new DownloadData(getCurrentDatasourceId(), table, field, id);
         String filePath = downloadData.getFullPath(content, currentDatasource, uploadConfigMap);
         if(!(new File(filePath)).exists()) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -1971,13 +1983,24 @@ public abstract class BaseController {
         private String path;
         private String tempFilePath;
         private boolean isPreview;
+        private int page;
 
-        public DownloadData(String datasourceId, String table, String field, String id, boolean isPreview) {
+        public DownloadData(String datasourceId, String table, String field, String id) {
             this.table = table;
             this.field = field;
             this.id = id;
             this.datasourceId = datasourceId;
-            this.isPreview = isPreview;
+            this.isPreview = false;
+            this.page = 0;
+        }
+
+        public DownloadData(String datasourceId, String table, String field, String id, int page) {
+            this.table = table;
+            this.field = field;
+            this.id = id;
+            this.datasourceId = datasourceId;
+            this.isPreview = true;
+            this.page = page;
         }
 
         public String getFilename() {

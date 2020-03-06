@@ -433,7 +433,19 @@ public class ApiController extends BaseController {
     @RequestMapping( value = "preview/{table}/{field}/{id}", method = RequestMethod.GET )
     public void previewed(@PathVariable String table, @PathVariable String field, @PathVariable String id) throws Exception {
 
-        super.preview(table, field, id);
+        super.preview(table, field, id, 0);
+    }
+
+    /***
+     * preview
+     * @return
+     */
+    @ResponseBody
+    @AccessCtrl
+    @RequestMapping( value = "preview/{table}/{field}/{id}/{page}", method = RequestMethod.GET )
+    public void previewedPage(@PathVariable String table, @PathVariable String field, @PathVariable String id, @PathVariable Integer page) throws Exception {
+
+        super.preview(table, field, id, page);
     }
 
     /***
