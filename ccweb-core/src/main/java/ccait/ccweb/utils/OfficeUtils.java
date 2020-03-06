@@ -127,7 +127,7 @@ public class OfficeUtils {
                 resultSet.add(result);
 
             } catch (Exception e) {
-                logger.error("第"+i+"张ppt转换出错");
+                logger.error("第"+i+"页ppt转换出错");
             }
         }
     }
@@ -225,9 +225,8 @@ public class OfficeUtils {
             return img;
 
         } catch (Exception e) {
-            logger.error("第"+page+"张ppt转换出错");
+            logger.error(e.getMessage(), e);
+            throw new IOException("第"+page+"页ppt转换出错");
         }
-
-        return null;
     }
 }
