@@ -21,12 +21,9 @@ public class UploadUtils {
             path = System.getProperty("user.dir") + path;
         }
 
-        File root = new File(path);
-        if(!root.exists()) {
-            root.mkdirs();
-        }
+        mkdirs(path);
 
-        String filepath = genFilePath(filename, path);
+        String filepath = ensureFilePath(filename, path);
         File file  = new File(path + filepath);
         if(file.exists()){
             file.delete();
@@ -40,7 +37,7 @@ public class UploadUtils {
         return filepath;
     }
 
-    private static String genFilePath(String filename, String root) {
+    private static String ensureFilePath(String filename, String root) {
 
         String[] dataArray = Datetime.format(new Date(), "yyyy-MM-dd").split("\\-");
         String path = String.format("/%s/%s", dataArray[0], dataArray[1]);
@@ -124,6 +121,19 @@ public class UploadUtils {
         return type;
     }
 
+    public static String getExtesion(String mimeType) {
+        if(StringUtils.isEmpty(mimeType)) {
+            return "";
+        }
+        // 在MIME和文件类型的匹配表中找到对应的MIME类型。
+        for (int i = 0; i < MIME_MapTable.length; i++) {
+            if (mimeType.toLowerCase().equals(MIME_MapTable[i][1])) {
+                return MIME_MapTable[i][0];
+            }
+        }
+
+        return "";
+    }
 
     private static final String[][] MIME_MapTable = {// {后缀名， MIME类型}
             {"3dml", "text/vnd.in3d.3dml"},

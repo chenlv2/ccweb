@@ -1662,10 +1662,12 @@ public abstract class BaseController {
             return bytes;
         }
 
-        if(mediaType.getType().equalsIgnoreCase("ppt") || mediaType.getType().equalsIgnoreCase("pptx")) {
+        String extesion = UploadUtils.getExtesion(mediaType.toString());
+        if(extesion.equalsIgnoreCase("ppt") ||
+                extesion.equalsIgnoreCase("pptx")) {
 
             downloadData.setMimeType("image/jpeg");
-            BufferedImage image = OfficeUtils.getPageImageByPPT(downloadData.getBuffer(), downloadData.page, downloadData.getFilename());
+            BufferedImage image = OfficeUtils.getPageImageByPPT(downloadData.getBuffer(), downloadData.page, extesion);
             if(image == null) {
                 return null;
             }

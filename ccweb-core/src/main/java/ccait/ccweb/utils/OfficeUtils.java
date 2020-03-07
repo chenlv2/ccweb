@@ -85,9 +85,9 @@ public class OfficeUtils {
         return text;
     }
 
-    public static Integer getPageCountByPPT(String suffix, byte[] fileBytes) throws IOException {
+    public static Integer getPageCountByPPT(String extesion, byte[] fileBytes) throws IOException {
 
-        SlideShow ppt = getSildeShow(suffix, fileBytes);
+        SlideShow ppt = getSildeShow(extesion, fileBytes);
 
         return ppt.getSlides().size();
     }
@@ -96,15 +96,15 @@ public class OfficeUtils {
 
         String[] arr = filename.split("\\.");
 
-        String suffix = arr[arr.length - 1];
+        String extesion = arr[arr.length - 1];
 
-        SlideShow ppt = getSildeShow(suffix, fileBytes);
+        SlideShow ppt = getSildeShow(extesion, fileBytes);
         Dimension pgsize = ppt.getPageSize();
 
         for (int i = 0; i < ppt.getSlides().size(); i++) {
             try {
                 //防止中文乱码
-                setPPTFont(suffix, (Slide) ppt.getSlides().get(i), "宋体");
+                setPPTFont(extesion, (Slide) ppt.getSlides().get(i), "宋体");
                 BufferedImage img = new BufferedImage(pgsize.width, pgsize.height, BufferedImage.TYPE_INT_RGB);
                 Graphics2D graphics = img.createGraphics();
                 // clear the drawing area
@@ -112,7 +112,7 @@ public class OfficeUtils {
                 graphics.fill(new Rectangle2D.Float(0, 0, pgsize.width, pgsize.height));
 
                 // render
-                drawPPT(suffix, graphics, (Slide) ppt.getSlides().get(i));
+                drawPPT(extesion, graphics, (Slide) ppt.getSlides().get(i));
 
                 // save the output
                 String pptPagePath = String.format("/preview/ppt/%s/%s/%s", currentDatasource, table, entry.getKey());
@@ -127,13 +127,13 @@ public class OfficeUtils {
                 resultSet.add(result);
 
             } catch (Exception e) {
-                logger.error("第"+i+"页ppt转换出错");
+                logger.error("第"+(i+1)+"页ppt转换出错");
             }
         }
     }
 
-    private static void drawPPT(String suffix, Graphics2D graphics, Slide slide) {
-        switch (suffix.toLowerCase()) {
+    private static void drawPPT(String extesion, Graphics2D graphics, Slide slide) {
+        switch (extesion.toLowerCase()) {
             case "pptx":
                 ((XSLFSlide) slide).draw(graphics);
                 break;
@@ -145,13 +145,13 @@ public class OfficeUtils {
 
     /***
      * 设置PPT字体
-     * @param suffix
+     * @param extesion
      * @param iSlide
      * @param fontname
      * @return
      */
-    public static void setPPTFont(String suffix, Slide iSlide, String fontname) {
-        switch (suffix.toLowerCase()) {
+    public static void setPPTFont(String extesion, Slide iSlide, String fontname) {
+        switch (extesion.toLowerCase()) {
             case "pptx":
                 XSLFSlide slide = (XSLFSlide) iSlide;
                 for(XSLFShape shape : slide.getShapes()){
@@ -183,16 +183,16 @@ public class OfficeUtils {
 
     /***
      * 获取ppt对象
-     * @param suffix
+     * @param extesion
      * @param fileBytes
      * @return
      * @throws IOException
      */
-    public static SlideShow getSildeShow(String suffix, byte[] fileBytes) throws IOException {
+    public static SlideShow getSildeShow(String extesion, byte[] fileBytes) throws IOException {
 
         InputStream is = new ByteArrayInputStream(fileBytes);
 
-        switch (suffix.toLowerCase()) {
+        switch (extesion.toLowerCase()) {
             case "pptx":
                 return new XMLSlideShow(is);
             case "ppt":
@@ -202,17 +202,20 @@ public class OfficeUtils {
         }
     }
 
-    public static BufferedImage getPageImageByPPT(byte[] fileBytes, int page, String filename) throws IOException {
-        String[] arr = filename.split("\\.");
-
-        String suffix = arr[arr.length - 1];
-
-        SlideShow ppt = getSildeShow(suffix, fileBytes);
+    public static BufferedImage getPageImageByPPT(byte[] fileBytes, int page, String extesion) throws IOException {
+ 
+        SlideShow ppt = getSildeShow(extesion, fileBytes);
         Dimension pgsize = ppt.getPageSize();
 
         try {
+            page--;
+            if(page<1 || page>ppt.getSlides().size()) {
+                throw new Exception("页码超出范围");
+            }
+
             //防止中文乱码
-            setPPTFont(suffix, (Slide) ppt.getSlides().get(page), "宋体");
+            setPPTFont(extesion, (Slide) ppt.getSlides().get(page), "宋体");
+
             BufferedImage img = new BufferedImage(pgsize.width, pgsize.height, BufferedImage.TYPE_INT_RGB);
             Graphics2D graphics = img.createGraphics();
             // clear the drawing area
@@ -220,13 +223,13 @@ public class OfficeUtils {
             graphics.fill(new Rectangle2D.Float(0, 0, pgsize.width, pgsize.height));
 
             // render
-            drawPPT(suffix, graphics, (Slide) ppt.getSlides().get(page));
+            drawPPT(extesion, graphics, (Slide) ppt.getSlides().get(page));
 
             return img;
 
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
-            throw new IOException("第"+page+"页ppt转换出错");
+            throw new IOException("第"+(page+1)+"页ppt转换出错");
         }
     }
 }
