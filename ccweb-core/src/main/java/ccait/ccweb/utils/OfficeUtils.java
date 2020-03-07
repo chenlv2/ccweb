@@ -208,9 +208,11 @@ public class OfficeUtils {
         Dimension pgsize = ppt.getPageSize();
 
         try {
-            page--;
             if(page<1 || page>ppt.getSlides().size()) {
                 throw new Exception("页码超出范围");
+            }
+            else {
+                page--;
             }
 
             //防止中文乱码
