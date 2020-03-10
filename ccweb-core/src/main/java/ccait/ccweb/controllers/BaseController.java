@@ -2059,6 +2059,9 @@ public abstract class BaseController {
             else {
                 int splitPoint = content.indexOf("|::|");
                 String fileString = content.substring(splitPoint + 4);
+                if(splitPoint < 1) {
+                    throw new Exception("Can not find file " + getFilename());
+                }
                 String messageBody = content.substring(0, splitPoint);
                 arrMessage = messageBody.split("::");
                 String[] arr = getMimeType().split("/");

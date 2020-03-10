@@ -121,7 +121,8 @@ public class UserModel extends Queryable<UserModel> {
 
     userGroupRoleModels = model.where("[userId]=#{userId}").orderby("createOn desc").query();
 
-    List<String> roleIdList = userGroupRoleModels.stream().map(a-> a.getRoleId().toString().replace("-", ""))
+    List<String> roleIdList = userGroupRoleModels.stream().filter(a-> a.getRoleId() != null)
+            .map(b-> b.getRoleId().toString().replace("-", ""))
             .collect(Collectors.toList());
 
     RoleModel roleModel = new RoleModel();
