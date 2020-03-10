@@ -152,6 +152,9 @@ public class InitializationFilter implements WebFilter, Filter {
             responseData.setStatus(-2);
             responseData.setMessage(message);
 
+            if(res.isCommitted()) {
+                return;
+            }
             res.reset();
             res.setCharacterEncoding("UTF-8");
 

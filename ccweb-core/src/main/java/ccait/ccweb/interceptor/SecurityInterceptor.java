@@ -137,8 +137,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             //  null == request.getHeader("x-requested-with") TODO 暂时用这个来判断是否为ajax请求
             // 如果没有权限 则抛401异常 springboot会处理，跳转到 /error/401 页面
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.sendError(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("has_not_privilege"));
+            response.setStatus(HttpStatus.FORBIDDEN.value());
+            response.sendError(HttpStatus.FORBIDDEN.value(), LangConfig.getInstance().get("has_not_privilege"));
             throw new Exception(LangConfig.getInstance().get("has_not_privilege"));
         }
         else {
@@ -452,6 +452,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
         if(user == null) {
             log.warn(LOG_PRE_SUFFIX + "用户未登录！！！");
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.sendError(HttpStatus.UNAUTHORIZED.value());
             return false;
         }
 

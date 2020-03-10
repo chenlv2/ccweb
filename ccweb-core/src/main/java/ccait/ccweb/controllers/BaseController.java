@@ -234,8 +234,8 @@ public abstract class BaseController {
     protected ResponseData error(int code, Exception e) {
 
         if(e instanceof HttpException) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            code = HttpStatus.UNAUTHORIZED.value();
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            code = HttpStatus.INTERNAL_SERVER_ERROR.value();
         }
 
         if(StringUtils.isEmpty(e.getMessage())) {
@@ -772,7 +772,7 @@ public abstract class BaseController {
 
     public static UserModel login(String username, String passwordEncode, HttpServletRequest request, HttpServletResponse response) throws Exception {
         if(StringUtils.isEmpty(username) || StringUtils.isEmpty(passwordEncode)) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
             throw new Exception(LangConfig.getInstance().get("username_and_password_can_not_be_empty"));
         }
 
