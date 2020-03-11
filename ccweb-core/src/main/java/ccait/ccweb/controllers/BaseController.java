@@ -2027,6 +2027,9 @@ public abstract class BaseController {
 
         public DownloadData invoke() throws Exception {
             Map<String, Object> data = get(table, id);
+            if(data == null) {
+                throw new Exception(LangConfig.getInstance().get("image_field_is_empty"));
+            }
             if(!data.containsKey(field)) {
                 throw new Exception(LangConfig.getInstance().get("wrong_field_name"));
             }
