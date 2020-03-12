@@ -748,6 +748,9 @@ public abstract class BaseController {
                     if(userIdByGroups.contains(Integer.parseInt(createBy))) {
                         return true;
                     }
+                    if(createBy.equals(getLoginUser().getCreateBy())) {
+                        return true;
+                    }
                 }
                 break;
         }
@@ -820,6 +823,11 @@ public abstract class BaseController {
             userIdListByGroups = userGroupRoleModel.where(String.format("groupId in ('%s')", join("', '", groupIdList)))
                     .select("userId").query(Integer.class);
         }
+
+        if(!userIdListByGroups.contains(user.getId())) {
+            userIdListByGroups.add(user.getId());
+        }
+
         ApplicationContext.getThreadLocalMap().put(CURRENT_USERID_BY_GROUPS, userIdListByGroups);
 
         if(jwtEnable) {
