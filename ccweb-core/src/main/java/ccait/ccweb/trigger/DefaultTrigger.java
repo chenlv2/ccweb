@@ -28,11 +28,13 @@ import entity.query.Datetime;
 import entity.query.Queryable;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.StringUtils;
+import org.apache.http.client.HttpResponseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -105,6 +107,9 @@ public final class DefaultTrigger {
                     item.put(createByField, user.getId());
                 }
             }
+            else {
+                throw new HttpResponseException(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("login_please"));
+            }
 
             if(hasCreateOn) {
                 item.put(createOnField, Datetime.now());
@@ -138,8 +143,13 @@ public final class DefaultTrigger {
         boolean hasModifyOnField = EntityContext.hasColumn(datasourceId, getTablename(), modifyOnField);
 
         UserModel user = (UserModel)request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY);
-        if(user != null && hasModifyByField) {
-            data.put(modifyByField, user.getId());
+        if(user != null) {
+            if(hasModifyByField) {
+                data.put(modifyByField, user.getId());
+            }
+        }
+        else{
+            throw new HttpResponseException(HttpStatus.UNAUTHORIZED.value(), LangConfig.getInstance().get("login_please"));
         }
 
         if(hasModifyOnField) {

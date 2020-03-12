@@ -30,7 +30,7 @@ en:
     has_not_privilege_for_this_table: user [%s] can not operation table %s for %s
     this_group_can_not_edit_table: group [%s] can not edit table [%s]
     user_has_not_group_for_acl_table: user [%s] has not group for acl table [%s]
-    file_to_be_long: file to be long
+    login_please: login please
 cn:
     can_not_delete_self: 不能删除本账号
     admin_can_not_be_removed: 不能删除超级管理员
@@ -63,4 +63,4 @@ cn:
     has_not_privilege_for_this_table: 用户[%s]对表%s没有%s的操作权限
     this_group_can_not_edit_table: 群组[%s]没有对[%s]表的操作权限
     user_has_not_group_for_acl_table: 用户[%s]所属的的群组没有对表%s的操作权限
-    file_to_be_long: 文件超出长度
+    login_please: 请先登录

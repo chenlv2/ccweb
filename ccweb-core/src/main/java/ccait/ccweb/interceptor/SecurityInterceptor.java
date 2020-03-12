@@ -125,7 +125,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
 
             if (!vaildUploadFilesByInsert((RequestWrapper) request, currentTable)) {
                 response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-                response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "无效的上传文件格式!!!");
+                if(response.isCommitted()) {
+                    response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), "无效的上传文件格式!!!");
+                }
                 return false;
             }
 
@@ -138,7 +140,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
             //  null == request.getHeader("x-requested-with") TODO 暂时用这个来判断是否为ajax请求
             // 如果没有权限 则抛401异常 springboot会处理，跳转到 /error/401 页面
             response.setStatus(HttpStatus.FORBIDDEN.value());
-            response.sendError(HttpStatus.FORBIDDEN.value(), LangConfig.getInstance().get("has_not_privilege"));
+            if(!response.isCommitted()) {
+                response.sendError(HttpStatus.FORBIDDEN.value(), LangConfig.getInstance().get("has_not_privilege"));
+            }
             throw new Exception(LangConfig.getInstance().get("has_not_privilege"));
         }
         else {
@@ -452,7 +456,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
         if(user == null) {
             log.warn(LOG_PRE_SUFFIX + "用户未登录！！！");
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.sendError(HttpStatus.UNAUTHORIZED.value());
+            if(!response.isCommitted()) {
+                response.sendError(HttpStatus.UNAUTHORIZED.value());
+            }
             return false;
         }
 
@@ -763,7 +769,9 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 Optional<String> opt = datasourceList.stream()
                         .filter(a -> a.toLowerCase().equals(ds.toLowerCase())).findAny();
                 if(opt == null || !opt.isPresent()) {
-                    response.sendError(HttpStatus.NOT_FOUND.value(), "没有找到匹配的url");
+                    if(!response.isCommitted()) {
+                        response.sendError(HttpStatus.NOT_FOUND.value(), "没有找到匹配的url");
+                    }
                     myResult = true;
                     return this;
                 }
