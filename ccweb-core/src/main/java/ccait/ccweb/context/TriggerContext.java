@@ -286,6 +286,7 @@ public final class TriggerContext {
             } catch(Exception e) {
 
                 if(e.getCause() != null) {
+                    log.error(e.getCause());
                     throw new IllegalAccessException(e.getCause().getMessage());
                 }
 
