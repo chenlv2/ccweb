@@ -514,8 +514,14 @@ public class QueryInfo implements Serializable {
                     List<Integer> userIdByGroups = (List<Integer>) ApplicationContext.getThreadLocalMap().get(CURRENT_USERID_BY_GROUPS);
                     if (userIdByGroups.size() > 0) {
                         //查询同组数据
-                        where = where.and(String.format("([%s] in ('%s') or [%s] is null)", context.createByField, join("', '", userIdByGroups), context.createByField));
+                        where = where.and(String.format("([%s] in ('%s'))", context.createByField, join("', '", userIdByGroups)));
                     }
+                }
+                break;
+            case NO_GROUP:
+                if(EntityContext.hasColumn(dataSource.getId(), tablename, context.createByField)) { //被访问的表有创建人ID时才需要检查分组权限
+                    //查询同组数据
+                    where = where.and(String.format("[%s] is null)", context.createByField));
                 }
                 break;
         }
