@@ -514,7 +514,7 @@ public class QueryInfo implements Serializable {
                     List<Integer> userIdByGroups = (List<Integer>) ApplicationContext.getThreadLocalMap().get(CURRENT_USERID_BY_GROUPS);
                     if (userIdByGroups.size() > 0) {
                         //查询同组数据
-                        where = where.and(String.format("([%s] in ('%s'))", context.createByField, join("', '", userIdByGroups)));
+                        where = where.and(String.format("([%s] in ('%s') or [%s]=-1)", context.createByField, join("', '", userIdByGroups), context.createByField));
                     }
                 }
                 break;

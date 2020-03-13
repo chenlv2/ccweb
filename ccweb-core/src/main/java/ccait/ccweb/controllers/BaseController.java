@@ -219,10 +219,11 @@ public abstract class BaseController {
     }
 
     protected <T> ResponseData<T> success(T data) {
-        if(data instanceof String) {
-            return this.result(0, data.toString(), null, null);
-        }
         return this.result(0, "OK", data, null);
+    }
+
+    protected ResponseData<String> message(String text) {
+        return this.result(0, text, null, null);
     }
 
     protected <T> ResponseData<T> success(T data, PageInfo pageInfo) {

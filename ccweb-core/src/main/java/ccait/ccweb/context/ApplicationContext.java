@@ -629,7 +629,7 @@ public class ApplicationContext implements ApplicationContextAware {
 
         col = new ColumnInfo();
         col.setColumnName(createByField);
-        col.setCanNotNull(true);
+        col.setCanNotNull(false);
         col.setType(Integer.class);
         columns.add(col);
 
@@ -699,7 +699,7 @@ public class ApplicationContext implements ApplicationContextAware {
 
         col = new ColumnInfo();
         col.setColumnName(createByField);
-        col.setCanNotNull(true);
+        col.setCanNotNull(false);
         col.setType(Integer.class);
         columns.add(col);
 

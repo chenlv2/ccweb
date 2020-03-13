@@ -17,7 +17,8 @@ public enum PrivilegeScope {
     CHILD(2, "CHILD"),
     PARENT_AND_CHILD(3, "PARENT_AND_CHILD"),
     GROUP(4, "GROUP"),
-    ALL(5, "ALL"),
+    NO_GROUP(5, "NO_GROUP"),
+    ALL(6, "ALL"),
     ;
 
     private int code;
