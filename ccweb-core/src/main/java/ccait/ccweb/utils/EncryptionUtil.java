@@ -13,7 +13,7 @@ package ccait.ccweb.utils;
 
 
 import entity.tool.util.StringUtils;
-import org.codehaus.plexus.util.Base64;
+import org.apache.commons.codec.binary.Base64;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 import javax.crypto.Cipher;

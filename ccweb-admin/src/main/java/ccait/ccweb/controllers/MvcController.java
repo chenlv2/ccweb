@@ -13,8 +13,7 @@ package ccait.ccweb.controllers;
 
 
 import ccait.ccweb.annotation.AccessCtrl;
-import ccait.ccweb.model.QueryInfo;
-import ccait.ccweb.model.ResponseData;
+import ccait.ccweb.entites.QueryInfo;
 import ccait.ccweb.model.UserModel;
 import entity.tool.util.StringUtils;
 import org.springframework.stereotype.Controller;

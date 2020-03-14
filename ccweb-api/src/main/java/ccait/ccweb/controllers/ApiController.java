@@ -13,6 +13,9 @@ package ccait.ccweb.controllers;
 
 
 import ccait.ccweb.annotation.AccessCtrl;
+import ccait.ccweb.entites.QueryInfo;
+import ccait.ccweb.entites.ResponseData;
+import ccait.ccweb.entites.SearchData;
 import ccait.ccweb.model.*;
 import entity.query.ColumnInfo;
 import org.springframework.web.bind.annotation.*;

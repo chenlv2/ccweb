@@ -1,6 +1,5 @@
 package ccait.ccweb.utils;
 
-import ccait.ccweb.dynamic.DynamicClassBuilder;
 import entity.query.Datetime;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +16,7 @@ public class UploadUtils {
     private static final Logger log = LogManager.getLogger(UploadUtils.class);
     public static String upload(String path, String filename, byte[] data) throws IOException {
 
-        if(DynamicClassBuilder.isWindows() && "/".equals(path.substring(0, 1))) {
+        if(OSUtils.isWindows() && "/".equals(path.substring(0, 1))) {
             path = System.getProperty("user.dir") + path;
         }
 
@@ -711,7 +710,7 @@ public class UploadUtils {
             {"pcurl", "application/vnd.curl.pcurl"},
             {"pcx", "image/x-pcx"},
             {"pdb", "application/vnd.palm"},
-            {"pdf", "application/pdf"},
+            {"ccait.ccweb.pdf", "application/ccait.ccweb.pdf"},
             {"pfa", "application/x-font-type1"},
             {"pfb", "application/x-font-type1"},
             {"pfm", "application/x-font-type1"},

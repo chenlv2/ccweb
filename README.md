@@ -604,7 +604,7 @@ public class Application {
 }
 ```
 ## 生成实体类
-* ccweb虽然支持通过请求动态生成数据查询实体类，但推荐在二次开发的时候通过实体生成器生成数据查询的实体以提高访问的性能，实体生在器在ccweb-core包里，包路径为package ccait.generator，启动类EntitesGenerator，生成的路径与包名可在application.yml中设置。
+* ccweb虽然支持通过请求动态生成数据查询实体类，但推荐在二次开发的时候通过实体生成器生成数据查询的实体以提高访问的性能，实体生在器在ccweb-core包里，包路径为package ccait.ccweb.generator，启动类EntitesGenerator，生成的路径与包名可在application.yml中设置。
 
 ## 编写控制器
 ```java
