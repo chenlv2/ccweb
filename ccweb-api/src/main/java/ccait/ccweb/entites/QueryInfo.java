@@ -520,7 +520,9 @@ public class QueryInfo implements Serializable {
             case NO_GROUP:
                 if(EntityContext.hasColumn(dataSource.getId(), tablename, context.createByField)) { //被访问的表有创建人ID时才需要检查分组权限
                     //查询同组数据
-                    where = where.and(String.format("[%s] is null)", context.createByField));
+                    if(EntityContext.hasColumn(dataSource.getId(), tablename, context.createByField)) { //被访问的表有创建人ID时才需要检查分组权限
+                        where = where.and(String.format("[%s] is null", context.createByField));
+                    }
                 }
                 break;
         }
