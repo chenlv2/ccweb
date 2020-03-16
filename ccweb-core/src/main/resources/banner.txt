@@ -12,7 +12,7 @@
      2019@copyright     v1.0.0   HTTP:  //    ///   CCAIT.CN FREAMEWORK
 
     =========================================================================
-    :: CCWEB :: (v1.0.0-SNAPSHOT)  Author: 草耑(linlurui) 2019@copyright
+    :: CCWEB :: (v1.0.0-SNAPSHOT)  Author:linlurui 2019@copyright
 
 
 

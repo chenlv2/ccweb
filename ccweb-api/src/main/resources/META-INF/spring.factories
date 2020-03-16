@@ -1,1 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\ccait.ccweb.config.WebConfig
+org.springframework.boot.env.EnvironmentPostProcessor=\ccait.ccweb.processor.ApplicationConfigProcessor
