@@ -823,10 +823,6 @@ public abstract class BaseController {
                     .select("userId").query(Integer.class);
         }
 
-        if(!userIdListByGroups.contains(user.getId())) {
-            userIdListByGroups.add(user.getId());
-        }
-
         ApplicationContext.getThreadLocalMap().put(CURRENT_USERID_BY_GROUPS, userIdListByGroups);
 
         if(jwtEnable) {
