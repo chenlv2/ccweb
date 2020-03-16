@@ -12,13 +12,13 @@
 package ccait.ccweb.enums;
 
 public enum PrivilegeScope {
-    DENIED(0, "DENIED"),
+    DENIED(-1, "DENIED"),
+    ALL(0, "ALL"),
     SELF(1, "SELF"),
     CHILD(2, "CHILD"),
     PARENT_AND_CHILD(3, "PARENT_AND_CHILD"),
     GROUP(4, "GROUP"),
     NO_GROUP(5, "NO_GROUP"),
-    ALL(6, "ALL"),
     ;
 
     private int code;
