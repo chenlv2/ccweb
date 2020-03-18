@@ -158,10 +158,6 @@ public class SecurityInterceptor implements HandlerInterceptor {
             return;
         }
 
-        if(request.getSession().getAttribute(request.getSession().getId() + LOGIN_KEY) != null) {
-            return;
-        }
-
         if(wechatEnable) {
             /*** TODO ***/
         }
