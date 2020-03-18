@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>ccweb-framework</artifactId>
-        <groupId>ccait</groupId>
+        <groupId>ccait.cn</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ccait</groupId>
+    <groupId>ccait.cn</groupId>
 
     <artifactId>ccweb-api</artifactId>
 
@@ -19,13 +19,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>ccait</groupId>
+            <groupId>ccait.cn</groupId>
             <artifactId>ccweb-core</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
-            <groupId>ccait</groupId>
+            <groupId>ccait.cn</groupId>
             <artifactId>ccweb-pdf</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>
@@ -40,6 +40,11 @@
             <groupId>com.auth0</groupId>
             <artifactId>java-jwt</artifactId>
             <version>3.4.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
         </dependency>
     </dependencies>
 

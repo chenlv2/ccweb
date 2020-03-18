@@ -34,7 +34,7 @@ import static ccait.ccweb.utils.StaticVars.*;
 
 
 @Component
-@ServerEndpoint(value="/ws")
+@ServerEndpoint(value="/ccws", configurator=GetHttpSessionConfigurator.class)
 public class WebSocketServer {
 
     private static final Logger log = LogManager.getLogger(WebSocketServer.class);
@@ -50,10 +50,10 @@ public class WebSocketServer {
      */
     @OnOpen
     public void onOpen(Session session, EndpointConfig conf) {
+
         session.setMaxIdleTimeout( MAX_TIME_OUT );
 
-        HandshakeRequest req = (HandshakeRequest) conf.getUserProperties().get("sessionKey");
-        HttpSession httpSession = (HttpSession) req.getHttpSession();
+        HttpSession httpSession = (HttpSession)conf.getUserProperties().get(HttpSession.class.getName());
 
         sessionSet.put(httpSession.getId(), session);
 
@@ -64,7 +64,7 @@ public class WebSocketServer {
         }
 
         int cnt = OnlineCount.incrementAndGet(); // 在线数加1
-        log.info(LOG_PRE_SUFFIX + String.format("有连接加入，当前连接数为：%s", cnt));
+        log.info(LOG_PRE_SUFFIX_BY_SOCKET + String.format("有连接加入，当前连接数为：%s", cnt));
     }
 
     /**
@@ -90,7 +90,7 @@ public class WebSocketServer {
         }
 
         int cnt = OnlineCount.decrementAndGet();
-        log.info(LOG_PRE_SUFFIX + String.format("有连接关闭，当前连接数为：%s", cnt));
+        log.info(LOG_PRE_SUFFIX_BY_SOCKET + String.format("有连接关闭，当前连接数为：%s", cnt));
     }
 
     /**
@@ -101,7 +101,7 @@ public class WebSocketServer {
      */
     @OnMessage
     public void onMessage(String message, Session session) {
-        log.info(LOG_PRE_SUFFIX + String.format("来自客户端的消息：%s", message));
+        log.info(LOG_PRE_SUFFIX_BY_SOCKET + String.format("来自客户端的消息：%s", message));
         try
         {
             if(StringUtils.isEmpty( message )) {
@@ -131,7 +131,7 @@ public class WebSocketServer {
 
         } catch ( Exception e )
         {
-            log.error(LOG_PRE_SUFFIX + String.format("接收消息发生错误：%s",e.getMessage()));
+            log.error(LOG_PRE_SUFFIX_BY_SOCKET + String.format("接收消息发生错误：%s",e.getMessage()));
 
             sendMessage(session, e.getMessage());
         }
@@ -205,7 +205,7 @@ public class WebSocketServer {
      */
     @OnError
     public void onError(Session session, Throwable error) {
-        log.error(LOG_PRE_SUFFIX + String.format("发生错误：%s，Session ID： %s",error.getMessage(),session.getId()));
+        log.error(LOG_PRE_SUFFIX_BY_SOCKET + String.format("发生错误：%s，Session ID： %s",error.getMessage(),session.getId()));
     }
 
     /**
@@ -225,7 +225,7 @@ public class WebSocketServer {
 
             session.getBasicRemote().sendText(message);
         } catch (Exception e) {
-            log.error(LOG_PRE_SUFFIX + String.format("发送消息出错：%s, 消息内容：%s", e.getMessage(), message));
+            log.error(LOG_PRE_SUFFIX_BY_SOCKET + String.format("发送消息出错：%s, 消息内容：%s", e.getMessage(), message));
             e.printStackTrace();
         }
     }
@@ -253,7 +253,7 @@ public class WebSocketServer {
             sendMessage(session, message);
         }
         else{
-            log.warn(LOG_PRE_SUFFIX + String.format("没有找到你指定ID的会话：%s",httpSessionId));
+            log.warn(LOG_PRE_SUFFIX_BY_SOCKET + String.format("没有找到你指定ID的会话：%s",httpSessionId));
         }
     }
 }

@@ -587,7 +587,7 @@ ccweb的二次开发实际就是自定义ccweb-start包的过程，springboot的
 
     <dependencies>
         <dependency>
-            <groupId>ccait</groupId>
+            <groupId>ccait.cn</groupId>
             <artifactId>ccweb-api</artifactId>
             <version>1.0.0-SNAPSHOT</version>
         </dependency>

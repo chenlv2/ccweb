@@ -421,7 +421,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 log.info(String.format(LOG_PRE_SUFFIX + "表[%s]没有设置权限，允许查询！", table));
 
                 if(user != null) {
-                    if (!checkPrivilege(table, user, aclList, method, attrs, request.getRequestPostString(), request)) {
+                    if (!checkPrivilege(table, user, aclList, method, attrs, request.getRequestPostString(), request, response)) {
                         message = String.format(LangConfig.getInstance().get("has_not_privilege_for_this_table"), user.getUsername(), table, method);
                         log.warn(LOG_PRE_SUFFIX + message);
                         throw new Exception(message);
@@ -480,7 +480,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
             }
         }
 
-        if(!checkPrivilege(table, user, aclList, method, attrs, request.getRequestPostString(), request)){
+        if(!checkPrivilege(table, user, aclList, method, attrs, request.getRequestPostString(), request, response)){
             message = String.format(LangConfig.getInstance().get("has_not_privilege_for_this_table"), user.getUsername(), table, method);
             log.warn(LOG_PRE_SUFFIX + message);
             throw new Exception(message);
@@ -490,7 +490,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
     }
 
     private boolean checkPrivilege(String table, UserModel user, List<AclModel> aclList, String method, Map<String, String > attrs,
-                                   String postString, HttpServletRequest request) throws Exception {
+                                   String postString, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
         String privilegeWhere = null;
         switch (method.toUpperCase()) {

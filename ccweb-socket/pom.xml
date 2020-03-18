@@ -9,29 +9,18 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ccait.cn</groupId>
-
-    <artifactId>ccweb-admin</artifactId>
-
-    <version>1.0.0-SNAPSHOT</version>
-
-    <packaging>jar</packaging>
+    <artifactId>ccweb-socket</artifactId>
 
     <dependencies>
         <dependency>
             <groupId>ccait.cn</groupId>
-            <artifactId>ccweb-api</artifactId>
+            <artifactId>ccweb-core</artifactId>
             <version>1.0.0-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
-
     </dependencies>
-
-
 </project>

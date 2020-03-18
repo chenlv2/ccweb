@@ -38,13 +38,22 @@ public class WebSocketClient extends Endpoint {
     //连接超时
     public static final long MAX_TIME_OUT = 60 * 60 * 24 * 1000;
 
+    @Value("${websocket.server:}")
+    private String server;
+
+    @Value("${websocket.port:}")
+    private String port;
+
+    @Value("${websocket.protocol:}")
+    private String protocol;
+
+    private String websocket_url;
+
     @PostConstruct
     private void init() {
         container = ContainerProvider.getWebSocketContainer();
+        websocket_url = protocol + "://" + server + ":" + port + "/ccws";
     }
-
-    @Value("${websocket.url:}")
-    private String websocket_url;
 
     @OnOpen
     @Override

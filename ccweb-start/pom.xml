@@ -6,11 +6,11 @@
 
     <parent>
         <artifactId>ccweb-framework</artifactId>
-        <groupId>ccait</groupId>
+        <groupId>ccait.cn</groupId>
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
-    <groupId>ccait</groupId>
+    <groupId>ccait.cn</groupId>
 
     <artifactId>ccweb-start</artifactId>
 
@@ -23,7 +23,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>ccait</groupId>
+            <groupId>ccait.cn</groupId>
             <artifactId>ccweb-api</artifactId>
             <version>1.0.0-SNAPSHOT</version>
             <exclusions>
@@ -33,6 +33,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <dependency>
+            <groupId>ccait.cn</groupId>
+            <artifactId>ccweb-socket</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-starter-tomcat</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-legacy</artifactId>

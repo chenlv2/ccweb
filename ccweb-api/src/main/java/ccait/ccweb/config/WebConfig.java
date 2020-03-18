@@ -20,6 +20,7 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import entity.query.core.DataSourceFactory;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.http.HttpMessageConverters;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -28,14 +29,24 @@ import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.Ordered;
 import org.springframework.session.web.http.CookieHttpSessionStrategy;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.PathMatchConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.context.request.async.TimeoutCallableProcessingInterceptor;
+import org.springframework.web.servlet.config.annotation.*;
 
 
 @Configuration
+@EnableAutoConfiguration
 public class WebConfig implements WebMvcConfigurer {
+
+    @Override
+    public void configureAsyncSupport(final AsyncSupportConfigurer configurer) {
+        configurer.setDefaultTimeout(300000);
+        configurer.registerCallableInterceptors(timeoutInterceptor());
+    }
+
+    @Bean
+    public TimeoutCallableProcessingInterceptor timeoutInterceptor() {
+        return new TimeoutCallableProcessingInterceptor();
+    }
 
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {

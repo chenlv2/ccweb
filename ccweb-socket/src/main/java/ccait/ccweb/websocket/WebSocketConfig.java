@@ -12,19 +12,22 @@
 package ccait.ccweb.websocket;
 
 
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
-@Configuration
-@ConditionalOnProperty(prefix = "websocket", name = "enable", havingValue = "true")
 @EnableWebSocket
+@Configuration
+@EnableAutoConfiguration
+@ConditionalOnProperty(prefix = "websocket", name = "enable", havingValue = "true")
 public class WebSocketConfig {
 
     @Bean
     public ServerEndpointExporter serverEndpointExporter() {
-        return new ServerEndpointExporter();  //websocket
+        return new ServerEndpointExporter();  //application.yml的websocket.enable设为true才会进来
     }
 }
