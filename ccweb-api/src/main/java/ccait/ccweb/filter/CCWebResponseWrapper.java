@@ -12,7 +12,7 @@
 package ccait.ccweb.filter;
 
 
-import ccait.ccweb.entites.ResponseData;
+import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.FastJsonUtils;
 import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;

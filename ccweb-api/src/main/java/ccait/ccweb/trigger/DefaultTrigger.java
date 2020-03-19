@@ -20,7 +20,7 @@ import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.filter.CCWebRequestWrapper;
 import ccait.ccweb.entites.ConditionInfo;
 import ccait.ccweb.entites.QueryInfo;
-import ccait.ccweb.entites.ResponseData;
+import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.model.UserModel;
 import ccait.ccweb.utils.FastJsonUtils;
 import entity.query.ColumnInfo;

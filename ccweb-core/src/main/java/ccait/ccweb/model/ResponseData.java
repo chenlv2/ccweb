@@ -9,7 +9,7 @@
  */
 
 
-package ccait.ccweb.entites;
+package ccait.ccweb.model;
 
 
 import java.io.Serializable;
@@ -21,6 +21,21 @@ public class ResponseData<T> implements Serializable {
 
     public ResponseData() {
         pageInfo = new PageInfo();
+        status = 0;
+        message = "OK";
+    }
+
+    public ResponseData(int status, String msg) {
+        pageInfo = new PageInfo();
+        status = status;
+        message = msg;
+    }
+
+    public ResponseData(int status, String msg, T data) {
+        pageInfo = new PageInfo();
+        status = status;
+        message = msg;
+        this.data = data;
     }
 
     public int getStatus() {

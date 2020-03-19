@@ -17,7 +17,7 @@ import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EncryptMode;
 import ccait.ccweb.filter.CCWebRequestWrapper;
 import ccait.ccweb.entites.QueryInfo;
-import ccait.ccweb.entites.ResponseData;
+import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.FastJsonUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

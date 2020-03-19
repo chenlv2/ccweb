@@ -14,7 +14,7 @@ package ccait.ccweb.trigger;
 import ccait.ccweb.annotation.*;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.entites.QueryInfo;
-import ccait.ccweb.entites.ResponseData;
+import ccait.ccweb.model.ResponseData;
 import org.springframework.core.annotation.Order;
 
 import javax.servlet.http.HttpServletRequest;

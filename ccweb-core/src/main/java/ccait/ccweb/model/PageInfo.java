@@ -9,7 +9,7 @@
  */
 
 
-package ccait.ccweb.entites;
+package ccait.ccweb.model;
 
 import java.io.Serializable;
 

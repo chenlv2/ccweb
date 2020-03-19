@@ -14,7 +14,7 @@ package ccait.ccweb.filter;
 import ccait.ccweb.context.TriggerContext;
 import ccait.ccweb.controllers.BaseController;
 import ccait.ccweb.enums.EventType;
-import ccait.ccweb.entites.ResponseData;
+import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.utils.FastJsonUtils;
 import entity.query.core.ApplicationConfig;
 import entity.tool.util.JsonUtils;

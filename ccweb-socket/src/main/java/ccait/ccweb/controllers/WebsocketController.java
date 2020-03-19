@@ -13,10 +13,12 @@ package ccait.ccweb.controllers;
 
 
 import ccait.ccweb.annotation.AccessCtrl;
+import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.websocket.MessageBody;
 import ccait.ccweb.websocket.WebSocketClient;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -28,6 +30,9 @@ public class WebsocketController {
 
     private static final Logger log = LogManager.getLogger(WebsocketController.class);
 
+    @Autowired
+    private WebSocketClient wsClient;
+
     /***
      * send message
      * @return
@@ -35,14 +40,16 @@ public class WebsocketController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "api/message/send", method = RequestMethod.POST )
-    public void sendMessage(@RequestBody MessageBody messageBody) {
+    public ResponseData sendMessage(@RequestBody MessageBody messageBody) {
 
         try {
-            WebSocketClient ws = new WebSocketClient();
-            ws.send(messageBody);
+            wsClient.send(messageBody);
         } catch (Exception e) {
             log.error(e.getMessage(), e);
+            return new ResponseData(500, e.getMessage());
         }
+
+        return new ResponseData();
     }
 
 
@@ -53,15 +60,8 @@ public class WebsocketController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "asyncapi/message/send", method = RequestMethod.POST )
-    public Mono asyncSendMessage(@RequestBody MessageBody messageBody) {
+    public Mono<ResponseData> asyncSendMessage(@RequestBody MessageBody messageBody) {
 
-        try {
-            this.sendMessage(messageBody);
-
-        } catch (Exception e) {
-            log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
-        }
-
-        return Mono.empty();
+        return Mono.just(this.sendMessage(messageBody));
     }
 }
