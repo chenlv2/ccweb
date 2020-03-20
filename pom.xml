@@ -207,11 +207,7 @@
         <!--<artifactId>transport</artifactId>-->
         <!--<version>7.0.0</version>-->
         <!--</dependency>-->
-        <dependency>
-            <groupId>io.searchbox</groupId>
-            <artifactId>jest</artifactId>
-            <version>2.0.0</version>
-        </dependency>
+
         <!--注释掉couchbase.jdbc才能正常启动webflux,否则只能用spring-boot-web-->
         <!--<dependency>-->
         <!--<groupId>com.couchbase.jdbc</groupId>-->

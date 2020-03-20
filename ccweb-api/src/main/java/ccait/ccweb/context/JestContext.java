@@ -15,6 +15,7 @@ import ccait.ccweb.model.PageInfo;
 import ccait.ccweb.model.SearchData;
 import ccait.ccweb.utils.FastJsonUtils;
 import com.google.gson.GsonBuilder;
+import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
 import entity.tool.util.ThreadUtils;
 import io.searchbox.client.JestClient;
@@ -28,6 +29,7 @@ import io.searchbox.core.*;
 import io.searchbox.indices.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -40,40 +42,21 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
-public class IndexingContext {
+public class JestContext {
 
-    private JestClient client;
+    @Autowired
+    private JestClient jestClient;
 
-    @Value(value = "${entity.elasticSearch.enable:false}")
+    @Value(value = "${elasticSearch.enable:false}")
     private boolean enableEasticSearch;
 
-    @Value(value = "${entity.elasticSearch.url:}")
-    private String url;
-
-    @Value(value = "${entity.elasticSearch.timeout:10000}")
-    private int timeout;
-
-    @Value(value = "${entity.elasticSearch.defaultMatch:match_node}")
+    @Value(value = "${elasticSearch.defaultMatch:match_node}")
     private String defaultMatch;
 
-    private static final Logger log = LogManager.getLogger( IndexingContext.class );
+    private static final Logger log = LogManager.getLogger( JestContext.class );
 
     @PostConstruct
     private void postConstruct() {
-
-        if(!enableEasticSearch) {
-            return;
-        }
-
-        List<String> urlList = StringUtils.splitString2List(url, ";", "http://%s");
-        JestClientFactory factory = new JestClientFactory();
-        factory.setHttpClientConfig(new HttpClientConfig
-                .Builder(urlList)
-                .gson(new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create())
-                .multiThreaded(true)
-                .readTimeout(timeout)
-                .build());
-        client = factory.getObject();
     }
 
     /**
@@ -82,11 +65,11 @@ public class IndexingContext {
      */
     public void deleteIndex(String indexname) throws Exception {
 
-        if(client == null) {
+        if(jestClient == null) {
             return;
         }
 
-        final String index = indexname.toLowerCase().replaceAll("\\[([^\\[\\]]+)\\]", "$1");
+        final String index = indexname.toLowerCase().replaceAll("[\\[`]([^\\[\\]]+)[\\]`]", "$1");
 
         if(enableEasticSearch) {
             ThreadUtils.async(new Runnable() {
@@ -94,7 +77,7 @@ public class IndexingContext {
                 public void run() {
                     try {
                         DeleteIndex deleteIndex = new DeleteIndex.Builder(index).build();
-                        JestResult result = client.execute(deleteIndex);
+                        JestResult result = jestClient.execute(deleteIndex);
                     } catch (IOException e) {
                         log.error(e.getMessage(), e);
                     }
@@ -111,12 +94,12 @@ public class IndexingContext {
      */
     public void clearCache() throws Exception {
 
-        if(client == null) {
+        if(jestClient == null) {
             return;
         }
 
         ClearCache closeIndex = new ClearCache.Builder().build();
-        JestResult result = client.execute(closeIndex);
+        JestResult result = jestClient.execute(closeIndex);
     }
 
 
@@ -127,7 +110,7 @@ public class IndexingContext {
      */
     public void closeIndex(String indexname) throws Exception {
 
-        if(client == null) {
+        if(jestClient == null) {
             return;
         }
         final String index = ensureIndexName(indexname);
@@ -138,7 +121,7 @@ public class IndexingContext {
                 public void run() {
                     try {
                         CloseIndex closeIndex = new CloseIndex.Builder(index).build();
-                        JestResult result = client.execute(closeIndex);
+                        JestResult result = jestClient.execute(closeIndex);
                     } catch (IOException e) {
                         log.error(e.getMessage(), e);
                     }
@@ -153,12 +136,12 @@ public class IndexingContext {
      */
     public void optimize() throws Exception {
 
-        if(client == null) {
+        if(jestClient == null) {
             return;
         }
 
         Optimize optimize = new Optimize.Builder().build();
-        JestResult result = client.execute(optimize);
+        JestResult result = jestClient.execute(optimize);
     }
 
     /**
@@ -168,7 +151,7 @@ public class IndexingContext {
     public JestResult flush() throws Exception {
 
         Flush flush = new Flush.Builder().build();
-        JestResult result = client.execute(flush);
+        JestResult result = jestClient.execute(flush);
 
         return result;
     }
@@ -178,9 +161,9 @@ public class IndexingContext {
      * @throws Exception
      */
     public boolean indicesExists(String indexname) throws Exception {
-        indexname = ensureIndexName(indexname);
-        IndicesExists indicesExists = new IndicesExists.Builder(indexname).build();
-        JestResult result = client.execute(indicesExists);
+        String index = ensureIndexName(indexname);
+        IndicesExists indicesExists = new IndicesExists.Builder(index).build();
+        JestResult result = jestClient.execute(indicesExists);
 
         return result.isSucceeded();
     }
@@ -192,7 +175,7 @@ public class IndexingContext {
     public JestResult nodesInfo() throws Exception {
 
         NodesInfo nodesInfo = new NodesInfo.Builder().build();
-        JestResult result = client.execute(nodesInfo);
+        JestResult result = jestClient.execute(nodesInfo);
 
         return result;
     }
@@ -205,7 +188,7 @@ public class IndexingContext {
     public JestResult health() throws Exception {
 
         Health health = new Health.Builder().build();
-        JestResult result = client.execute(health);
+        JestResult result = jestClient.execute(health);
 
         return result;
     }
@@ -216,7 +199,7 @@ public class IndexingContext {
      */
     public JestResult nodesStats() throws Exception {
         NodesStats nodesStats = new NodesStats.Builder().build();
-        JestResult result = client.execute(nodesStats);
+        JestResult result = jestClient.execute(nodesStats);
 
         return result;
     }
@@ -235,7 +218,7 @@ public class IndexingContext {
                 public void run() {
                     try {
                         Update update = new Update.Builder(content).index(index).id(id).build();
-                        client.execute(update);
+                        jestClient.execute(update);
                     } catch (IOException e) {
                         log.error(e.getMessage(), e);
                     }
@@ -260,7 +243,7 @@ public class IndexingContext {
                 public void run() {
                     try {
                         Delete delete = new Delete.Builder(id).index(index).build();
-                        client.execute(delete);
+                        jestClient.execute(delete);
                     } catch (IOException e) {
                         log.error(e.getMessage(), e);
                     }
@@ -278,34 +261,10 @@ public class IndexingContext {
 
         indexname = indexname.toLowerCase();
         Get get = new Get.Builder(indexname, id).build();
-        JestResult jestResult = client.execute(get);
+        JestResult jestResult = jestClient.execute(get);
         T result = jestResult.getSourceAsObject(clazz);
 
         return result;
-    }
-
-    /**
-     * Suggestion
-     * @throws Exception
-     */
-    public void suggest() throws Exception{
-        String suggestionName = "my-suggestion";
-
-        Suggest suggest = new Suggest.Builder("{" +
-                "  \"" + suggestionName + "\" : {" +
-                "    \"text\" : \"the amsterdma meetpu\"," +
-                "    \"term\" : {" +
-                "      \"field\" : \"body\"" +
-                "    }" +
-                "  }" +
-                "}").build();
-        SuggestResult suggestResult = client.execute(suggest);
-        System.out.println(suggestResult.isSucceeded());
-        List<SuggestResult.Suggestion> suggestionList = suggestResult.getSuggestions(suggestionName);
-        System.out.println(suggestionList.size());
-        for(SuggestResult.Suggestion suggestion:suggestionList){
-            System.out.println(suggestion.text);
-        }
     }
 
     /**
@@ -330,7 +289,10 @@ public class IndexingContext {
         Search search = new Search.Builder(queryString)
                 .addIndex(indexname)
                 .build();
-        SearchResult searchResult = client.execute(search);
+        SearchResult searchResult = jestClient.execute(search);
+        if(searchResult.getResponseCode() != 200) {
+            throw new Exception(searchResult.getErrorMessage());
+        }
         List<SearchResult.Hit<T,Void>> hits = searchResult.getHits(clazz);
         for (SearchResult.Hit<T, Void> hit : hits) {
 
@@ -437,14 +399,14 @@ public class IndexingContext {
                         List<Index> builderList = new ArrayList<>();
 
                         for(T data : datas) {
-                            builderList.add(new Index.Builder(data).build());
+                            builderList.add(new Index.Builder(JsonUtils.toJson(data)).build());
                         }
 
                         Bulk bulk = new Bulk.Builder()
                                 .defaultIndex(index)
                                 .addAction(builderList).build();
 
-                        client.execute(bulk);
+                        jestClient.execute(bulk);
                     } catch (IOException e) {
                         log.error(e.getMessage(), e);
                     }
@@ -453,31 +415,76 @@ public class IndexingContext {
         }
     }
 
-    private String ensureIndexName(String indexname) {
-        return indexname.toLowerCase().replaceAll("\\[([^\\[\\]]+)\\]", "$1");
+    public String ensureIndexName(String indexname) {
+        return indexname.toLowerCase().replaceAll("[\\[`]([^\\[\\]]+)[\\]`]", "$1");
+    }
+    /**
+     * 插入单条数据
+     * 若该条数据已经存在,则覆盖。
+     * @return
+     */
+    public <T> boolean insertOrUpdateDoc(T data, String uniqueId, String index) {
+        //是否插入成功标识
+        boolean flag = false;
+        Index.Builder builder = new Index.Builder(JsonUtils.toJson(data));
+        builder.id(uniqueId);
+        builder.refresh(true);
+        Index indexDoc = builder.index(index).type(index).build();
+        JestResult result;
+        try {
+            result = jestClient.execute(indexDoc);
+            if (result != null && result.isSucceeded()) {
+                return true;
+            }
+
+            else {
+                log.error("ESJestClient insertDoc exception===>" + result.getErrorMessage());
+            }
+        } catch (IOException e) {
+            log.error("ESJestClient insertDoc exception", e);
+        }
+        return false;
     }
 
-
-    public <T> void createIndex(String indexname, T data) throws Exception {
+    public <T> void createIndex(String indexname, String uniqueId, T data) throws Exception {
 
         if(data == null)  {
             return;
         }
 
-        final String index = indexname.toLowerCase().replaceAll("\\[([^\\[\\]]+)\\]", "$1");
+        final String index = indexname.toLowerCase().replaceAll("[\\[`]([^\\[\\]]+)[\\]`]", "$1");
 
         if(enableEasticSearch) {
             ThreadUtils.async(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        Index jestIndex = new Index.Builder(data).index(index).build();
-                        JestResult jestResult = client.execute(jestIndex);
-                    } catch (IOException e) {
+                        if(!indicesExists(index)) {
+                            jestClient.execute(new CreateIndex.Builder(index).build());
+                        }
+                        insertOrUpdateDoc(data, uniqueId, index);
+
+                    } catch (Exception e) {
                         log.error(e.getMessage(), e);
                     }
                 }
             });
         }
+    }
+
+    public static JestClient createClient(int timeout, String clusterNodes) {
+        List<String> urlList = StringUtils.splitString2List(clusterNodes, ",", "http://%s");
+        JestClientFactory factory = new JestClientFactory();
+        factory.setHttpClientConfig(new HttpClientConfig
+                .Builder(urlList)
+                //.defaultCredentials("elastic","changeme") //如果使用了x-pack，就要添加用户名和密码
+                .gson(new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create())
+                .multiThreaded(true)
+                .connTimeout(timeout)
+                .readTimeout(timeout)
+                .build());
+        JestClient jestClient = factory.getObject();
+
+        return jestClient;
     }
 }

@@ -350,21 +350,10 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
         "pageSize": 50  //每页条数
     },
 
-    "conditionList": [{ //查询条件
-        "name": "id",   //字段名
-        "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2, "="), GT(3, ">"), LT(4, "<"), GTEQ(5, ">="), LTEQ(6, "<="), NOT(7, "<>"), NOTEQ(8, "!=")
-    }, ... ],
-
     "sortList": [{ //排序条件
         "name": "id", //字段名 
         "desc": true  //true为降序，false为升序
     }, ... ],
-
-    "groupList" : [ //分组条件
-        "id", //字段名 
-        ...
-    ],
 
     "keywords" : [{ //关键词模糊查询条件
         "name": "id",   //字段名

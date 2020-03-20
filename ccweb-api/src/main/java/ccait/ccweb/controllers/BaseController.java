@@ -13,10 +13,7 @@ package ccait.ccweb.controllers;
 
 
 import ccait.ccweb.config.LangConfig;
-import ccait.ccweb.context.ApplicationContext;
-import ccait.ccweb.context.EntityContext;
-import ccait.ccweb.context.IndexingContext;
-import ccait.ccweb.context.TriggerContext;
+import ccait.ccweb.context.*;
 import ccait.ccweb.dynamic.DynamicClassBuilder;
 import ccait.ccweb.entites.*;
 import ccait.ccweb.enums.*;
@@ -97,7 +94,7 @@ public abstract class BaseController {
     private QueryInfo queryInfo;
 
     @Autowired
-    private IndexingContext indexingContext;
+    private JestContext jestContext;
 
     @Value("${entity.queryable.ignoreTotalCount:true}")
     protected boolean ignoreTotalCount;
@@ -1392,7 +1389,13 @@ public abstract class BaseController {
         if(where.update(postData)) {
             result = 1;
 
-            indexingContext.createIndex(((Queryable)entity).tablename(), postData);
+            ColumnInfo primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
+            if(primary != null) {
+                String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
+//                transportContext.createIndex(indexName);
+//                transportContext.addData(entity, indexName, entity.getClass().getTypeName(), id);
+                jestContext.createIndex(indexName, id, entity);
+            }
 
             String currentDatasource = getCurrentDatasourceId();
             deleteFileByFieldname(table, data, currentDatasource);
@@ -1438,8 +1441,9 @@ public abstract class BaseController {
 
         Queryable queryable = ((Queryable) entity);
 
+        ColumnInfo primary = null;
         if(StringUtils.isEmpty(idField)) {
-            ColumnInfo primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
+            primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
             if (primary != null) {
                 if (!"int".equals(primary.getDataType()) && !"bigint".equals(primary.getType())) {
                     idField = primary.getColumnName();
@@ -1449,9 +1453,16 @@ public abstract class BaseController {
 
         if(StringUtils.isEmpty(idField)) {
             Integer result = queryable.insert();
-            indexingContext.createIndex(((Queryable)entity).tablename(), postData);
+
             if(result == null) {
                 return "0";
+            }
+
+            if(primary != null) {
+                String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
+//                transportContext.createIndex(indexName);
+//                transportContext.addData(entity, indexName, entity.getClass().getTypeName(), result.toString());
+                jestContext.createIndex(indexName, result.toString(), entity);
             }
 
             return result.toString();
@@ -2250,7 +2261,9 @@ public abstract class BaseController {
 
         encrypt(queryInfo.getConditionList());
 
-        return indexingContext.search(table, queryInfo, Map.class);
+        String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
+
+        return jestContext.search(table, queryInfo, Map.class);
     }
 
     public boolean wechatLogin(String code) throws IOException {
