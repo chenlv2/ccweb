@@ -10,3 +10,6 @@ target
 *.db
 *.DS_Store
 */*.DS_Store
+home
+**/home
+*/home

@@ -550,6 +550,25 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     ...
 ```
 
+### 24. 消息推关
+* URL：/api/message/send 
+* 请求方式：POST
+* URL参数：无
+* POST参数：
+* 注意：该接口需要引入ccweb-socket包
+```javascript
+表单：
+{
+    "message": "my message", //消息内容
+    "receiver": {  //接收人
+        "groupId": "",  //组ID
+        "roleId": "",   //角色ID
+        "usernames": [] //用户名
+    },
+    "sendMode": "ALL"   //发送方式: ALL(0, "ALL"), USER(1, "USER"), GROUP(2, "GROUP"), ROLE(3, "ROLE")
+}
+```
+
 
 ## 系统用户/权限表结构说明
 用户权限相关表在服务启动时会自动创建，目的在于使用系统服务控制数据库表的访问权限，用户组是扁平结构的，需要更复杂的权限控制功能建议通过二次开发实现。
