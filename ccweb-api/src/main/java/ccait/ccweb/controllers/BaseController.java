@@ -1147,11 +1147,11 @@ public abstract class BaseController {
 
         Map<String, Object> postData = queryInfo.getData();
 
+        ensureJsonData(postData);
+
         encrypt(postData);
 
         encrypt(queryInfo.getConditionList());
-
-        ensureJsonData(postData);
 
         Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
@@ -1368,11 +1368,11 @@ public abstract class BaseController {
             throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
+        ensureJsonData(postData);
+
         encrypt(postData);
 
         fillData(postData, entity);
-
-        ensureJsonData(postData);
 
         Where where = queryInfo.getWhereQueryableById(entity, id);
 
@@ -1392,8 +1392,6 @@ public abstract class BaseController {
             ColumnInfo primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
             if(primary != null) {
                 String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
-//                transportContext.createIndex(indexName);
-//                transportContext.addData(entity, indexName, entity.getClass().getTypeName(), id);
                 jestContext.createIndex(indexName, id, entity);
             }
 
@@ -1433,11 +1431,11 @@ public abstract class BaseController {
             throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
+        ensureJsonData(postData);
+
         encrypt(postData);
 
         fillData(postData, entity);
-
-        ensureJsonData(postData);
 
         Queryable queryable = ((Queryable) entity);
 
@@ -1460,8 +1458,6 @@ public abstract class BaseController {
 
             if(primary != null) {
                 String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
-//                transportContext.createIndex(indexName);
-//                transportContext.addData(entity, indexName, entity.getClass().getTypeName(), result.toString());
                 jestContext.createIndex(indexName, result.toString(), entity);
             }
 

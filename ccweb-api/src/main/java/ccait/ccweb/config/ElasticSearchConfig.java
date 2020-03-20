@@ -1,18 +1,14 @@
 package ccait.ccweb.config;
 
 import ccait.ccweb.context.JestContext;
-import com.google.gson.GsonBuilder;
-import entity.tool.util.StringUtils;
 import io.searchbox.client.JestClient;
-import io.searchbox.client.JestClientFactory;
-import io.searchbox.client.config.HttpClientConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import java.util.List;
+
 
 @Configuration
 @ConditionalOnProperty(prefix = "elasticSearch", name = "enable", havingValue = "true")

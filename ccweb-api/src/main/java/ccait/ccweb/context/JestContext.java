@@ -424,8 +424,6 @@ public class JestContext {
      * @return
      */
     public <T> boolean insertOrUpdateDoc(T data, String uniqueId, String index) {
-        //是否插入成功标识
-        boolean flag = false;
         Index.Builder builder = new Index.Builder(JsonUtils.toJson(data));
         builder.id(uniqueId);
         builder.refresh(true);
