@@ -10,5 +10,5 @@
         </class>
     </keep-names>
 
-    <property name="log-file" value="ccweb-pdf-log.xml"/>
+    <property name="log-file" value="../logs/ccweb-pdf-log.xml"/>
 </config>
