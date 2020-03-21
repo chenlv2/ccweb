@@ -1,6 +1,6 @@
 <config>
     <input>
-        <jar in="../../ccweb-core/target/ccweb-core-1.0.0-SNAPSHOT.jar" out="../release/ccweb-core.jar"/>
+        <jar in="../../ccweb-core/target/ccweb-core-1.0.0-SNAPSHOT.jar" out="../release/ccweb-core-1.0.0-SNAPSHOT.jar"/>
     </input>
 
     <keep-names>

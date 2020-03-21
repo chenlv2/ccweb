@@ -21,6 +21,8 @@ import ccait.ccweb.entites.QueryInfo;
 import ccait.ccweb.model.ResponseData;
 import ccait.ccweb.model.UserModel;
 import ccait.ccweb.utils.FastJsonUtils;
+import entity.query.core.ApplicationConfig;
+import entity.tool.util.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
@@ -181,6 +183,12 @@ public final class UserTableTrigger implements ITrigger {
 
         if(data == null) {
             data = new HashMap<String, Object>();
+        }
+
+        String fields = ApplicationConfig.getInstance().get("${entity.security.encrypt.AES.fields}", "");
+        List<String> fieldList = StringUtils.splitString2List(fields, ",");
+        if(!fieldList.stream().anyMatch(a->"id".equalsIgnoreCase(a) || "user.id".equalsIgnoreCase(a))) {
+            return data;
         }
 
         data.put(userIdField, decrypt(id, EncryptMode.AES, aesPublicKey));

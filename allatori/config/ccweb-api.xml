@@ -1,6 +1,6 @@
 <config>
     <input>
-        <jar in="../../ccweb-api/target/ccweb-api-1.0.0-SNAPSHOT.jar" out="../release/ccweb-api.jar"/>
+        <jar in="../../ccweb-api/target/ccweb-api-1.0.0-SNAPSHOT.jar" out="../release/ccweb-api-1.0.0-SNAPSHOT.jar"/>
     </input>
 
     <keep-names>

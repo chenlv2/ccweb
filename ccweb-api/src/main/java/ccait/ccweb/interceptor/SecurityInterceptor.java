@@ -179,6 +179,7 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 }
 
                 BaseController.login(user.getUsername(), user.getPassword(), request, response);
+                response.setHeader("token", token);
 
                 return;
             } catch (JWTDecodeException e) {
@@ -209,6 +210,8 @@ public class SecurityInterceptor implements HandlerInterceptor {
                 }
 
                 BaseController.login(request, user);
+                response.setHeader("token", token);
+
                 return;
             }
 

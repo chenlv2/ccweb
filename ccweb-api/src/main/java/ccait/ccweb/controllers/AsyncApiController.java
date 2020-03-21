@@ -14,6 +14,7 @@ package ccait.ccweb.controllers;
 
 import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.entites.QueryInfo;
+import ccait.ccweb.entites.SearchInfo;
 import ccait.ccweb.model.SearchData;
 import ccait.ccweb.model.UserModel;
 import entity.query.ColumnInfo;
@@ -165,7 +166,7 @@ public class AsyncApiController extends BaseController {
     @ResponseBody
     @AccessCtrl
     @RequestMapping( value = "search/{table}", method = RequestMethod.POST  )
-    public Mono doSearch(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
+    public Mono doSearch(@PathVariable String table, @RequestBody SearchInfo queryInfo) {
 
         try {
 

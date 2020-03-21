@@ -82,6 +82,9 @@ public abstract class BaseController {
     @Value("${entity.auth.jwt.enable:false}")
     private static boolean jwtEnable;
 
+    @Value(value = "${elasticSearch.enable:false}")
+    private boolean enableEasticSearch;
+
     public ResponseData<Object> RMessage;
 
     @Autowired
@@ -1155,7 +1158,19 @@ public abstract class BaseController {
 
         Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
-        return where.update(postData);
+        Boolean result = where.update(postData);
+        if(result && enableEasticSearch) {
+            ColumnInfo primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
+            if(primary != null) {
+                List<String> ids = where.select(primary.getColumnName()).query(String.class);
+                for(String id : ids) {
+                    String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
+                    jestContext.createIndex(indexName, id, entity);
+                }
+            }
+        }
+
+        return result;
     }
 
     protected QueryableAction getQueryableAction(QueryInfo queryInfo, Where where, boolean isMutilTable) throws Exception {
@@ -1389,10 +1404,12 @@ public abstract class BaseController {
         if(where.update(postData)) {
             result = 1;
 
-            ColumnInfo primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
-            if(primary != null) {
-                String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
-                jestContext.createIndex(indexName, id, entity);
+            if(enableEasticSearch) {
+                ColumnInfo primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
+                if (primary != null) {
+                    String indexName = jestContext.ensureIndexName(((Queryable) entity).tablename());
+                    jestContext.createIndex(indexName, id, entity);
+                }
             }
 
             String currentDatasource = getCurrentDatasourceId();
@@ -1456,7 +1473,7 @@ public abstract class BaseController {
                 return "0";
             }
 
-            if(primary != null) {
+            if(enableEasticSearch && primary != null) {
                 String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
                 jestContext.createIndex(indexName, result.toString(), entity);
             }
@@ -2245,21 +2262,21 @@ public abstract class BaseController {
     /***
      * search data by elasticSearch
      * @param table
-     * @param queryInfo
+     * @param searchInfo
      * @return
      * @throws Exception
      */
-    public SearchData search(String table, QueryInfo queryInfo) throws Exception {
-        Object entity = EntityContext.getEntity(table, queryInfo);
+    public SearchData search(String table, SearchInfo searchInfo) throws Exception {
+        Object entity = EntityContext.getEntity(table, searchInfo);
         if(entity == null) {
             throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
         }
 
-        encrypt(queryInfo.getConditionList());
+        encrypt(searchInfo.getConditionList());
 
         String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
 
-        return jestContext.search(table, queryInfo, Map.class);
+        return jestContext.search(table, searchInfo);
     }
 
     public boolean wechatLogin(String code) throws IOException {

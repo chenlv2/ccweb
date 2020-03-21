@@ -11,10 +11,12 @@
 package ccait.ccweb.context;
 
 import ccait.ccweb.entites.*;
+import ccait.ccweb.enums.Algorithm;
 import ccait.ccweb.model.PageInfo;
 import ccait.ccweb.model.SearchData;
 import ccait.ccweb.utils.FastJsonUtils;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import entity.tool.util.JsonUtils;
 import entity.tool.util.StringUtils;
 import entity.tool.util.ThreadUtils;
@@ -35,10 +37,9 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Component
@@ -271,20 +272,21 @@ public class JestContext {
      * 查询
      * @throws Exception
      */
-    public <T> SearchData<List<T>> search(String indexname, QueryInfo queryInfo, Class<T> clazz) throws Exception {
+    public SearchData<List<Map>> search(String indexname, SearchInfo queryInfo) throws Exception {
         String queryString = FastJsonUtils.convertObjectToJSON(getQueryMap(queryInfo));
-        return search(indexname, queryString, false, clazz);
-    }
-    public <T> SearchData<List<T>> search(String indexname, QueryInfo queryInfo, boolean heightlight, Class<T> clazz) throws Exception {
-        String queryString = FastJsonUtils.convertObjectToJSON(getQueryMap(queryInfo));
-        return search(indexname, queryString, false, clazz);
+        SearchData<List<Map>> result = search(indexname, queryString, false);
+        if(queryInfo.getPageInfo() != null) {
+            result.getPageInfo().setPageIndex(queryInfo.getPageInfo().getPageIndex());
+            result.getPageInfo().setPageSize(queryInfo.getPageInfo().getPageSize());
+        }
 
+        return result;
     }
-    public <T> SearchData<List<T>> search(String indexname, String queryString, boolean heightlight, Class<T> clazz) throws Exception {
+    public SearchData<List<Map>> search(String indexname, String queryString, boolean heightlight) throws Exception {
 
         indexname = ensureIndexName(indexname);
-        SearchData<List<T>> result = new SearchData<List<T>>();
-        List<T> list = new ArrayList<T>();
+        SearchData<List<Map>> result = new SearchData<List<Map>>();
+        List<Map> list = new ArrayList<Map>();
 
         Search search = new Search.Builder(queryString)
                 .addIndex(indexname)
@@ -293,8 +295,8 @@ public class JestContext {
         if(searchResult.getResponseCode() != 200) {
             throw new Exception(searchResult.getErrorMessage());
         }
-        List<SearchResult.Hit<T,Void>> hits = searchResult.getHits(clazz);
-        for (SearchResult.Hit<T, Void> hit : hits) {
+        List<SearchResult.Hit<Map,Void>> hits = searchResult.getHits(Map.class);
+        for (SearchResult.Hit<Map, Void> hit : hits) {
 
             if(heightlight) {
                 //获取高亮后的内容
@@ -305,20 +307,25 @@ public class JestContext {
         }
 
         result.setPageInfo(new PageInfo());
-        result.getPageInfo().setTotalRecords(searchResult.getTotal());
+        JsonElement total = searchResult.getJsonObject().get("hits").getAsJsonObject().get("total").getAsJsonObject().get("value");
+        if(total != null) {
+            result.getPageInfo().setTotalRecords(total.getAsInt());
+        }
 
         result.setData(list);
 
         return result;
     }
 
-    public String getQueryMap(QueryInfo queryInfo) {
+    public String getQueryMap(SearchInfo queryInfo) {
 
         if(queryInfo == null) {
             return defaultMatch;
         }
 
+        Map<String, Object> esMap = new HashMap<String, Object>();
         Map<String, Object> queryMap = new HashMap<String, Object>();
+        Map<String, Object> boolMap = new HashMap<String, Object>();
 
         if(queryInfo.getSortList() != null && queryInfo.getSortList().size() > 0) {
 
@@ -327,60 +334,123 @@ public class JestContext {
                 map.put(item.getName(), new HashMap<String, String>() { { put("order", item.isDesc() ? "desc" : "asc"); } });
             }
 
-            queryMap.put("sort", map);
-        }
-
-        if(queryInfo.getSelectList() != null && queryInfo.getSelectList().size() > 0) {
-
-            Map<String, Object> map = new HashMap<String, Object>();
-            queryMap.put("stored_fields", queryInfo.getSelectList().stream().map(a->a.getField()).collect(Collectors.toList()));
+            esMap.put("sort", map);
         }
 
         if(queryInfo.getGroupList() != null && queryInfo.getGroupList().size() > 0) {
 
             Map<String, Object> map = new HashMap<String, Object>();
-            for(SortInfo item : queryInfo.getSortList()) {
-                map.put("field", item.getName());
+            for(String group : queryInfo.getGroupList()) {
+                Matcher m = Pattern.compile("\\s*((\\w+)\\()?(\\w+)\\)?\\s+[aA][sS]\\s+(\\w+)\\s*").matcher(group);
+                if(!m.matches()) {
+                    continue;
+                }
+
+                map.put(m.group(4), new HashMap<String, Object>() {{
+                    put(m.group(2), new HashMap<String, Object>() {{
+                        put("field", m.group(3));
+                    }});
+                }});
             }
 
-            queryMap.put("collapse", map);
+            esMap.put("aggs", map);
         }
 
         if(queryInfo.getPageInfo().getPageSize() > 0) {
-            queryMap.put("size", queryInfo.getPageInfo().getPageSize());
+            esMap.put("size", queryInfo.getPageInfo().getPageSize());
         }
 
         if(queryInfo.getSkip() > 0) {
-            queryMap.put("search_after", queryInfo.getSkip());
+            esMap.put("from", queryInfo.getSkip());
         }
 
-        Map<String, Object> matchMap = new HashMap<String, Object>();
         if(queryInfo.getConditionList() != null && queryInfo.getConditionList().size() > 0) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            for(ConditionInfo item : queryInfo.getConditionList()) {
-                map.put(item.getName(), new HashMap<String, String>() { {
-                    put("query", item.getValue().toString());
-                    put("operator", item.getAlgorithm().getValue().toLowerCase().trim());
-                } });
+            List<Map<String, Object>> mustList = new ArrayList<Map<String, Object>>();
+            queryInfo.getConditionList().stream().filter(a-> Algorithm.EQ.equals(a.getAlgorithm())).forEach(item->{
+                mustList.add(new HashMap<String, Object>() {{
+                    put("term", new HashMap<String, Object>(){{ put(item.getName(), item.getValue()); }});
+                }});
+            });
+
+            queryInfo.getConditionList().stream().filter(a-> Algorithm.LIKE.equals(a.getAlgorithm())).forEach(item->{
+                mustList.add(new HashMap<String, Object>() {{
+                    put("wildcard", new HashMap<String, Object>(){{ put(item.getName(), item.getValue()); }});
+                }});
+            });
+
+            queryInfo.getConditionList().stream().filter(a-> Algorithm.IN.equals(a.getAlgorithm())).forEach(item->{
+                mustList.add(new HashMap<String, Object>() {{
+                    put("terms", new HashMap<String, Object>(){{ put(String.format("%s.keyword", item.getName()), item.getValue()); }});
+                }});
+            });
+
+            queryInfo.getConditionList().stream().filter(a-> Algorithm.GT.equals(a.getAlgorithm()) ||
+                    Algorithm.GTEQ.equals(a.getAlgorithm()) || Algorithm.LT.equals(a.getAlgorithm()) ||
+                    Algorithm.LTEQ.equals(a.getAlgorithm())).forEach(item->{
+
+                mustList.add(new HashMap<String, Object>() {{
+
+                    put("range", new HashMap<String, Object>(){{
+                        put(item.getName(), new HashMap<String, Object>(){{
+                            String alg = "eq";
+                            switch (item.getAlgorithm()) {
+                                case GT:
+                                    alg = "gt";
+                                    break;
+                                case LT:
+                                    alg = "lt";
+                                case LTEQ:
+                                    alg = "lte";
+                                    break;
+                                case GTEQ:
+                                    alg = "gte";
+                                    break;
+                            }
+                            put(alg, item.getValue());
+                        }});
+                    }});
+                }});
+            });
+
+            if(mustList.size() > 0) {
+                boolMap.put("must", mustList);
             }
 
-            matchMap.put("match", map);
+            List<Map<String, Object>> mustNotList = new ArrayList<Map<String, Object>>();
+            queryInfo.getConditionList().stream().filter(a-> Algorithm.NOT.equals(a.getAlgorithm())).forEach(item->{
+                mustNotList.add(new HashMap<String, Object>() {{
+                    put("term", new HashMap<String, Object>(){{ put(item.getName(), item.getValue()); }});
+                }});
+            });
+
+            queryInfo.getConditionList().stream().filter(a-> Algorithm.NOTIN.equals(a.getAlgorithm())).forEach(item->{
+                mustNotList.add(new HashMap<String, Object>() {{
+                    put("terms", new HashMap<String, Object>(){{ put(String.format("%s.keyword", item.getName()), item.getValue()); }});
+                }});
+            });
+
+            if(mustNotList.size() > 0) {
+                boolMap.put("must_not", mustNotList);
+            }
         }
 
         if(queryInfo.getKeywords() != null && queryInfo.getKeywords().size() > 0) {
-            Map<String, Object> map = new HashMap<String, Object>();
-            map.put("must", queryInfo.getKeywords().stream().map(a->new HashMap<String, String>() { {
-                put(a.getName(), a.getValue().toString());
+            boolMap.put("should", queryInfo.getKeywords().stream().map(item->new HashMap<String, Object>() { {
+                put("wildcard", new HashMap<String, Object>(){{ put(item.getName(), item.getValue()); }});
             } }).collect(Collectors.toList()));
-
-            matchMap.put("bool", map);
         }
 
-        if(matchMap.size() > 0) {
-            queryMap.put("query", matchMap);
+        if(boolMap.size() == 0) {
+            queryMap.put("match_all", new HashMap());
         }
 
-        return FastJsonUtils.convertObjectToJSON(queryMap);
+        else {
+            queryMap.put("bool", boolMap);
+        }
+
+        esMap.put("query", queryMap);
+
+        return FastJsonUtils.convertObjectToJSON(esMap);
     }
 
     public <T> void batchIndex(String indexname, List<T> datas) throws Exception {

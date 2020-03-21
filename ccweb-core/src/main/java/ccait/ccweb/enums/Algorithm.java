@@ -28,6 +28,7 @@ public enum Algorithm {
     END(11, "[END]"),
     IN(12, " IN "),
     NOTIN(13, " NOT IN "),
+    KEYWORD(14, " = ")
     ;
 
     private int code;

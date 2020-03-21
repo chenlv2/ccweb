@@ -1,6 +1,6 @@
 <config>
     <input>
-        <jar in="../../ccweb-pdf/target/ccweb-pdf-1.0.0-SNAPSHOT.jar" out="../release/ccweb-pdf.jar"/>
+        <jar in="../../ccweb-pdf/target/ccweb-pdf-1.0.0-SNAPSHOT.jar" out="../release/ccweb-pdf-1.0.0-SNAPSHOT.jar"/>
     </input>
 
     <keep-names>

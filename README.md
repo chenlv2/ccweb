@@ -343,6 +343,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
 * POST参数：
+* 注意：使用该接口需要在application.yml配置中将elasticSearch.enable设为true，然后新增或修改数据时才会创建索引
 ```javascript
 {
     "pageInfo" : {
@@ -350,20 +351,26 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
         "pageSize": 50  //每页条数
     },
 
+    "conditionList": [{ //查询条件
+        "name": "id",   //字段名
+        "value": "1",   //值
+        "algorithm": "EQ",   //条件: EQ(2), GT(3), LT(4), GTEQ(5), LTEQ(6), NOT(7), LIKE(9), IN(12), NOTIN(13)
+    }, ... ],
+
     "sortList": [{ //排序条件
         "name": "id", //字段名 
         "desc": true  //true为降序，false为升序
     }, ... ],
 
+    "groupList" : [ //分组条件
+        "max(id) as maxId", //格式类SQL的select子句写法，聚合函数参考Elasticsearch 
+        ...
+    ],
+
     "keywords" : [{ //关键词模糊查询条件
         "name": "id",   //字段名
-        "value": "1"   //值
-    }, ...],
-
-    "selectList": [{ //显示字段
-        "field": "id",  //字段名 
-        "function": "MAX",  //数据库相关函数：MAX, MIN, UPPER, LOWER, LENGTH, AVG, COUNT, SUM, GROUP_CONCAT等; 
-    }, ... ]
+        "value": "1"   //值(可写通配符*，中文通配符查询效果以分词准)
+    }, ...]
 }
 ```
 
@@ -539,7 +546,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     ...
 ```
 
-### 24. 消息推关
+### 24. 消息推送
 * URL：/api/message/send 
 * 请求方式：POST
 * URL参数：无
