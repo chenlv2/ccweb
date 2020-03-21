@@ -14,9 +14,7 @@ package ccait.ccweb.controllers;
 
 import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.entites.QueryInfo;
-import ccait.ccweb.entites.SearchInfo;
 import ccait.ccweb.model.ResponseData;
-import ccait.ccweb.model.SearchData;
 import ccait.ccweb.model.*;
 import entity.query.ColumnInfo;
 import org.springframework.web.bind.annotation.*;
@@ -174,30 +172,6 @@ public class ApiController extends BaseController {
             boolean result = super.updateByQuery(table, queryInfo);
 
             return success( result );
-        } catch (Exception e) {
-            getLogger().error(LOG_PRE_SUFFIX + e, e);
-
-            return error(110, e);
-        }
-    }
-
-    /***
-     * search
-     * @return
-     */
-    @ResponseBody
-    @AccessCtrl
-    @RequestMapping( value = "search/{table}", method = RequestMethod.POST )
-    public ResponseData doSearch(@PathVariable String table, @RequestBody SearchInfo queryInfo) {
-
-        try {
-
-            SearchData result = super.search(table, queryInfo);
-
-            queryInfo.getPageInfo().setTotalRecords(result.getPageInfo().getTotalRecords());
-            queryInfo.getPageInfo().setPageCount();
-
-            return success( result.getData(), queryInfo.getPageInfo() );
         } catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
@@ -513,18 +487,6 @@ public class ApiController extends BaseController {
     @RequestMapping( value = "{table}/import", method = {RequestMethod.POST, RequestMethod.PUT} )
     public ResponseData doImportExcel(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles) throws Exception {
         super.importExcel(table, uploadFiles);
-        return success();
-    }
-
-    /***
-     * import ppt
-     * @return
-     */
-    @ResponseBody
-    @AccessCtrl
-    @RequestMapping( value = "{table}/import/ppt", method = {RequestMethod.POST, RequestMethod.PUT} )
-    public ResponseData doImportPPT(@PathVariable String table, @RequestBody Map<String, Object> uploadFiles) throws Exception {
-        super.importPPT(table, uploadFiles);
         return success();
     }
 }

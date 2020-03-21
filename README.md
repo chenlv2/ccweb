@@ -551,6 +551,42 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
+### 24. 数据滚动接口（2.0功能，需要引用企业版API）
+* URL：/api/{datasource}/{table}/stream 
+* 请求方式：POST
+* URL参数：{table}为数据库表名称
+* POST参数：
+* 注意：使用该接口需要在application.yml配置中将enableFlux设为true才能开启异步响应流
+```javascript
+{
+    "pageInfo" : {
+        "pageIndex": 1, //页码
+        "pageSize": 50  //每页条数
+    },
+
+    "conditionList": [{ //查询条件
+        "name": "id",   //字段名
+        "value": "1",   //值
+        "algorithm": "EQ",   //条件: EQ(2), GT(3), LT(4), GTEQ(5), LTEQ(6), NOT(7), LIKE(9), IN(12), NOTIN(13)
+    }, ... ],
+
+    "sortList": [{ //排序条件
+        "name": "id", //字段名 
+        "desc": true  //true为降序，false为升序
+    }, ... ],
+
+    "groupList" : [ //分组条件
+        "max(id) as maxId", //格式类SQL的select子句写法，聚合函数参考Elasticsearch 
+        ...
+    ],
+
+    "keywords" : [{ //关键词模糊查询条件
+        "name": "id",   //字段名
+        "value": "1"   //值(可写通配符*，中文通配符查询效果以分词准)
+    }, ...]
+}
+```
+
 ## 系统用户/权限表结构说明
 用户权限相关表在服务启动时会自动创建，目的在于使用系统服务控制数据库表的访问权限，用户组是扁平结构的，需要更复杂的权限控制功能建议通过二次开发实现。
 * 用户表 (user, 主键id)

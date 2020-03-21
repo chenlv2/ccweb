@@ -89,24 +89,6 @@ entity:
 #    whiteList:  #IP白名单
 #    blackList:  #IP黑名单
 
-  elasticSearch:
-    enable: false
-    defaultMatch: match_all
-    timeout: 10000
-    url: 127.0.0.1:9200;127.0.0.1:9500 #分号分隔
-    indexs: #索引设置
-      user_username: user.username #key＝indexname, value=[{tablename}].{fieldname}
-    highlight: #高亮设置
-      user: #表名
-        fields: username #字段名，逗号分隔
-        fragmentSize: 200
-        preTags: <em>
-        postTags: </em>
-        script: painless
-        painless:
-          password: "doc['password']=\"*****\"; return doc['password'];"
-
-
 
 # 2.SpringCloud配置
 eureka:

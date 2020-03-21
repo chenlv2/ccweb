@@ -82,9 +82,6 @@ public abstract class BaseController {
     @Value("${entity.auth.jwt.enable:false}")
     private static boolean jwtEnable;
 
-    @Value(value = "${elasticSearch.enable:false}")
-    private boolean enableEasticSearch;
-
     public ResponseData<Object> RMessage;
 
     @Autowired
@@ -95,9 +92,6 @@ public abstract class BaseController {
 
     @Autowired
     private QueryInfo queryInfo;
-
-    @Autowired
-    private JestContext jestContext;
 
     @Value("${entity.queryable.ignoreTotalCount:true}")
     protected boolean ignoreTotalCount;
@@ -1159,16 +1153,6 @@ public abstract class BaseController {
         Where where = queryInfo.getWhereQuerable(table, entity, getCurrentMaxPrivilegeScope(table));
 
         Boolean result = where.update(postData);
-        if(result && enableEasticSearch) {
-            ColumnInfo primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
-            if(primary != null) {
-                List<String> ids = where.select(primary.getColumnName()).query(String.class);
-                for(String id : ids) {
-                    String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
-                    jestContext.createIndex(indexName, id, entity);
-                }
-            }
-        }
 
         return result;
     }
@@ -1404,14 +1388,6 @@ public abstract class BaseController {
         if(where.update(postData)) {
             result = 1;
 
-            if(enableEasticSearch) {
-                ColumnInfo primary = EntityContext.getPrimaryKey(getCurrentDatasourceId(), table);
-                if (primary != null) {
-                    String indexName = jestContext.ensureIndexName(((Queryable) entity).tablename());
-                    jestContext.createIndex(indexName, id, entity);
-                }
-            }
-
             String currentDatasource = getCurrentDatasourceId();
             deleteFileByFieldname(table, data, currentDatasource);
         }
@@ -1471,11 +1447,6 @@ public abstract class BaseController {
 
             if(result == null) {
                 return "0";
-            }
-
-            if(enableEasticSearch && primary != null) {
-                String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
-                jestContext.createIndex(indexName, result.toString(), entity);
             }
 
             return result.toString();
@@ -1856,115 +1827,6 @@ public abstract class BaseController {
         }
     }
 
-    protected void importPPT(String table, Map<String, Object> uploadFiles) throws Exception {
-
-        if(uploadFiles == null) {
-            throw new IOException("request error!!!");
-        }
-
-        if(getLoginUser() == null) {
-            throw new IOException("login please!!!");
-        }
-
-        List<Map.Entry<String, Object>> data = uploadFiles.entrySet().stream()
-                .filter(a -> a.getKey().indexOf("_upload_filename") == -1 &&
-                        !a.getKey().equals("save_full_text") &&
-                        !a.getKey().equals("save_source_ppt")).collect(Collectors.toList());
-        if(data == null || data.size() < 1) {
-            throw new IOException("Post data can not be empty!!!");
-        }
-
-        Boolean save_full_text = uploadFiles.entrySet().stream()
-                .filter(a-> a.getKey().equals("save_full_text") && Boolean.TRUE.equals(a.getValue()))
-                .isParallel();
-
-        Boolean save_source_ppt = uploadFiles.entrySet().stream()
-                .filter(a-> a.getKey().equals("save_full_text") && Boolean.TRUE.equals(a.getValue()))
-                .isParallel();
-
-        String currentDatasource = "default";
-        if(ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE) != null) {
-            currentDatasource = ApplicationContext.getThreadLocalMap().get(CURRENT_DATASOURCE).toString();
-        }
-
-        Map<String, Object> fieldSet = new HashMap<String, Object>();
-        Map<String, Object> pptSet = new HashMap<String, Object>();
-        for(Map.Entry<String, Object> entry : data) {
-            String tempKey = String.format("%s_upload_filename", entry.getKey());
-            if (!uploadFiles.containsKey(tempKey)) { //没有文件名的不是文件
-                fieldSet.put(entry.getKey(), entry.getValue());
-            }
-            else {
-                pptSet.put(entry.getKey(), entry.getValue());
-            }
-        }
-
-        List<Map<String, Object>> resultSet = new ArrayList<Map<String, Object>>();
-        for(Map.Entry<String, Object> entry : pptSet.entrySet()) {
-
-            String tempKey = String.format("%s_upload_filename", entry.getKey());
-            String filename = uploadFiles.get(tempKey).toString();
-            String[] arr = filename.split("\\.");
-            String extName = arr[arr.length - 1];
-
-            byte[] fileBytes = ImageUtils.getBytesForBase64(entry.getValue().toString());
-
-            //转换成图片
-            OfficeUtils.saveImageByPPT(table, currentDatasource, resultSet, entry, filename, fileBytes);
-
-            //保存ppt源文件
-            if(save_source_ppt) {
-                String pprSourcePath = String.format("/preview/ppt/%s/%s/%s/source", currentDatasource, table, entry.getKey());
-                String value = UploadUtils.upload(pprSourcePath, filename, fileBytes);
-                Map<String, Object> result = new HashMap<String, Object>();
-                result.put(entry.getKey(), value);
-                result.put("number", 0);
-                resultSet.add(result);
-            }
-
-            //创建全文索引
-            if(save_full_text) {
-                String value = OfficeUtils.getTextByPPT(fileBytes);
-                Map<String, Object> result = new HashMap<String, Object>();
-                result.put(entry.getKey(), value);
-                result.put("number", 0);
-                resultSet.add(result);
-            }
-        }
-
-        //准备实体所需的字段
-        List<String> fields = new ArrayList<String>();
-        for(String field : fieldSet.keySet()) {
-            fields.add(field);
-        }
-        for(Map<String, Object> item : resultSet) {
-            for(String field : item.keySet()) {
-                if(fields.contains(field)) {
-                    continue;
-                }
-                fields.add(field);
-            }
-        }
-
-        //保存到数据库
-        Queryable query = (Queryable)EntityContext.getEntity(table, fields);
-        for(Map<String, Object> item : resultSet) {
-            for(String field : item.keySet()) {
-                if(item.get(field) == null) {
-                    continue;
-                }
-                ReflectionUtils.setFieldValue(query, field, item.get(field));
-            }
-            for(String field : fieldSet.keySet()) {
-                if(fieldSet.get(field) == null) {
-                    continue;
-                }
-                ReflectionUtils.setFieldValue(query, field, fieldSet.get(field));
-            }
-            query.insert();
-        }
-    }
-
     protected void playVideo(String table, String field, String id) throws Exception {
 
         String currentDatasource = getCurrentDatasourceId();
@@ -2256,27 +2118,6 @@ public abstract class BaseController {
         } catch (IllegalAccessException e) {
             log.error(LOG_PRE_SUFFIX + e.getMessage(), e);
         }
-    }
-
-
-    /***
-     * search data by elasticSearch
-     * @param table
-     * @param searchInfo
-     * @return
-     * @throws Exception
-     */
-    public SearchData search(String table, SearchInfo searchInfo) throws Exception {
-        Object entity = EntityContext.getEntity(table, searchInfo);
-        if(entity == null) {
-            throw new Exception(LangConfig.getInstance().get("can_not_find_entity"));
-        }
-
-        encrypt(searchInfo.getConditionList());
-
-        String indexName = jestContext.ensureIndexName(((Queryable)entity).tablename());
-
-        return jestContext.search(table, searchInfo);
     }
 
     public boolean wechatLogin(String code) throws IOException {

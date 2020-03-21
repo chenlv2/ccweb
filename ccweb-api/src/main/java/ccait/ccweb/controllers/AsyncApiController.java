@@ -14,8 +14,6 @@ package ccait.ccweb.controllers;
 
 import ccait.ccweb.annotation.AccessCtrl;
 import ccait.ccweb.entites.QueryInfo;
-import ccait.ccweb.entites.SearchInfo;
-import ccait.ccweb.model.SearchData;
 import ccait.ccweb.model.UserModel;
 import entity.query.ColumnInfo;
 import org.springframework.http.MediaType;
@@ -152,30 +150,6 @@ public class AsyncApiController extends BaseController {
             queryInfo.getPageInfo().setPageCount();
 
             return successAs( result, queryInfo.getPageInfo() );
-        } catch (Exception e) {
-            getLogger().error(LOG_PRE_SUFFIX + e, e);
-
-            return errorAs(110, e);
-        }
-    }
-
-    /***
-     * search
-     * @return
-     */
-    @ResponseBody
-    @AccessCtrl
-    @RequestMapping( value = "search/{table}", method = RequestMethod.POST  )
-    public Mono doSearch(@PathVariable String table, @RequestBody SearchInfo queryInfo) {
-
-        try {
-
-            SearchData result = super.search(table, queryInfo);
-
-            queryInfo.getPageInfo().setTotalRecords(result.getPageInfo().getTotalRecords());
-            queryInfo.getPageInfo().setPageCount();
-
-            return successAs( result.getData(), queryInfo.getPageInfo() );
         } catch (Exception e) {
             getLogger().error(LOG_PRE_SUFFIX + e, e);
 
@@ -408,28 +382,5 @@ public class AsyncApiController extends BaseController {
     public Mono previewedPage(@PathVariable String table, @PathVariable String field, @PathVariable String id, @PathVariable Integer page) throws Exception {
 
         return super.previewAs(table, field, id, page);
-    }
-
-    /***
-     * query
-     * @return
-     */
-    @ResponseBody
-    @AccessCtrl
-    @RequestMapping( value = "{table}/stream", method = RequestMethod.POST, produces= MediaType.APPLICATION_STREAM_JSON_VALUE  )
-    public Mono stream(@PathVariable String table, @RequestBody QueryInfo queryInfo) {
-
-        try {
-
-            List result = super.query(table, queryInfo);
-
-            queryInfo.getPageInfo().setPageCount();
-
-            return successAs( result, queryInfo.getPageInfo() );
-        } catch (Exception e) {
-            getLogger().error(LOG_PRE_SUFFIX + e, e);
-
-            return errorAs(110, e);
-        }
     }
 }
