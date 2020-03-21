@@ -5,13 +5,13 @@
     <parent>
         <artifactId>ccweb-framework</artifactId>
         <groupId>ccait.cn</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.5-RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>ccweb-pdf</artifactId>
 
-    <version>1.0.0-SNAPSHOT</version>
+    <version>1.0.5-RELEASE</version>
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/com.alibaba/easyexcel -->

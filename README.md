@@ -331,50 +331,14 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * POST参数：无
 
 
-### 13. 文件预览
+### 13. 文件预览（支持预览图片、视频、PDF）
 * URL：/api/{datasource}/preview/{table}/{field}/{id}/{page} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键，{page}为可选入参，可指定页码
 * POST参数：无
 
 
-### 14. 搜索（通过es搜索引擎）
-* URL：/api/{datasource}/search/{table} 
-* 请求方式：POST
-* URL参数：{table}为数据库表名称
-* POST参数：
-* 注意：使用该接口需要在application.yml配置中将elasticSearch.enable设为true，然后新增或修改数据时才会创建索引
-```javascript
-{
-    "pageInfo" : {
-        "pageIndex": 1, //页码
-        "pageSize": 50  //每页条数
-    },
-
-    "conditionList": [{ //查询条件
-        "name": "id",   //字段名
-        "value": "1",   //值
-        "algorithm": "EQ",   //条件: EQ(2), GT(3), LT(4), GTEQ(5), LTEQ(6), NOT(7), LIKE(9), IN(12), NOTIN(13)
-    }, ... ],
-
-    "sortList": [{ //排序条件
-        "name": "id", //字段名 
-        "desc": true  //true为降序，false为升序
-    }, ... ],
-
-    "groupList" : [ //分组条件
-        "max(id) as maxId", //格式类SQL的select子句写法，聚合函数参考Elasticsearch 
-        ...
-    ],
-
-    "keywords" : [{ //关键词模糊查询条件
-        "name": "id",   //字段名
-        "value": "1"   //值(可写通配符*，中文通配符查询效果以分词准)
-    }, ...]
-}
-```
-
-### 15. 上传
+### 14. 上传
 * URL：/api/{datasource}/{table}/{field}/upload 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称，{field}为字段名
@@ -396,7 +360,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 16. 批量查询更新
+### 15. 批量查询更新
 * URL：/api/{datasource}/{table}/update 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -421,7 +385,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 17. 批量删除
+### 16. 批量删除
 * URL：/api/{datasource}/{table}/delete 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -432,7 +396,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 
 
 
-### 18. 导出excel
+### 17. 导出excel
 * URL：/api/{datasource}/{table}/export 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -458,7 +422,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ```
 
 
-### 19. 联表查询导出excel
+### 18. 联表查询导出excel
 * URL：/api/{datasource}/export/join 
 * 请求方式：POST
 * URL参数：{table}为数据库表名称
@@ -498,7 +462,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
-### 20. 新增
+### 19. 新增
 * URL：/api/{datasource}/{table}/max/{field} 
 * 请求方式：PUT
 * URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
@@ -513,13 +477,13 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 ]
 ```
 
-### 21. 视频播放
+### 20. 视频播放
 * URL：/api/{datasource}/play/{table}/{field}/{id} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键
 * POST参数：无
 
-### 22. 导入excel
+### 21. 导入excel
 * URL：/api/{datasource}/{table}/import 
 * 请求方式：POST
 * URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
@@ -532,21 +496,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
     ...
 ```
 
-### 23. 导入ppt
-* URL：/api/{datasource}/{table}/import/ppt 
-* 请求方式：POST
-* URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
-* POST参数：
-* 注意：table必须要有number字段存放页码
-```javascript
-表单：
-    字段名: 文件/字符串/数值
-    字段名: 文件/字符串/数值
-    字段名: 文件/字符串/数值
-    ...
-```
-
-### 24. 消息推送
+### 22. Websocket消息推送（2.0功能，需要引用企业版API）
 * URL：/api/message/send 
 * 请求方式：POST
 * URL参数：无
@@ -565,6 +515,41 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
+### 23. 通过es搜索引擎查询数据（2.0功能，需要引用企业版API）
+* URL：/api/{datasource}/search/{table} 
+* 请求方式：POST
+* URL参数：{table}为数据库表名称
+* POST参数：
+* 注意：使用该接口需要在application.yml配置中将elasticSearch.enable设为true，然后新增或修改数据时才会创建索引
+```javascript
+{
+    "pageInfo" : {
+        "pageIndex": 1, //页码
+        "pageSize": 50  //每页条数
+    },
+
+    "conditionList": [{ //查询条件
+        "name": "id",   //字段名
+        "value": "1",   //值
+        "algorithm": "EQ",   //条件: EQ(2), GT(3), LT(4), GTEQ(5), LTEQ(6), NOT(7), LIKE(9), IN(12), NOTIN(13)
+    }, ... ],
+
+    "sortList": [{ //排序条件
+        "name": "id", //字段名 
+        "desc": true  //true为降序，false为升序
+    }, ... ],
+
+    "groupList" : [ //分组条件
+        "max(id) as maxId", //格式类SQL的select子句写法，聚合函数参考Elasticsearch 
+        ...
+    ],
+
+    "keywords" : [{ //关键词模糊查询条件
+        "name": "id",   //字段名
+        "value": "1"   //值(可写通配符*，中文通配符查询效果以分词准)
+    }, ...]
+}
+```
 
 ## 系统用户/权限表结构说明
 用户权限相关表在服务启动时会自动创建，目的在于使用系统服务控制数据库表的访问权限，用户组是扁平结构的，需要更复杂的权限控制功能建议通过二次开发实现。
@@ -604,7 +589,7 @@ ccweb的二次开发实际就是自定义ccweb-start包的过程，springboot的
         <dependency>
             <groupId>ccait.cn</groupId>
             <artifactId>ccweb-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.5-RELEASE</version>
         </dependency>
     </dependencies>
 ```

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>ccweb-framework</artifactId>
         <groupId>ccait.cn</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.5-RELEASE</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -15,7 +15,7 @@
         <dependency>
             <groupId>ccait.cn</groupId>
             <artifactId>ccweb-core</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.5-RELEASE</version>
         </dependency>
 
         <dependency>
