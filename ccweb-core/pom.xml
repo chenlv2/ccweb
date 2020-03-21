@@ -54,7 +54,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.11</version><!--$NO-MVN-MAN-VER$ -->
+            <version>8.0.11</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -83,78 +83,5 @@
             <artifactId>derby</artifactId>
             <version>10.14.1.0</version>
         </dependency>
-
-        <!--<dependency>-->
-        <!--<groupId>org.apache.hive</groupId>-->
-        <!--<artifactId>hive-jdbc</artifactId>-->
-        <!--<version>2.1.1</version>-->
-        <!--<exclusions>-->
-        <!--<exclusion>-->
-        <!--<groupId>org.mortbay.jetty</groupId>-->
-        <!--<artifactId>jsp-2.1</artifactId>-->
-        <!--</exclusion>-->
-        <!--</exclusions>-->
-        <!--</dependency>-->
-        <!--<dependency>-->
-        <!--<groupId>org.apache.hadoop</groupId>-->
-        <!--<artifactId>hadoop-common</artifactId>-->
-        <!--<version>2.6.1</version>-->
-        <!--</dependency>-->
     </dependencies>
-    <build>
-        <defaultGoal>compile</defaultGoal>
-        <plugins>
-            <!-- Allatori plugin start -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
-                <executions>
-                    <execution>
-                        <id>copy-and-filter-allatori-config</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${basedir}/../target</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>${basedir}/../allatori/config</directory>
-                                    <includes>
-                                        <include>ccweb-core.xml</include>
-                                    </includes>
-                                    <filtering>true</filtering>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>run-allatori</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <executable>java</executable>
-                    <arguments>
-                        <argument>-Xms128m</argument>
-                        <argument>-Xmx512m</argument>
-                        <argument>-jar</argument>
-                        <argument>${basedir}/../allatori/lib/allatori.jar</argument>
-                        <argument>${basedir}/../allatori/config/ccweb-core.xml</argument>
-                    </arguments>
-                </configuration>
-            </plugin>
-            <!-- Allatori plugin end -->
-        </plugins>
-    </build>
 </project>
