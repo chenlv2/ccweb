@@ -13,8 +13,6 @@
     <modules>
         <module>ccweb-core</module>
         <module>ccweb-api</module>
-        <module>ccweb-admin</module>
-        <module>ccweb-pdf</module>
         <module>ccweb-start</module>
         <module>ccweb-socket</module>
     </modules>
