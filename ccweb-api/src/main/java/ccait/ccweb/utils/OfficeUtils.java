@@ -24,9 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class OfficeUtils {
 
@@ -90,46 +88,6 @@ public class OfficeUtils {
         SlideShow ppt = getSildeShow(extesion, fileBytes);
 
         return ppt.getSlides().size();
-    }
-
-    public static void saveImageByPPT(String table, String currentDatasource, List<Map<String, Object>> resultSet, Map.Entry<String, Object> entry, String filename, byte[] fileBytes) throws IOException {
-
-        String[] arr = filename.split("\\.");
-
-        String extesion = arr[arr.length - 1];
-
-        SlideShow ppt = getSildeShow(extesion, fileBytes);
-        Dimension pgsize = ppt.getPageSize();
-
-        for (int i = 0; i < ppt.getSlides().size(); i++) {
-            try {
-                //防止中文乱码
-                setPPTFont(extesion, (Slide) ppt.getSlides().get(i), "宋体");
-                BufferedImage img = new BufferedImage(pgsize.width, pgsize.height, BufferedImage.TYPE_INT_RGB);
-                Graphics2D graphics = img.createGraphics();
-                // clear the drawing area
-                graphics.setPaint(Color.white);
-                graphics.fill(new Rectangle2D.Float(0, 0, pgsize.width, pgsize.height));
-
-                // render
-                drawPPT(extesion, graphics, (Slide) ppt.getSlides().get(i));
-
-                // save the output
-                String pptPagePath = String.format("/preview/ppt/%s/%s/%s", currentDatasource, table, entry.getKey());
-
-                String imgName = String.format("%s_%s.png", filename, i);
-
-                String fullpath = UploadUtils.upload(pptPagePath, imgName, ImageUtils.toBytes(img));
-
-                Map<String, Object> result = new HashMap<String, Object>();
-                result.put(entry.getKey(), fullpath);
-                result.put("page_number", i);
-                resultSet.add(result);
-
-            } catch (Exception e) {
-                logger.error("第"+(i+1)+"页ppt转换出错");
-            }
-        }
     }
 
     private static void drawPPT(String extesion, Graphics2D graphics, Slide slide) {
@@ -203,7 +161,7 @@ public class OfficeUtils {
     }
 
     public static BufferedImage getPageImageByPPT(byte[] fileBytes, int page, String extesion) throws IOException {
- 
+
         SlideShow ppt = getSildeShow(extesion, fileBytes);
         Dimension pgsize = ppt.getPageSize();
 
