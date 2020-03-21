@@ -1,0 +1,14 @@
+<config>
+    <input>
+        <jar in="../../ccweb-admin/target/ccweb-admin-1.0.0-SNAPSHOT.jar" out="../release/ccweb-admin-1.0.0-SNAPSHOT.jar"/>
+    </input>
+
+    <keep-names>
+        <class access="protected+">
+            <field access="protected+"/>
+            <method access="protected+"/>
+        </class>
+    </keep-names>
+
+    <property name="log-file" value="../logs/ccweb-admin-log.xml"/>
+</config>
