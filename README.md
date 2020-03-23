@@ -12,11 +12,11 @@
      2019@copyright     v1.0.0   HTTP:  //    ///   CCAIT.CN FREAMEWORK
 
     =========================================================================
-    :: CCWEB :: (v1.0.0-SNAPSHOT)  Author: 草耑(linlurui) 2019@copyright
+    :: CCWEB :: (v2.0.0-SNAPSHOT)  Author: 草耑(linlurui) 2019@copyright
 
-CCWEB是基于springboot设计的CQRS敏捷web api开发框架，CCWEB提倡动态向前端提供基础数据，由前端根据基础数据组装业务来提高开发效率;内置用户管理、权限设置 等安全模块，启动服务后无需添加任何后端代码前端便可以通过默认接口直接访问到自己在数据库建的表和查询视图；底层orm采用entityQueryable访问数据，支持SpringCloud微服务扩展；支持elasticSerach搜索引擎；在横向扩展方面ccweb兼容了多种数据库系统，包括主流的mysql、sqlserver和大数据存储的hadoop等，有易于数据集成及高度扩展的能力，可以让数据自由地穿梭于各种数据存储系统之间：项目包含ccweb-core，ccweb-api，ccweb-admin，ccweb-start
+CCWEB是基于springboot设计的CQRS敏捷web api开发框架，CCWEB提倡动态向前端提供基础数据，由前端根据基础数据组装业务来提高开发效率;内置用户管理、权限设置 等安全模块，启动服务后无需添加任何后端代码前端便可以通过默认接口直接访问到自己在数据库建的表和查询视图；底层orm采用entityQueryable访问数据，支持SpringCloud微服务扩展；支持elasticSerach搜索引擎；在横向扩展方面ccweb兼容了多种数据库系统，包括主流的mysql、sqlserver和大数据存储的hadoop等，有易于数据集成及高度扩展的能力，可以让数据自由地穿梭于各种数据存储系统之间：项目包含ccweb-core，ccweb-api，ccweb-start，ccweb-socket(2.0)，ccweb-admin(2.0)
 </p>
-    <img align="right" src="https://github.com/linlurui/entityQueryable/blob/master/pay5.jpg" alt="捐赠给作者"  width="200">
+    <img align="right" src="https://github.com/linlurui/entityQueryable/raw/master/pay5.jpg" alt="捐赠给作者"  width="200">
     <p align="right">
         <em>捐赠给作者</em>
     </p>
@@ -29,7 +29,7 @@ ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组�
 * jdk1.8
 
 ## 文件结构
-* ccweb-start-1.0.0-SNAPSHOT.jar 【ccweb默认服务启动包 [下载](https://github.com/linlurui/ccweb/raw/master/release/ccweb-start-1.0.0-SNAPSHOT.jar)】
+* ccweb-start-2.0.0-SNAPSHOT.jar 【ccweb默认服务启动包 [下载](https://github.com/linlurui/ccweb/raw/master/release/ccweb-start-2.0.0-SNAPSHOT.jar)】
 * application.yml 【应用程序主配置文件 [详情](https://github.com/linlurui/ccweb/blob/master/release/application.yml)】
 * db-config.xml 【数据库连接配置文件 [详情](https://github.com/linlurui/ccweb/blob/master/release/db-config.xml)】
 * entity.queryable-2.0-SNAPSHOT.jar【动态查询依赖包 [下载](https://github.com/linlurui/ccweb/raw/master/release/libs/entity.queryable-2.0-SNAPSHOT.jar)】
@@ -39,7 +39,7 @@ ccweb-start是ccweb-api的启动包，其中包含了springcloud的微服务组�
 * log4j2.xml 【可选，log4j2日志配置文件，记录ccweb服务异常信息 [详情](https://github.com/linlurui/ccweb/blob/master/release/log4j2.xml)】
 
 ## 服务启动命令
-***java -jar ccweb-start-1.0.0-SNAPSHOT.jar***
+***java -jar ccweb-start-2.0.0-SNAPSHOT.jar***
 
 ## 接口说明
 ccweb-start内置了默认的api接口可以让前端直接通过表名操作数据，需要限制访问的可以设置系统默认创建的用户权限表进行控制，接口的请求类型同时支持json和表单提交，表单中存在文件上传的会自动上传到表的字段中，字段类型必须为blob。
@@ -331,7 +331,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * POST参数：无
 
 
-### 13. 文件预览（支持预览图片、视频、PDF）
+### 13. 文件预览（支持预览图片、视频、PPT）
 * URL：/api/{datasource}/preview/{table}/{field}/{id}/{page} 
 * 请求方式：GET
 * URL参数：{table}为数据库表名称，{field}为字段名，{id}为主键，{page}为可选入参，可指定页码
@@ -462,7 +462,7 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 }
 ```
 
-### 19. 新增
+### 19. 新增(返回指定主键)
 * URL：/api/{datasource}/{table}/max/{field} 
 * 请求方式：PUT
 * URL参数：{datasource}数据源,{table}为数据库表名称,{field}为要返回的字段名,接口会返回该字段最后插入的值
@@ -596,11 +596,6 @@ ccweb-start内置了默认的api接口可以让前端直接通过表名操作数
 * 数据访问控制表 (acl, 主键aclId, 外键关联groupId)
 * 操作权限表 (privilege, 主键privilegeId, 外键关联groupId、roleId、aclId)
 
-# ccweb-admin
-ccweb-admin是为超级管理员在设计阶段准备的数据管理界面，包含用户管理、用户组管理、权限管理、表结构与视图管理 [下载](https://github.com/linlurui/ccweb/blob/master/release/ccweb-admin-1.0.0-SNAPSHOT.jar)
-
-## 启动命令
-## 访问地址
 
 # 二次开发
 ccweb的二次开发实际就是自定义ccweb-start包的过程，springboot的启动类注解需要加上@SpringBootApplication(scanBasePackages = "ccait.ccweb")才会去扫描ccweb-core的bean。
@@ -856,12 +851,4 @@ public final class DefaultTrigger {
   modifyOn: modifyOn #数据修改时间
   groupId: groupId  #群组ID
   roleId: roleId #角色ID
-```
-
-## github代理服务器
-```yaml
-#hosts
-192.30.253.112 github.com
-151.101.185.194 github.global.ssl.fastly.net
-192.30.253.120 codeload.github.com
 ```
