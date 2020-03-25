@@ -35,7 +35,7 @@
     <repositories>
         <repository>
             <id>entityQueryable</id>
-            <url>https://raw.github.com/linlurui/entityQueryable/snapshots2.0</url>
+            <url>https://raw.github.com/linlurui/entityQueryable/release2.0</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>

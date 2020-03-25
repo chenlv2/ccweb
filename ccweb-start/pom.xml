@@ -7,7 +7,7 @@
     <parent>
         <artifactId>ccweb-framework</artifactId>
         <groupId>ccait.cn</groupId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
 
     <groupId>ccait.cn</groupId>
@@ -25,7 +25,7 @@
         <dependency>
             <groupId>ccait.cn</groupId>
             <artifactId>ccweb-api</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>ccait.cn</groupId>
             <artifactId>ccweb-socket</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.springframework.boot</groupId>
