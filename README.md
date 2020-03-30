@@ -608,7 +608,7 @@ ccweb的二次开发实际就是自定义ccweb-start包的过程，springboot的
     <repositories>
         <repository>
             <id>ccweb</id>
-            <url>https://raw.github.com/linlurui/ccweb/snapshots</url>
+            <url>https://raw.github.com/linlurui/ccweb/release</url>
             <snapshots>
                 <enabled>true</enabled>
                 <updatePolicy>always</updatePolicy>
@@ -620,7 +620,7 @@ ccweb的二次开发实际就是自定义ccweb-start包的过程，springboot的
         <dependency>
             <groupId>ccait.cn</groupId>
             <artifactId>ccweb-api</artifactId>
-            <version>1.0</version>
+            <version>2.0.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 ```
